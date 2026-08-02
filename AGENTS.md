@@ -37,7 +37,7 @@ AI 中转站模块包含两个互补但视角不同的视图，统一通过 [`co
 
 ## 4. 数据同步与性能探针机制
 
-* **数据流向**：`飞书 KB Bitable (knowledge-base-2026)` / `qizhang.org API` → `scripts/fetch-data.ts` → `data/*.json` 本地缓存 + 探针实测数据自动生成 → 前端展示。
+* **数据流向**：`飞书 KB Bitable (knowledge-base-2026)` / `市场数据源` → `scripts/fetch-data.ts` → `data/*.json` 本地缓存 + 探针实测数据自动生成 → 前端展示。
 * **数据命令**：
   * **抓取飞书数据 & 自动更新全站探针**：`npm run fetch`（使用 `lark-cli` 应用 Bot 身份 `cli_aa819ef0aa785bb4` 自动抓取各表数据并触发全量 165+ 站点的并发网络延迟/可用率打点，更新 `data/relay_site_perf.json`）。
-  * **同步 qizhang 数据至飞书**：`npx tsx scripts/sync-qz-data.ts`
+  * **同步市场数据至飞书**：`npx tsx scripts/sync-remote-data.ts`

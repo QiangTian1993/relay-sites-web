@@ -1,8 +1,7 @@
-// qizhang.org API 类型定义
-// 数据源：https://relay.qizhang.org/api/sites + /api/performance-summary
-// v1.0 (2026-07-26)
+// 远程探针与行情 API 接口类型定义
+// 涵盖站点分组、计费倍率与可用性打点摘要
 
-export interface QzGroupRow {
+export interface MarketGroupRow {
   name: string;
   rate_multiplier: string;
   rate_multiplier_min: number | null;
@@ -21,7 +20,7 @@ export interface QzGroupRow {
   };
 }
 
-export interface QzMonitorRow {
+export interface MarketMonitorRow {
   name: string;
   provider: string;
   primary_model: string;
@@ -40,7 +39,7 @@ export interface QzMonitorRow {
   };
 }
 
-export interface QzSyncSettings {
+export interface MarketSyncSettings {
   siteName?: string;
   registrationEnabled: boolean;
   emailVerifyEnabled: boolean;
@@ -56,7 +55,7 @@ export interface QzSyncSettings {
   stationSlug?: string;
 }
 
-export interface QzSyncCounts {
+export interface MarketSyncCounts {
   modelsAvailable?: number;
   textModels?: number;
   imageModels?: number;
@@ -69,7 +68,7 @@ export interface QzSyncCounts {
   monitorsEffective: number;
 }
 
-export interface QzSite {
+export interface MarketSite {
   id: string;
   name: string;
   host: string;
@@ -82,8 +81,8 @@ export interface QzSite {
   notes?: string;
   registerPath?: string;
   monitorPath?: string;
-  groupRows: QzGroupRow[];
-  monitorRows?: QzMonitorRow[];
+  groupRows: MarketGroupRow[];
+  monitorRows?: MarketMonitorRow[];
   sponsor?: {
     enabled: boolean;
     priority?: number;
@@ -95,20 +94,20 @@ export interface QzSite {
     lastSuccessAt?: string;
     lastError?: string;
     errorCategory?: string;
-    settings: QzSyncSettings;
-    counts: QzSyncCounts;
+    settings: MarketSyncSettings;
+    counts: MarketSyncCounts;
   };
 }
 
-export interface QzSitesResponse {
+export interface MarketSitesResponse {
   title: string;
   subtitle: string;
   apiPrefix: string;
   apiFlow: string[];
-  sites: QzSite[];
+  sites: MarketSite[];
 }
 
-export interface QzPerfSite {
+export interface MarketPerfSite {
   host: string;
   name: string;
   framework: string;
@@ -136,7 +135,7 @@ export interface QzPerfSite {
   groups: Record<string, unknown>;
 }
 
-export interface QzPerfSummaryResponse {
+export interface MarketPerfSummaryResponse {
   generatedAt: string;
   mode: string;
   runs: number;
@@ -155,7 +154,7 @@ export interface QzPerfSummaryResponse {
     tpsAvg: number | null;
   };
   groupSummary: Record<string, unknown>;
-  sites: Record<string, QzPerfSite>;
+  sites: Record<string, MarketPerfSite>;
 }
 
 // === 派生的 KB record 类型 ===

@@ -1,20 +1,20 @@
-// 同步脚本：qizhang.org → 飞书 KB relay_site_groups + relay_site_perf
-// 用 tsx 跑：npx tsx scripts/sync-qz-data.ts
-// 频率：cron 5 分钟（与 fetch-data.ts 一致）
-// 身份：bot（绕开 user 91403）
+// 市场数据同步脚本：远程行情源 → 飞书 KB relay_site_groups + relay_site_perf
+// 用 tsx 跑：npx tsx scripts/sync-remote-data.ts
+// 频率：定时同步
+// 身份：bot
 // QPS 限流：sleep 0.6s/req
 
 import fs from "node:fs";
 import { execFileSync } from "node:child_process";
 import { TABLES } from "../lib/tables";
 import type {
-  QzSitesResponse,
-  QzSite,
-  QzPerfSummaryResponse,
+  MarketSitesResponse,
+  MarketSite,
+  MarketPerfSummaryResponse,
   RelaySiteGroupRecord,
-} from "../lib/qz-types";
+} from "../lib/remote-types";
 
-const QZ_BASE = "https://relay.qizhang.org";
+const MARKET_DATA_ENDPOINT = process.env.MARKET_DATA_ENDPOINT ?? "";
 const rawKbToken = process.env.FEISHU_BASE_TOKEN ?? process.env.FEISHU_KB_TOKEN ?? process.env.KB_TOKEN;
 const KB_TOKEN = (rawKbToken && !rawKbToken.includes("…")) ? rawKbToken : "SchGbU6UDaT5q9sDjHTct79Sn9d";
 // bot 需开通 base:record:*；当前默认走 user（可用 LARK_AS=bot 覆盖）
@@ -259,15 +259,16 @@ function loadSiteIndex(): SiteIndex {
   return { recordIdBySiteId, recordIdByHost };
 }
 
-// ============ 抓 qz 数据 ============
+// ============ 抓取市场行情数据 ============
 
-async function fetchQzSites(): Promise<QzSite[]> {
+async function fetchMarketSites(): Promise<MarketSite[]> {
+  if (!MARKET_DATA_ENDPOINT) return [];
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      log(`GET ${QZ_BASE}/api/sites (attempt ${attempt})`);
-      const r = await fetch(`${QZ_BASE}/api/sites`);
+      log(`GET ${MARKET_DATA_ENDPOINT}/api/sites (attempt ${attempt})`);
+      const r = await fetch(`${MARKET_DATA_ENDPOINT}/api/sites`);
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      const j = (await r.json()) as QzSitesResponse;
+      const j = (await r.json()) as MarketSitesResponse;
       log(`  → ${j.sites.length} 站`);
       return j.sites;
     } catch (e) {
@@ -279,13 +280,14 @@ async function fetchQzSites(): Promise<QzSite[]> {
   throw new Error("unreachable");
 }
 
-async function fetchQzPerf(): Promise<QzPerfSummaryResponse> {
+async function fetchMarketPerf(): Promise<MarketPerfSummaryResponse | null> {
+  if (!MARKET_DATA_ENDPOINT) return null;
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      log(`GET ${QZ_BASE}/api/performance-summary (attempt ${attempt})`);
-      const r = await fetch(`${QZ_BASE}/api/performance-summary`);
+      log(`GET ${MARKET_DATA_ENDPOINT}/api/performance-summary (attempt ${attempt})`);
+      const r = await fetch(`${MARKET_DATA_ENDPOINT}/api/performance-summary`);
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      const j = (await r.json()) as QzPerfSummaryResponse;
+      const j = (await r.json()) as MarketPerfSummaryResponse;
       log(`  → ${Object.keys(j.sites).length} 站 perf`);
       return j;
     } catch (e) {
@@ -299,7 +301,7 @@ async function fetchQzPerf(): Promise<QzPerfSummaryResponse> {
 
 // ============ 映射 ============
 
-function siteGroupToRecord(site: QzSite, g: QzSite["groupRows"][number], now: string): Omit<RelaySiteGroupRecord, "__id"> {
+function siteGroupToRecord(site: MarketSite, g: MarketSite["groupRows"][number], now: string): Omit<RelaySiteGroupRecord, "__id"> {
   return {
     site_id: site.id,
     site_name: site.name,
@@ -319,7 +321,7 @@ function siteGroupToRecord(site: QzSite, g: QzSite["groupRows"][number], now: st
 
 // ============ Upsert 流 ============
 
-async function upsertGroups(sites: QzSite[], siteIndex: SiteIndex) {
+async function upsertGroups(sites: MarketSite[], siteIndex: SiteIndex) {
   const table = TABLES.find((t) => t.id === "relay_site_groups");
   if (!table || table.tableId.startsWith("TBD")) {
     log(`⏭ relay_site_groups: 跳过（tableId=${table?.tableId} 为 TBD，需强哥建表后填入）`);
@@ -459,7 +461,7 @@ async function upsertGroups(sites: QzSite[], siteIndex: SiteIndex) {
   return { ok, unchanged, skip };
 }
 
-async function upsertPerf(perf: QzPerfSummaryResponse, sites: QzSite[], siteIndex: SiteIndex) {
+async function upsertPerf(perf: MarketPerfSummaryResponse, sites: MarketSite[], siteIndex: SiteIndex) {
   const table = TABLES.find((t) => t.id === "relay_site_perf");
   if (!table || table.tableId.startsWith("TBD")) {
     log(`⏭ relay_site_perf: 跳过（tableId=${table?.tableId} 为 TBD）`);
@@ -554,26 +556,26 @@ async function main() {
   const start = Date.now();
   fs.mkdirSync(LOG_DIR, { recursive: true });
 
-  log("=== sync-qz-data 开始 ===");
+  log("=== sync-remote-data 开始 ===");
 
   // TBD 守卫
   const tbdTables = TABLES.filter((t) => t.id.startsWith("relay_site_") && t.tableId.startsWith("TBD"));
   if (tbdTables.length > 0) {
     log(`⏭ 跳过全部：${tbdTables.length} 个新表还是 TBD（${tbdTables.map((t) => t.id).join(", ")}）`);
-    log(`   强哥在飞书 base 手动建表后，把 tableId 填到 lib/tables.ts 即可`);
-    log(`=== sync-qz-data 结束 (skipped) ===`);
+    log(`   在飞书 base 手动建表后，把 tableId 填到 lib/tables.ts 即可`);
+    log(`=== sync-remote-data 结束 (skipped) ===`);
     return;
   }
 
-  const sites = await fetchQzSites();
-  const perf = await fetchQzPerf();
+  const sites = await fetchMarketSites();
+  const perf = await fetchMarketPerf();
   const siteIndex = loadSiteIndex();
 
-  const perfResult = await upsertPerf(perf, sites, siteIndex);
+  const perfResult = perf ? await upsertPerf(perf, sites, siteIndex) : { ok: 0, unchanged: 0, skip: 0 };
   const groupResult = await upsertGroups(sites, siteIndex);
 
   const elapsed = ((Date.now() - start) / 1000).toFixed(1);
-  log(`=== sync-qz-data 结束 (${elapsed}s) groups: ok=${groupResult.ok}/skip=${groupResult.skip}, perf: ok=${perfResult.ok}/skip=${perfResult.skip} ===`);
+  log(`=== sync-remote-data 结束 (${elapsed}s) groups: ok=${groupResult.ok}/skip=${groupResult.skip}, perf: ok=${perfResult.ok}/skip=${perfResult.skip} ===`);
 }
 
 main().catch((err) => {

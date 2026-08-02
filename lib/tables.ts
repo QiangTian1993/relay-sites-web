@@ -172,7 +172,7 @@ export const TABLES: TableConfig[] = [
     // 2026-07-26 由小珠通过 lark-cli +table-create 自动创建
     tableId: "tblgFmai5SmdDNIZ",
     displayName: "站点性能",
-    description: "qizhang.org 最新实测性能（成功率 / TTFT / P95 / TPS / 可用率）",
+    description: "全网并发打点网络性能实测（成功率 / TTFT / P95 / TPS / 可用率）",
     primaryKey: "site_name",
     titleField: "site_name",
     color: "blue",
