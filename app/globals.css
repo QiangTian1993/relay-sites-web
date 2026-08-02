@@ -1,0 +1,140 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #ffffff;
+  color: #000000;
+  font-feature-settings: "ss01", "cv11";
+}
+
+/* 选中颜色：Swiss Red */
+::selection {
+  background: #ff3000;
+  color: #ffffff;
+}
+
+/* 链接默认无下划线 */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid #ff3000;
+  outline-offset: 2px;
+}
+
+/* 滚动条极简 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.4);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #ff3000;
+}
+
+/* ===== Swiss Style Pattern Utilities ===== */
+
+/* 1. Grid Pattern (24px grid lines, 3% opacity) */
+.swiss-grid {
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* 2. Dot Matrix (16px dots, 4% opacity) */
+.swiss-dots {
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.06) 1px, transparent 1.5px);
+  background-size: 16px 16px;
+}
+
+/* 3. Diagonal Lines (45deg, 10px spacing, 2% opacity) */
+.swiss-diagonal {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 9px,
+    rgba(0, 0, 0, 0.04) 9px,
+    rgba(0, 0, 0, 0.04) 10px
+  );
+}
+
+/* 4. Noise Texture (SVG fractal noise, 1.5% opacity) */
+.swiss-noise {
+  position: relative;
+}
+.swiss-noise::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.15 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 200px 200px;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+}
+.swiss-noise > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== Swiss Animations ===== */
+
+@keyframes swiss-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.swiss-fade-in {
+  animation: swiss-fade-in 0.3s ease-out;
+}
+
+@keyframes swiss-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* 旋转 plus 图标 */
+.plus-rotate {
+  transition: transform 0.2s ease-out;
+}
+.group:hover .plus-rotate,
+.group[data-open="true"] .plus-rotate {
+  transform: rotate(90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 表格行 hover */
+tr.swiss-row {
+  transition: background-color 0.15s ease;
+}
+tr.swiss-row:hover {
+  background-color: #f2f2f2;
+}
+
+/* 强调边框（accent 4px 红色边框） */
+.swiss-highlight {
+  box-shadow: inset 4px 0 0 0 #ff3000;
+}

@@ -1,0 +1,338 @@
+[
+  {
+    "__id": "recvqmy2IAViHL",
+    "工具名": "Cursor",
+    "产品定位": "AI 原生 IDE 标杆，基于 VS Code 深度定制（fork），深度集成 AI 能力；面向专业开发者，强调「AI 协作者」而非「AI 补全」。2026 已支持云端虚拟机代理，Agent 可在云端独立开发环境并行执行任务。",
+    "目标用户": "专业开发者 / 全栈工程师；预算可承担 $20/月 Pro 订阅的个人和团队；不适合纯学生 / 预算紧张群体（72% 个人开发者表示难以长期负担）。",
+    "使用建议": "适合复杂跨文件修改 + 大型项目重构场景；Composer Agent 模式 + Tab 智能补全是杀手锏；多平台触发（桌面/网页/手机/Slack/GitHub）便于异步协作；迁移成本低（VS Code 生态 + 插件兼容）。预算紧的直接看 Trae。",
+    "竞品对比": "vs Windsurf：Cursor 全能重构强但 $20/月，Windsurf 免费 + Agent 原生 + 中文优先。vs Trae：Cursor 成熟，Trae 免费 + 中文 + 字节生态。vs Claude Code：Cursor 是 GUI IDE，Claude Code 是 CLI Agent。vs Copilot：Cursor 是 AI 协作者（深度整合），Copilot 是智能补全（插件定位）。"
+  },
+  {
+    "__id": "recvqmy3dCUppd",
+    "工具名": "Windsurf",
+    "产品定位": "Codeium 推出的首个 Agentic IDE（VS Code fork），主打「AI 协作搭档」；Cascade 系统实时上下文感知（自动追踪代码库变更），Agent+Copilot 协作模式，2026-03 Cascade 多文件联动编辑。",
+    "目标用户": "预算紧张但想要 AI Agent 能力的个人开发者 / 学生党 / 中小企业；本地 GPU 用户（隐私敏感 / 响应速度优先）；Web 开发为主的项目。",
+    "使用建议": "Cascade 自动追踪代码库新增文件 / 变量重命名，省去手动喂上下文；本地 AI 计算兼顾隐私（适合 GPU 机器）；免费版功能够用，$15/月 Pro 比 Cursor 便宜 25%；自然语言指令支持中文优先。",
+    "竞品对比": "vs Cursor：Windsurf 免费 + Agent 原生 + 中文 + 本地化，Cursor 全能但 $20/月。vs Trae：Windsurf 海外本地化优先，Trae 中文 + 字节生态。vs Copilot：Windsurf Agent 强 + 免费版够用，Copilot 生态深但 Agent 能力基础。"
+  },
+  {
+    "__id": "recvqmy3GqFc2a",
+    "工具名": "Trae",
+    "产品定位": "字节跳动 2025-01 发布的 AI 原生 IDE，专为中文开发者设计；VS Code 架构 + 内置 Claude 3.5/3.7、GPT-4o、DeepSeek、豆包；2026 已发 SOLO 正式版（桌面+网页独立端） + TRAE CN 企业版（92% 字节内部渗透率）。",
+    "目标用户": "中文开发者（界面 / 注释全中文，迁移零成本）；个人开发者（永久免费基础版 + 600 万+ 用户）；字节生态内企业；预算敏感但要 AI IDE 的中小团队。",
+    "使用建议": "中文开发者入门首选（免费 + 中文界面 + 中文注释）；SOLO 独立端支持桌面+网页协同 + 多任务并行 + 跨设备；TRAE CN 企业版承载 10 万文件 / 1.5 亿行代码容量；抖音生活服务团队 AI 代码贡献率 43%。",
+    "竞品对比": "vs Cursor：Trae 免费 + 中文 + 字节生态，Cursor 成熟但贵。vs Windsurf：Trae 中文为主，Windsurf 海外本地化优先。vs 国产同行：豆包/DeepSeek 集成 + 字节内部 92% 实战验证。"
+  },
+  {
+    "__id": "recvqmy48alBmf",
+    "工具名": "Antigravity",
+    "产品定位": "Google 2025 推出的 AI 编程工具；2026 Google I/O 升级为 Antigravity 2.0（桌面应用 + CLI + SDK），定位从「面向开发者的智能体式 IDE」→「通用智能体优先工作平台」；可同时协调多智能体并行执行任务。",
+    "目标用户": "Google Cloud / GCP 生态用户；产品经理 / 项目 Owner（Agent 优先 + 人机协作思路）；需要多智能体并行调度的复杂项目团队。",
+    "使用建议": "2.0 起支持 /schedule 定时任务 + /goal /grill-me /browser 斜杠命令，可控性增强；多 Agent 并行处理不同编程任务；不再强绑定代码仓库，按 project 管理；自定义工作流 SDK 可扩展。",
+    "竞品对比": "vs TRAE Work：Antigravity Google 生态深，TRAE 字节生态深。vs Cursor：Antigravity 偏 Agent 工作流平台，Cursor 偏 IDE 编辑。vs Claude Code：Antigravity GUI + CLI 双形态，Claude Code 纯 CLI。"
+  },
+  {
+    "__id": "recvqmy4ArfJSR",
+    "工具名": "Zed",
+    "产品定位": "Zed Industries 2026 发布 1.0 正式版的 AI 编辑器；Rust 编写的高性能本地 IDE，默认集成 Claude 3.5 Sonnet，支持自定义 LLM + 本地模型推理。",
+    "目标用户": "追求极致性能 / 启动速度的开发者；重视隐私 / 本地推理的用户；从 VS Code 迁移想要轻量替代的；Rust / 系统级 / 高频编辑场景。",
+    "使用建议": "性能强（Rust 优势）但 AI 功能成熟度暂不如 Cursor；适合对启动速度 / 资源占用敏感的用户；本地 LLM 推理需 GPU 支持；适合作为「主力 IDE + 偶尔 AI 补全」的组合。",
+    "竞品对比": "vs Cursor：Zed 性能 / 资源占优，Cursor AI 功能成熟度领先。vs VS Code + Copilot：Zed 是 AI 一等公民，VS Code 是插件扩展。vs Claude Code：Zed GUI IDE，Claude Code CLI Agent。"
+  },
+  {
+    "__id": "recvqmy50DaFH4",
+    "工具名": "Claude Code",
+    "产品定位": "Anthropic 推出的终端 CLI 编程助手；2026 已支持 Computer Use + 远程操控；纯 CLI 无 GUI，深度依赖 Anthropic Claude 模型（推理能力突出）；CLI 可嵌入任何工作流。",
+    "目标用户": "习惯终端工作流的开发者；深度学习/根因分析任务（推理更深）；CLI 优先的 DevOps / 后端工程师；想要精细控制的高级开发者。",
+    "使用建议": "学习新技术 / 分析根因场景比 Cursor 更深；可嵌入 CI/CD、shell 脚本、自动化工作流；Computer Use 支持远程操控；与 IDE 类工具（Cursor）双持是 1+1>2。",
+    "竞品对比": "vs Cursor：Claude Code 是 CLI Agent（可嵌入工作流），Cursor 是 GUI IDE（编辑直观）。vs Deep Agents：Claude Code 闭源付费，Deep Agents 开源可定制。vs Codex CLI：两家头部 CLI 直接对标（推理深 vs 多智能体编排）。"
+  },
+  {
+    "__id": "recvqmy5rDhls1",
+    "工具名": "Codex CLI",
+    "产品定位": "OpenAI 2026-02 推出 macOS Codex 应用（多智能体并行作业），2026-05 计划 iPhone 版（转向通用 AI 生产力工具），2026-06 扩展 6 岗位插件覆盖 62 应用 / 110 技能。",
+    "目标用户": "OpenAI 生态用户；多智能体编排需求；移动端监控后台任务的开发者；想要通用 AI 生产力工具的个人。",
+    "使用建议": "多智能体融合是核心亮点；移动端 + 语音指令审批 code diff 适合异步工作流；6 岗位插件（创意/销售等）说明定位已超出纯编程；GPT-5.2-Codex 模型加持。",
+    "竞品对比": "vs Claude Code：Codex 多智能体 + 移动端，Claude Code CLI + 推理深。vs Cursor：Codex 应用 + 移动端，Cursor IDE。vs DeepSeek-Coder：Codex 多模态 + 生态深。"
+  },
+  {
+    "__id": "recvqmy5Tptsr1",
+    "工具名": "Aider",
+    "产品定位": "终端 AI 编程工具，强调 pair programming（开发者 + AI 协作）；支持多 LLM 后端（OpenAI/Anthropic/本地）；Git 原生集成（自动 commit + 生成 commit message）。",
+    "目标用户": "终端优先的开发者；想用自己 LLM API key 的用户（避免被 IDE 锁定）；Git 工作流重的项目；老派 pair programming 爱好者。",
+    "使用建议": "适合已有 Git 习惯的项目（自动 commit）；支持本地模型（隐私 / 成本敏感）；比 IDE 类轻量，比纯 CLI 类友好；模型可选是最大优势。",
+    "竞品对比": "vs Claude Code：Aider 多模型 + Git 原生 + 开源，Claude Code 闭源 Anthropic 为主。vs Cursor：Aider 终端，Cursor GUI。vs Cline：Aider 终端独立，Cline VS Code 扩展。"
+  },
+  {
+    "__id": "recvqmy6kT5KZL",
+    "工具名": "GitHub Copilot CLI",
+    "产品定位": "GitHub 2026-04 推向全面可用的 CLI 工具，作为 GitHub CLI（gh）扩展；终端 AI 辅助开发的一等入口；接入 GPT-4o / Claude 3.5 Sonnet 等多模型。",
+    "目标用户": "GitHub 生态用户（重 PR / Issue 工作流）；想要 CLI 形态但保留 Copilot 体验的开发者；VS Code + 终端双场景用户。",
+    "使用建议": "与 GitHub CLI 无缝集成（PR / Issue / Repo 操作直接调用 AI）；多模型切换灵活（GPT-4o / Claude 3.5）；响应速度亚秒级；适合已经在用 gh CLI 的开发者。",
+    "竞品对比": "vs Claude Code：Copilot CLI GitHub 生态集成深，Claude Code 推理深。vs Codex CLI：Copilot 多模型切换，Codex OpenAI 专精。vs Cursor：Copilot CLI 是补全类扩展，Cursor CLI 暂未单独发布。"
+  },
+  {
+    "__id": "recvqmy6MCwCb3",
+    "工具名": "Cline",
+    "产品定位": "VS Code 扩展形式的 AI 编程助手（曾用名 Claude Dev）；支持 Anthropic / OpenAI / DeepSeek 等多模型（OpenAI 兼容模式）；MCP 集成能力强（浏览器控制、文件系统等）。",
+    "目标用户": "VS Code 重度用户；想要 IDE 内 AI 但不愿订阅 Cursor/Copilot 的预算敏感用户；国内开发者（DeepSeek 兼容 + 便宜）；MCP 早期采用者。",
+    "使用建议": "配置灵活（多模型 + OpenAI 兼容模式）；VS Code 原生体验，迁移成本零；MCP 集成可控制浏览器等外部工具；性价比高（自备 API key，无平台抽成）。",
+    "竞品对比": "vs Cursor：Cline 是 VS Code 扩展 + 自备 key 便宜，Cursor 是 fork IDE。vs Claude Code：Cline IDE 内，Claude Code 终端。vs Continue：Cline MCP 强 + Agent 强，Continue 模型路由更灵活。"
+  },
+  {
+    "__id": "recvqmy7dW3Epn",
+    "工具名": "Goose",
+    "产品定位": "Block（前 Square）推出的开源 AI agent 平台（block.github.io/goose）；不止代码建议，能 install / execute / edit / test；支持任意 LLM 后端；客户端 + CLI + IDE 多端集成。",
+    "目标用户": "想要开源 + 可扩展 AI agent 的开发者；Block / Square 生态；多 LLM 灵活切换需求；自部署 / 本地推理 / 数据隐私敏感用户。",
+    "使用建议": "开源可定制（不像 Cursor / Windsurf 闭源）；任意 LLM 后端（不被 vendor lock-in）；CLI / Desktop / IDE 多端集成；适合自动化工作流 + 自托管场景。",
+    "竞品对比": "vs OpenCode：两家都是开源 + 多 LLM + 可定制。vs Cursor：Goose 开源可自部署，Cursor 闭源 IDE。vs Claude Code：Goose 多 LLM + 开源，Claude Code 闭源 Anthropic 为主。"
+  },
+  {
+    "__id": "recvqmy7FA6Cck",
+    "工具名": "Kiro",
+    "产品定位": "亚马逊云科技 2025-07 预览、2025-11 正式可用的 AI IDE；首创 Spec-driven（规范驱动）开发模式，用 EARS 格式定义系统行为；与 Bedrock AgentCore（Firecracker microVM 运行时）集成，专注从原型到生产的工程化。",
+    "目标用户": "看重代码可维护性 / 生产化规范的团队；企业级 AI 开发流程（从原型到生产级）；AWS / Bedrock 生态用户；复杂迁移项目（Scala 转 Go 等）；架构师 / Tech Lead。",
+    "使用建议": "Specs 作为人机可读规范成为 AI 开发流程的基准线；预览期 25 万开发者使用，累计近 3 亿次开发请求；Socure 用此模式将 Scala 转 Go 从 3 周压缩到 2 天；适合需要长期维护的中大型项目。",
+    "竞品对比": "vs Cursor：Kiro 规范驱动（生产级可维护），Cursor 自由交互（原型快）。vs Claude Code：Kiro IDE + 规范，Claude Code CLI + 推理深。vs Windsurf：Kiro 偏团队 + AWS，Windsurf 偏个人 + 免费。"
+  },
+  {
+    "__id": "recvqmy86fikLy",
+    "工具名": "Bolt.new",
+    "产品定位": "StackBlitz 推出的 AI 驱动全栈 Web 开发平台；自然语言 → 多页应用 + 后端服务 + 数据库集成；核心技术：AI + WebContainers（浏览器内完整 Node.js 环境）；2026 还开源了 bolt-slides（网页式 slide 生成）。",
+    "目标用户": "想要「想法直接上线」的非纯开发者 / 产品经理；前端 / 全栈快速原型场景；技术初学者；需要 demo / MVP 快速验证的初创团队；方案 / 提案频繁的咨询 / 销售。",
+    "使用建议": "浏览器内完整开发环境（无需本地安装任何依赖）；自然语言驱动全栈生成（前端 + 后端 + DB）；适合 MVP / 概念验证；bolt-slides 让方案书生成变「活的网页」，适合客户演示。",
+    "竞品对比": "vs Lovable：Bolt.new 浏览器内 Node.js + 全栈生成，Lovable 移动端 + 氛围编码。vs v0：Bolt.new 全栈（前端+后端+DB），v0 仅前端 UI。vs Replit Agent：都有托管环境，Bolt.new 用 WebContainers，Replit 经典沙箱。"
+  },
+  {
+    "__id": "recvqmy8xMtQDo",
+    "工具名": "Lovable",
+    "产品定位": "2026-04 iOS / Android 双平台上线的无代码 AI 应用构建器；首创「氛围编码」（vibe coding）概念；语音 / 文本指令实时捕捉创意并完成应用原型；跨设备同步。",
+    "目标用户": "非技术背景的创意人士 / 设计师 / 产品经理；想要移动端随时开发的用户；快速 MVP 验证的初创团队；碎片化时间做原型的独立开发者。",
+    "使用建议": "跨设备同步（移动 ↔ 桌面无缝衔接）；语音指令适合碎片化时间记录灵感；适合做「灵感快速落 demo」；对非工程师最友好（无需读代码也能出原型）。",
+    "竞品对比": "vs Bolt.new：Lovable 移动端 + 氛围编码 + 无代码，Bolt.new 浏览器 + 全栈 + 需懂技术。vs v0：Lovable 全栈应用生成，v0 仅前端 UI。vs Replit Agent：Lovable 移动 + 语音，Replit 桌面 + 教育场景。"
+  },
+  {
+    "__id": "recvqmy8Yc9GmA",
+    "工具名": "v0",
+    "产品定位": "Vercel（前 ZEIT）推出的生成式 UI 系统；自然语言 → React + Tailwind + shadcn/ui 可运行代码；目标定位是「V0」（产品的第一个版本），可在 V1 / V2 迭代；前端开发最佳实践 + AI 的结合。",
+    "目标用户": "前端开发者；想要快速 UI 草图的设计师；产品经理（验证 UI 想法）；使用 Vercel / Next.js 生态的项目；shadcn/ui 粉丝。",
+    "使用建议": "自然语言描述需求，AI 直接生成 React + Tailwind + shadcn/ui 可运行代码；默认风格美观度高；适合做「产品第一个版本」的 UI；Next.js 项目无缝集成（Vercel 一手生态）。",
+    "竞品对比": "vs Bolt.new：v0 仅前端 UI（需自配后端），Bolt.new 全栈（前端 + 后端 + DB）。vs Lovable：v0 输出前端代码（开发者友好），Lovable 无代码应用（非工程师友好）。vs Cursor：v0 单点 UI 生成（无 IDE），Cursor 完整 IDE。"
+  },
+  {
+    "__id": "recvqmy9qb5Hvp",
+    "工具名": "Replit Agent",
+    "产品定位": "Replit 2026-03 发布 Agent 4，定位「迄今最快、最全能的智能编程代理」；加速氛围编程 + 构建生产级应用；浏览器内完整开发 + 部署环境（Replit 经典沙箱）。",
+    "目标用户": "编程初学者（学习资源丰富 + 操作便捷）；想要「开发 + 部署」一体化的全栈开发者；教学场景；快速验证想法的独立开发者。",
+    "使用建议": "Agent 4 在速度 + 任务处理广度上显著突破；适合「氛围编程」追求极致效率的场景；Replit 平台一键部署（无需配服务器）；内置教育生态适合新手。",
+    "竞品对比": "vs Bolt.new：都有托管环境，Replit 经典沙箱 + 教育生态，Bolt.new WebContainers + 全栈。vs Lovable：Replit 桌面 + 编程，Replit 教育场景深，Lovable 移动 + 氛围编码。vs Cursor：Replit 偏学习 + 部署，Cursor 偏专业 IDE。"
+  },
+  {
+    "__id": "recvqmy9VeWaxy",
+    "工具名": "Create.xyz",
+    "产品定位": "Create Inc（前 GPT Engineer 转型）推出的 AI 应用生成平台；自然语言 → 完整 Web 应用（前端 + 后端 + 数据库）；强调「vibe coding」平台化，让非工程师也能产出可发布应用。",
+    "目标用户": "非工程师创业者；想要快速出可发布 MVP 的团队；产品经理独立做 demo；预算紧但要全栈应用的初创团队。",
+    "使用建议": "比 Bolt.new 更偏「vibe coding」品牌定位；GPT Engineer 时代积累的 prompt 工程 + agent 编排；适合从想法 → 部署的端到端流程；与 Bolt.new / Lovable 形成「vibe coding 三剑客」。",
+    "竞品对比": "vs Bolt.new：Create.xyz vibe coding 品牌化 + 端到端，Bolt.new WebContainers + StackBlitz 生态。vs Lovable：Create.xyz 桌面 + 编程，Lovable 移动 + 无代码。vs Cursor：Create.xyz 应用生成平台，Cursor IDE。"
+  },
+  {
+    "__id": "recvqmyamQKZEq",
+    "工具名": "GitHub Copilot",
+    "产品定位": "GitHub / Microsoft 2021 推出的 AI 编程助手（行业先驱），全球用户 300 万+；支持 37+ 编程语言；接入 GPT-4o / Claude 3.5 Sonnet 等多模型；行内代码补全 + Chat + Agent Mode 三件套。",
+    "目标用户": "VS Code / JetBrains / Xcode 全家桶用户（迁移成本零）；看重稳定 + 生态集成的团队；GitHub 重度用户（PR / Issue 工作流）；入门 AI 编程的首选。",
+    "使用建议": "$10/月 Pro 性价比高；2026 已开放 BYOK（接入 Claude API 跑 Claude 4.x）；Agent Mode 处理复杂任务可拆解；响应速度亚秒级；适合「插件即用、不换 IDE」的路线。",
+    "竞品对比": "vs Cursor：Copilot 是 IDE 插件扩展（不换编辑器），Cursor 是 AI 原生 IDE（换编辑器）。vs Claude Code：Copilot 多模型 + IDE 集成，Claude Code CLI + 推理深。vs Windsurf：Copilot 生态深 + 稳定，Windsurf Agent 原生 + 免费。"
+  },
+  {
+    "__id": "recvqmyaNLr3Wq",
+    "工具名": "Continue",
+    "产品定位": "开源（Apache-2.0）的 AI 代码助手，github.com/continuedev/continue；核心卖点：「连接任何模型和任何上下文」，在 VS Code + JetBrains 中构建自定义自动完成 + 聊天体验；config.yaml 灵活配置。",
+    "目标用户": "看重开源 + 可定制的开发者；想用自备 API key（BYOK）的用户；企业内网 / 数据隐私场景；多模型路由需求（Chat / Edit / Autocomplete / Embedding 四角色可独立配置）。",
+    "使用建议": "config.yaml 比 JSON 写起来更清爽 + 注释友好；可针对 Chat / Edit / Autocomplete / Embedding 四个角色配不同模型；自托管 / 本地推理友好；VS Code / JetBrains 双 IDE 支持。",
+    "竞品对比": "vs Cline：Continue 开源 + 模型路由灵活，Cline VS Code 扩展 + MCP 强 + Agent 强。vs Copilot：Continue 开源 + BYOK + 可定制，Copilot 闭源 + GitHub 生态。vs Cursor：Continue 插件式不换 IDE，Cursor AI 原生 IDE。"
+  },
+  {
+    "__id": "recvqmybfAVmf0",
+    "工具名": "Cody",
+    "产品定位": "Sourcegraph 推出的 AI 编程助手（VS Code + IntelliJ 插件）；核心优势：基于 Sourcegraph 代码搜索平台，能深度理解大型代码库；上下文检索能力突出；支持中文对话。",
+    "目标用户": "大型代码库 / 复杂项目的团队（Sourcegraph 代码搜索加持）；企业级代码理解需求；VS Code / JetBrains 用户；已用 Sourcegraph 做代码搜索的团队。",
+    "使用建议": "免费试用（注册 Sourcegraph 账号即可）；基于 Sourcegraph 代码搜索能精准定位上下文；适合需要「跨文件 / 跨仓库」理解的项目；中文对话支持。",
+    "竞品对比": "vs Cursor：Cody 是插件 + 代码搜索强 + 大型仓库友好，Cursor 是 AI 原生 IDE。vs Copilot：Cody 大型代码库检索强，Copilot 行内补全 + 生态深。vs Continue：Cody 企业级代码搜索，Continue 开源 + 模型路由灵活。"
+  },
+  {
+    "__id": "recvqmybG35B7L",
+    "工具名": "Tabnine",
+    "产品定位": "以色列 Codota 2013 年创立（2021-05 更名 Tabnine），全球 100 万+ 用户；专注 AI 代码补全 + 生成；支持企业内网部署（离线授权）+ 多架构（x86_64 / arm64 / Windows / Linux / macOS）；团队训练模型 + 开源训练模型融合。",
+    "目标用户": "企业内网 / 离网环境的开发团队；数据隐私 / 代码保密要求高的金融 / 政府 / 军工；多架构服务器环境的运维；想要稳定 + 长期支持的企业用户。",
+    "使用建议": "dl_binaries.sh 离线资源包适合内网部署；多架构支持（x86_64-unknown-linux-musl / aarch64-apple-darwin 等）；中高级开发者精准建议；内网版本更新机制完整。",
+    "竞品对比": "vs Copilot：Tabnine 企业内网部署强 + 数据隐私，Copilot 云端为主。vs Continue：Tabnine 闭源企业版，Continue 开源 + 模型路由灵活。vs Cody：Tabnine 专注补全 + 企业，Cody 大型代码库检索。"
+  },
+  {
+    "__id": "recvqmyc85xLcT",
+    "工具名": "JetBrains AI Assistant",
+    "产品定位": "JetBrains 官方 AI 编程助手（IDE 亲儿子）；多模型集成（JetBrains 自研 + 第三方模型）；支持远程开发；开源适配；不是单纯补全，是「开发者效率引擎」；深度集成 IntelliJ IDEA / PyCharm / WebStorm 等全家桶。",
+    "目标用户": "JetBrains 全家桶用户（已付费 IDE 想要原生 AI）；看重 IDE 深度集成 + 官方支持的团队；远程开发场景；习惯 JetBrains 快捷键 / 调试器 / 重构工具的高级开发者。",
+    "使用建议": "没有人比 JetBrains 更懂自家 IDE 的深层逻辑；多模型协作灵活适配场景（命名 / 重构 / 补全 / Chat）；远程开发 + 开源适配完善；官方文档里找不到的实战细节多。",
+    "竞品对比": "vs Copilot：JetBrains AI 是 IDE 亲儿子 + 深度集成，Copilot 是第三方插件跨 IDE。vs Cursor：JetBrains AI 不换 IDE（保持熟悉工作流），Cursor 换 IDE 深度集成。vs Claude Code：JetBrains AI GUI IDE 内，Claude Code CLI 为主。"
+  },
+  {
+    "__id": "recvqmycyjF0q0",
+    "工具名": "Orca",
+    "产品定位": "开源 AI 舰队编排工具（GitHub 7.3K Star）；核心卖点：让 Claude Code / Codex / Gemini 等多个 CLI 同时开工；解决「终端地狱」——多个 AI CLI 并排跑 + 手动切换的低效；统一 UI 监控多个 AI 任务。",
+    "目标用户": "同时使用多个 AI CLI（Claude Code + Codex + Gemini 等）的开发者；想要统一调度 AI agent 的个人 / 团队；想避免「空中交通管制员」手动切换的低效；多模型协作场景。",
+    "使用建议": "一个 UI 同时监控多个 AI 任务进度；适合「多模型协作」实验 / 任务；开源可定制；适合已有多个 CLI 订阅想提升调度效率的用户；不需要切换窗口。",
+    "竞品对比": "vs 单 CLI（Claude Code / Codex）：Orca 统一调度多 CLI，单 CLI 各自为战。vs Antigravity：Orca 编排现有 CLI，Antigravity 自建多 Agent 工作平台。vs Magentic-One：Orca 是 CLI 编排器，Magentic-One 是研究型多 Agent 框架。"
+  },
+  {
+    "__id": "recvqmycZkpw20",
+    "工具名": "Qoder",
+    "产品定位": "阿里 2025-10 推出的 Agentic Coding Platform for Real Software；面向真实软件开发的智能体编程平台；分层架构：基础设施（大模型 + AI Infra）+ 平台能力 + 应用；2025-12 开源 Agentic Coding 产品耐用度评测集。",
+    "目标用户": "想要「面向真实软件开发」（不只是 demo）的团队；阿里云 / 阿里生态用户；Java / 后端 / 企业级项目；看重平台可扩展性 + 自研模型能力的开发者。",
+    "使用建议": "注册送 1000 积分免费试用；GitHub 账号集成登录；三层架构（基础设施 / 平台 / 应用）适合复杂场景；新用户友好 + 阿里云打通；耐用度评测集开源可参考。",
+    "竞品对比": "vs Cursor：Qoder 阿里云生态 + 真实软件导向，Cursor 海外成熟 IDE。vs Claude Code：Qoder GUI IDE + Agent 平台，Claude Code CLI 为主。vs Antigravity：Qoder 阿里生态 + 真实软件，Antigravity Google 生态 + 通用 Agent 工作平台。"
+  },
+  {
+    "__id": "recvqmydqz5tnl",
+    "工具名": "Amazon Q Developer CLI",
+    "产品定位": "AWS 推出的 AI 编程 CLI 工具（从 CodeWhisperer 进化而来）；2026 已升级为多功能：内联补全 + 聊天面板 + 多步骤代理 + 命令行代理 + 代码转换作业；支持 MCP（本地 + 远程 server）；给现有 macOS / Linux 终端加 AI 能力。",
+    "目标用户": "AWS 生态用户；已用 CodeWhisperer 想升级到更强 AI 的团队；想要 CLI 形态 + AWS 集成的开发者；需要 MCP 集成（自定义工具 / 外部服务）；代码迁移 / 转换需求。",
+    "使用建议": "MCP 配置文件 ~/.aws/amazonq/cli-agents 支持本地 + 远程 server；CLI 提供 IDE 级体验（行内补全 + 聊天 + 多步骤代理）；适合已深度用 AWS 的团队；代码转换作业支持语言迁移。",
+    "竞品对比": "vs Claude Code：Amazon Q Developer AWS 生态 + MCP 强 + 代码转换，Claude Code Anthropic 推理深。vs Copilot CLI：Amazon Q Developer AWS 集成深，Copilot GitHub 集成深。vs Kiro：Amazon Q Developer CLI 为主，Kiro IDE 为主（都是 AWS 出品）。"
+  },
+  {
+    "__id": "recvqmydRAAVcy",
+    "工具名": "Devin",
+    "产品定位": "Cognition Labs 2024-03 发布的「全球首位 AI 软件工程师」（华人团队创办，CEO Scott Wu）；自治代理模式，自带 shell / 代码编辑器 / Web 浏览器；端到端处理整个开发项目。",
+    "目标用户": "需要「端到端外包」开发任务的企业；想要尝试 AI 替代初级程序员的探索者；预算充足、愿意承担实验性工具风险的团队；对 AI 编程能力前沿有兴趣的开发者。",
+    "使用建议": "在明确指导下能像初级程序员一样独立完成任务；大约可持续独立工作 3 小时，之后开始出现偏差（需管理预期）；适合小到中等的软件开发项目；学习不熟悉技术 + 自动找 bug + 训练模型都能做。",
+    "竞品对比": "vs OpenHands：Devin 闭源商业化最早（2024），OpenHands 开源自部署。vs Cursor：Devin 自治代理（独立工作），Cursor 协作 IDE（人在回路）。vs Claude Code：Devin 端到端，Claude Code CLI 嵌入工作流。"
+  },
+  {
+    "__id": "recvqmyei6h1VW",
+    "工具名": "OpenCode",
+    "产品定位": "开源 AI 编程代理（CLI-first）；提供原生终端用户界面（TUI），可在熟悉的命令行环境中直接与 AI 交互；连接任何大语言模型，打破 vendor lock-in；2026 被视为「告别天价订阅」的开源选项。",
+    "目标用户": "想要开源 + 自由的开发者；预算紧张但要 AI 编程助手；多 LLM 切换需求；CLI 优先的开发者；想自己控制 LLM API key 的用户。",
+    "使用建议": "安装部署门槛低（保姆级教程）；原生 TUI 比 web 端更轻量；适合终端优先工作流；开源可深度定制；不绑定单一 vendor。",
+    "竞品对比": "vs Goose：两家都是开源 + 多 LLM CLI。vs Claude Code：OpenCode 开源 + 多 LLM，Claude Code 闭源 Anthropic。vs Aider：OpenCode 终端原生 TUI，Aider 终端 + pair programming + Git 集成。"
+  },
+  {
+    "__id": "recvqmyeIIyJtX",
+    "工具名": "OpenHands",
+    "产品定位": "github.com/openhands-agent 的开源 AI 软件工程师平台（前身 OpenDevin）；支持代码生成 + 命令行操作 + 网页浏览 + 多智能体协作；安全沙箱环境 + Docker 本地部署。",
+    "目标用户": "想要自托管 AI 软件工程师的开源用户；多智能体协作研究；本地 Docker 部署的隐私 / 安全需求；Devin 的开源替代品需求。",
+    "使用建议": "Docker 一键本地启动（避免环境 / 权限 / API Key 坑）；多代理协作机制可拆解复杂任务；安全沙箱适合企业内网；既能网页浏览又能写代码 + 执行命令。",
+    "竞品对比": "vs Devin：OpenHands 开源 + 自部署，Devin 闭源 + 商业化最早。vs Goose：OpenHands 偏 AI 软件工程师（多能力），Goose 偏 AI 编程 agent（多 LLM）。vs Claude Code：OpenHands 开源 + 多能力，Claude Code 闭源 + 推理深。"
+  },
+  {
+    "__id": "recvqmyfaFYOOx",
+    "工具名": "Factory",
+    "产品定位": "AI Agent 平台（Factory.ai）；「Droids」系列 agent 可执行代码审查 + 自主提交 PR + 端到端开发任务；面向企业的代码 agent 编排平台；2026 跻身 AI Agent 工程分水岭代表厂商。",
+    "目标用户": "企业级代码 agent 需求（PR 自动化 + 代码审查）；想要「AI 员工」（Droid）协助开发的企业；研究 long-horizon agent 编排的团队；CTO / 工程效能团队。",
+    "使用建议": "Droids 系列可针对不同任务配置（如 PR Reviewer / Bug Fixer / Feature Builder）；适合规模化代码协作；企业级权限 / 审计 / 合规完善；agent 编排可视化。",
+    "竞品对比": "vs Devin：Factory 偏企业 + 多 agent 编排，Devin 偏个人 + 端到端。vs Claude Code：Factory 编排多 agent，Claude Code 单 CLI 智能。vs OpenHands：Factory 商业化平台，OpenHands 开源自部署。"
+  },
+  {
+    "__id": "recvqmyfCCMaew",
+    "工具名": "Junie",
+    "产品定位": "JetBrains 2025-03 推出的 AI 编程智能体（对标 Cursor）；目前 Mac / Linux 私密预览；智能体式 AI（自主完成任务，不只是建议代码）；基准测试单次运行可完成 53.6% 任务。",
+    "目标用户": "JetBrains 全家桶用户（深度 IDE 集成）；想要 Cursor 替代品但不想换 IDE 的用户；对 JetBrains 品牌有信任的高级开发者；预算充足的企业。",
+    "使用建议": "开发者输入一条指令（如「实现带 UI 的书签管理 CRUD」），智能体即可完成（通常需人工评审细化）；2025-07 起多人实战分享（legacy code / pet projects / day-1 / day-2 评测）；适合 JetBrains 用户尝试 agent 能力。",
+    "竞品对比": "vs Cursor：Junie JetBrains IDE 集成（不换 IDE），Cursor 换 AI 原生 IDE。vs JetBrains AI Assistant：Junie 是 Agent（自主执行），Assistant 是补全（建议代码）。vs Claude Code：Junie GUI IDE + Agent，Claude Code CLI。"
+  },
+  {
+    "__id": "recvqmyg2W9BPU",
+    "工具名": "Conductor",
+    "产品定位": "macOS 原生 AI 编程工具，专注于并行运行多个 Claude Code / Codex agent；类似 Orca 但深度 macOS 集成（菜单栏 / Spotlight / 快捷键）；解决「单一 Claude Code 实例不够用」的多任务并行场景。",
+    "目标用户": "macOS 重度用户（追求原生体验）；同时跑多个 AI 编程任务的开发者；Claude Code / Codex 重度订阅者；想要统一管理多 agent 任务的个人开发者。",
+    "使用建议": "菜单栏快速启动新 agent 会话；适合需要并行处理多个独立 coding 任务的场景；macOS 通知中心集成；适合把 AI agent 当「虚拟员工」协作编排。",
+    "竞品对比": "vs Orca：两家都是多 agent 编排器，Conductor macOS 原生 + Claude Code 集成，Orca 开源跨平台 + 多 CLI。vs 单 CLI：Conductor 并行调度多实例，单 CLI 一次一个任务。vs Antigravity：Conductor 编排现有 CLI，Antigravity 自建多 Agent 平台。"
+  },
+  {
+    "__id": "recvqmyguBfigB",
+    "工具名": "MetaGPT",
+    "产品定位": "开源多智能体框架（github.com/geekan/MetaGPT）；将多个 AI 模型整合，模仿现实世界软件公司运作；为产品经理 / 架构师 / 工程师等 agent 分配不同角色；核心理念「Code = SOP（标准操作流程）」；2025-09 发布用户智能体，开启端到端自主软件测试新范式。",
+    "目标用户": "想要研究多 agent 协作的开发者 / 研究者；想要自动化软件公司流程的初创团队；AI agent 编排框架爱好者；探索 AI 驱动协作系统的产品经理。",
+    "使用建议": "多智能体分工（PM / Architect / Engineer / QA）模拟真实公司；2025-09 后支持端到端自主软件测试；适合构建「AI 软件公司」概念验证；开源可深度定制。",
+    "竞品对比": "vs Magentic-One：MetaGPT 模拟软件公司角色分工，Magentic-One 是通用多 agent 系统（Orchestrator + specialists）。vs Devin：MetaGPT 多 agent 编排开源，Devin 单一自治代理闭源。vs Factory：MetaGPT 框架级开源，Factory 商业化平台。"
+  },
+  {
+    "__id": "recvqmygUPl1bF",
+    "工具名": "Magentic-One",
+    "产品定位": "微软 2024-11 发布的通用多代理系统（基于 AutoGen 框架）；通才（generalist）多智能体解决开放式 Web 和文件型任务；Orchestrator 代理负责任务分解 + 规划 + 跟踪进度 + 必要时纠偏；其他代理具备 Web 浏览等专项能力。",
+    "目标用户": "想要研究通用多 agent 系统的研究者；AutoGen 框架使用者；需要协调多个 AI 代理完成开放式任务的企业；Microsoft 生态 + Azure 云用户。",
+    "使用建议": "Orchestrator 自动协调 specialists 处理复杂工作流；适合 Web + 文件型任务自动化；AutoGen 框架内可深度定制；2026 已是 AI Agent 工程分水岭代表厂商之一。",
+    "竞品对比": "vs MetaGPT：Magentic-One 通用多 agent 编排（Orchestrator + specialists），MetaGPT 模拟软件公司角色分工。vs Factory：Magentic-One 研究框架开源，Factory 商业化企业平台。vs Orca：Magentic-One 自建多 agent，Orca 编排现有 CLI。"
+  },
+  {
+    "__id": "recvqmyhlJWyRF",
+    "工具名": "Superset",
+    "产品定位": "macOS AI 编程工具（superset.sh）；分支驱动的多文件编辑工作流；类似 Sourcery 团队出品的桌面 AI 编辑器；专注多分支并行开发场景下的 AI 辅助。",
+    "目标用户": "macOS 用户；频繁开多分支开发的工程师；想要分支级 AI 辅助的团队；喜欢 Sourcery 风格 AI 工具的开发者。",
+    "使用建议": "适合多分支并行开发场景；macOS 原生体验；与 git 工作流深度集成；适合在分支层面让 AI 辅助 review / 修改。",
+    "竞品对比": "vs Conductor：Superset 分支驱动编辑，Conductor 多 agent 并行调度。vs Cursor：Superset macOS 原生 + 分支，Cursor AI 原生 IDE。vs Claude Code：Superset GUI 分支编辑，Claude Code CLI 单工作流。"
+  },
+  {
+    "__id": "recvqmyhMTQ64M",
+    "工具名": "LM Studio Bionic",
+    "产品定位": "LM Studio 2026-07-17 发布的本地 AI Agent 工具；为开源模型（Open Models）打造的 Agent；可调用 GLM 5.2 / Qwen3.6 / Gemma4 / DeepSeek 等本地大模型；natively local（原生本地运行），处理编程 / 研究 / 复杂文档工作。",
+    "目标用户": "数据隐私 / 代码保密要求高的开发者；想要本地推理 + Agent 能力的团队；不愿被云端 LLM 绑定的用户；已有 GPU 工作站的 AI 编程爱好者。",
+    "使用建议": "完全本地运行（无数据上传）；支持多种主流开源模型（gpt-oss / Qwen3.6 / DeepSeek 等）；LM Studio 个人和工作免费；JS / Python SDK + MCP 客户端支持；当前是 initial preview 阶段。",
+    "竞品对比": "vs OpenCode：LM Studio Bionic 专为本地开源模型，OpenCode CLI + 多 LLM（云端为主）。vs Goose：LM Studio Bionic 本地优先，Goose 多 LLM 灵活（含云端）。vs Claude Code：LM Studio Bionic 本地开源模型，Claude Code 闭源 Anthropic 云端。"
+  },
+  {
+    "__id": "recvqmyicVtIsl",
+    "工具名": "Juggler",
+    "产品定位": "AI 编程工具（Juggler / juggler.dev 路线），新兴 AI coding IDE 玩家；定位为多任务 / 多 agent 并行实验性工具；强调「开发者体验」打磨；早期阶段（Beta / Preview）。",
+    "目标用户": "想尝试新兴 / 实验性 AI 编程工具的早期采用者；对多任务并行 + 多 agent 编排感兴趣的开发者；愿意承担新工具稳定性风险的个人开发者。",
+    "使用建议": "早期工具更适合「探索」而非「生产主力」；建议作为副工具配合 Cursor / Claude Code；关注工具后续版本迭代再考虑深度依赖；适合尝鲜。",
+    "竞品对比": "vs Conductor：Juggler 多任务并行（实验），Conductor macOS 多 agent 编排（更成熟）。vs Orca：Juggler IDE 形态，Orca CLI 编排器。vs Cursor：Juggler 新兴入场，Cursor 行业标杆。"
+  },
+  {
+    "__id": "recvqmyiD13O7o",
+    "工具名": "Eigent",
+    "产品定位": "开源多智能体工作流桌面应用（github.com/eigent-ai/eigent）；「全球首个多智能体工作流桌面应用程序」（2026-05 定位）；Claude Cowork + Codex 的本地免费替代品；2200+ commits 持续活跃。",
+    "目标用户": "想要本地 + 免费替代 Claude Cowork / Codex 的用户；多智能体协作研究者；桌面应用偏好（而非纯 CLI / IDE）的开发者；想要隐私本地化运行的团队。",
+    "使用建议": "Electron 桌面应用 + 后端服务架构；开源可深度定制；README 多语言（EN/CN/JA/PT-BR）国际化；Docker 部署支持；适合构建「本地 AI 员工」场景。",
+    "竞品对比": "vs Claude Code：Eigent 本地 + 免费 + 多 agent + 桌面，Claude Code 闭源 + 云端 + CLI。vs Codex：Eigent 本地 + 免费 + 多 agent，Codex 闭源 + 云端 + Apple 生态。vs MetaGPT：Eigent 桌面应用 + 多 agent，MetaGPT 框架 + 角色分工。"
+  },
+  {
+    "__id": "recvqmyjiqvfQO",
+    "工具名": "DeepSeek-Reasonix",
+    "产品定位": "专为 DeepSeek prefix-cache 优化的终端编码 Agent（github.com/esengine/reasonix）；append-only 运行循环 + Cache-First Loop 设计，V4 模型下缓存命中率高达 99.82%，长会话输入 token 成本降至约 1/5；三段架构：缓存优先循环 + 工具调用修复 + 字节级 prefix 匹配；Go 单二进制 + MCP 插件化；可双模型并行（executor+planner）。",
+    "目标用户": "DeepSeek API 重度用户；长会话 / 多轮编码场景（缓存优化能省 token）；想要 Go 高性能单二进制工具的极客；MCP 插件化扩展需求。",
+    "使用建议": "直接对接 DeepSeek API（按 token 付费，无中间商加价）；npm i -g reasonix && reasonix chat 一行启动；main-v2 分支是 1.0 Go 重写版本（性能 + 部署友好）；desktop v1.17.3 持续发布（2026-07-07）；DeepSeek V4 配合效果最佳（缓存 99.82%）；适合 DeepSeek 生态深度用户。",
+    "竞品对比": "vs Claude Code：Reasonix 仅 DeepSeek 模型 + prefix-cache 极致优化（99.82% 命中），Claude Code 多模型 + Anthropic 推理深。vs Cursor：Reasonix 终端专属 DeepSeek，Cursor IDE + 多模型。vs Aider：Reasonix 终端 + DeepSeek 专属 + append-only，Aider 终端 + 多 LLM + Git 集成。vs OpenCode：Reasonix 单 DeepSeek 深度优化，OpenCode 多 LLM 灵活。"
+  },
+  {
+    "__id": "recvqmyjIBIb97",
+    "工具名": "ToCodex",
+    "产品定位": "国产 AI 编程 IDE，2026-07-22 发布 v3.3.6 推出「全球首个通用型自学习自进化 Agent」；围绕记忆 / 经验 / 工作流三类可复用资产；多模型 API 聚合 + 16 种 Agent 模式 + 多 Agent 并行调度 + 移动端协同。",
+    "目标用户": "国产 AI 编程工具早期采用者；想要「自学习 / 自进化」能力的团队（沉淀记忆 / 经验 / 工作流可复用资产）；多模型 API 聚合需求（不想被单一 vendor 锁定）；移动端协同开发者。",
+    "使用建议": "注册即送 100 万 Token 体验额度（限时活动）；桌面 + IDE + 插件 + CLI + 移动端多形态；Skills 技能框架 + 检查点回滚 + 细粒度自动审批；适合复杂研发流程的国产替代选择。",
+    "竞品对比": "vs Cursor：ToCodex 自学习自进化 Agent + 国产 + 移动端，Cursor AI 原生 IDE + 海外。vs Claude Code：ToCodex 桌面 + IDE + 多形态 + 国产，Claude Code CLI + 推理深。vs Trae：ToCodex 自进化 + 多厂商模型聚合，Trae 字节 + Claude/GPT/豆包/DeepSeek。"
+  },
+  {
+    "__id": "recvqmyqzez7ns",
+    "工具名": "rowboat",
+    "产品定位": "桌面 AI 协作者（github.com/rowboatlabs/rowboat，RowBoat Labs YC 投资）；持久记忆 + 自动索引邮件 / 会议 / Slack / 对话为 Obsidian 风格反链知识图谱；内置 email / notes / browser / code mode 等多工作面；Apache-2.0 开源。",
+    "目标用户": "知识工作者 / 开发者需要持久 AI 协作者；Obsidian / 反链笔记爱好者；想要 AI 整合邮件 / 日历 / 会议 / Slack 工作流的用户；桌面 AI 协作者体验尝鲜者。",
+    "使用建议": "16.5k stars / 1.6k forks 社区活跃；v0.7.1 发布于 2026-07-07 持续更新；桌面端为主需要本机运行；适合作为「个人 AI 协作者」长期沉淀工作记忆；官网 rowboatlabs.com。",
+    "竞品对比": "vs Cursor：rowboat 桌面 AI 协作者 + 持久记忆 + 反链知识图谱，Cursor IDE + 短期任务。vs Claude Code：rowboat 桌面 + 长期记忆 + 知识管理，Claude Code CLI + 单任务。vs LM Studio Bionic：rowboat 本地 + 知识管理，LM Studio Bionic 本地 + 编程 / 研究。"
+  },
+  {
+    "__id": "recvqxpANe8yUB",
+    "工具名": "OptMem",
+    "产品定位": "AI 编程工具，主打「记忆优化」路径（OptMem = Optimize Memory）；关注长会话 / 大型项目的上下文管理；针对现有 AI 编程工具「上下文窗口有限 + 记忆易丢」的痛点做增强。",
+    "目标用户": "受困于 AI 编程工具「上下文丢失」问题的开发者；长会话 / 大型项目协作的团队；想要 AI 持续记住项目背景 / 用户偏好的用户。",
+    "使用建议": "适合作为现有 AI 编程工具的「记忆层」补充；关注上下文压缩 / 长期记忆持久化技术；适合需要 AI 在多轮 / 多项目中保持一致的复杂场景。",
+    "竞品对比": "vs ToCodex：OptMem 专注记忆优化，ToCodex 三大类可复用资产（记忆 + 经验 + 工作流）更广。vs rowboat：OptMem 编程场景记忆，rowboat 通用知识图谱 + 多工作面。vs Cursor：OptMem 记忆增强，Cursor 短期 IDE 任务。"
+  },
+  {
+    "__id": "recvqxpENYobvD",
+    "工具名": "Cindy",
+    "产品定位": "AI 编程助手（个人 / 小团队项目为主）；新兴玩家，处于早期阶段（Beta / Preview）；提供基础的 AI 编程辅助能力（补全 + 对话 + 简单 agent）。",
+    "目标用户": "想尝试非主流 AI 编程工具的开发者；个人项目 / 小团队尝鲜；对 AI 编程工具有研究兴趣（关注生态演进）；愿意为新工具提供反馈的早期用户。",
+    "使用建议": "早期工具更适合「探索 + 反馈」而非「生产主力」；建议作为辅助工具使用；关注社区反馈决定是否深度采用；适合想看到 AI 编程工具生态多样性的人。",
+    "竞品对比": "vs Cursor：Cindy 新兴入场，Cursor 行业标杆。vs Cline：Cindy 新兴工具，Cline VS Code 扩展 + 开源 + MCP。vs Cody：Cindy 新兴入场，Cody Sourcegraph 企业级代码搜索。"
+  }
+]

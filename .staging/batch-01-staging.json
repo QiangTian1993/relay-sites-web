@@ -1,0 +1,42 @@
+[
+  {
+    "__id": "recvqmy2IAViHL",
+    "工具名": "Cursor",
+    "产品定位": "AI 原生 IDE 标杆，基于 VS Code 深度定制（fork），深度集成 AI 能力；面向专业开发者，强调「AI 协作者」而非「AI 补全」。2026 已支持云端虚拟机代理，Agent 可在云端独立开发环境并行执行任务。",
+    "目标用户": "专业开发者 / 全栈工程师；预算可承担 $20/月 Pro 订阅的个人和团队；不适合纯学生 / 预算紧张群体（72% 个人开发者表示难以长期负担）。",
+    "使用建议": "适合复杂跨文件修改 + 大型项目重构场景；Composer Agent 模式 + Tab 智能补全是杀手锏；多平台触发（桌面/网页/手机/Slack/GitHub）便于异步协作；迁移成本低（VS Code 生态 + 插件兼容）。预算紧的直接看 Trae。",
+    "竞品对比": "vs Windsurf：Cursor 全能重构强但 $20/月，Windsurf 免费 + Agent 原生 + 中文优先。vs Trae：Cursor 成熟，Trae 免费 + 中文 + 字节生态。vs Claude Code：Cursor 是 GUI IDE，Claude Code 是 CLI Agent。vs Copilot：Cursor 是 AI 协作者（深度整合），Copilot 是智能补全（插件定位）。"
+  },
+  {
+    "__id": "recvqmy3dCUppd",
+    "工具名": "Windsurf",
+    "产品定位": "Codeium 推出的首个 Agentic IDE（VS Code fork），主打「AI 协作搭档」；Cascade 系统实时上下文感知（自动追踪代码库变更），Agent+Copilot 协作模式，2026-03 Cascade 多文件联动编辑。",
+    "目标用户": "预算紧张但想要 AI Agent 能力的个人开发者 / 学生党 / 中小企业；本地 GPU 用户（隐私敏感 / 响应速度优先）；Web 开发为主的项目。",
+    "使用建议": "Cascade 自动追踪代码库新增文件 / 变量重命名，省去手动喂上下文；本地 AI 计算兼顾隐私（适合 GPU 机器）；免费版功能够用，$15/月 Pro 比 Cursor 便宜 25%；自然语言指令支持中文优先。",
+    "竞品对比": "vs Cursor：Windsurf 免费 + Agent 原生 + 中文 + 本地化，Cursor 全能但 $20/月。vs Trae：Windsurf 海外本地化优先，Trae 中文 + 字节生态。vs Copilot：Windsurf Agent 强 + 免费版够用，Copilot 生态深但 Agent 能力基础。"
+  },
+  {
+    "__id": "recvqmy3GqFc2a",
+    "工具名": "Trae",
+    "产品定位": "字节跳动 2025-01 发布的 AI 原生 IDE，专为中文开发者设计；VS Code 架构 + 内置 Claude 3.5/3.7、GPT-4o、DeepSeek、豆包；2026 已发 SOLO 正式版（桌面+网页独立端） + TRAE CN 企业版（92% 字节内部渗透率）。",
+    "目标用户": "中文开发者（界面 / 注释全中文，迁移零成本）；个人开发者（永久免费基础版 + 600 万+ 用户）；字节生态内企业；预算敏感但要 AI IDE 的中小团队。",
+    "使用建议": "中文开发者入门首选（免费 + 中文界面 + 中文注释）；SOLO 独立端支持桌面+网页协同 + 多任务并行 + 跨设备；TRAE CN 企业版承载 10 万文件 / 1.5 亿行代码容量；抖音生活服务团队 AI 代码贡献率 43%。",
+    "竞品对比": "vs Cursor：Trae 免费 + 中文 + 字节生态，Cursor 成熟但贵。vs Windsurf：Trae 中文为主，Windsurf 海外本地化优先。vs 国产同行：豆包/DeepSeek 集成 + 字节内部 92% 实战验证。"
+  },
+  {
+    "__id": "recvqmy48alBmf",
+    "工具名": "Antigravity",
+    "产品定位": "Google 2025 推出的 AI 编程工具；2026 Google I/O 升级为 Antigravity 2.0（桌面应用 + CLI + SDK），定位从「面向开发者的智能体式 IDE」→「通用智能体优先工作平台」；可同时协调多智能体并行执行任务。",
+    "目标用户": "Google Cloud / GCP 生态用户；产品经理 / 项目 Owner（Agent 优先 + 人机协作思路）；需要多智能体并行调度的复杂项目团队。",
+    "使用建议": "2.0 起支持 /schedule 定时任务 + /goal /grill-me /browser 斜杠命令，可控性增强；多 Agent 并行处理不同编程任务；不再强绑定代码仓库，按 project 管理；自定义工作流 SDK 可扩展。",
+    "竞品对比": "vs TRAE Work：Antigravity Google 生态深，TRAE 字节生态深。vs Cursor：Antigravity 偏 Agent 工作流平台，Cursor 偏 IDE 编辑。vs Claude Code：Antigravity GUI + CLI 双形态，Claude Code 纯 CLI。"
+  },
+  {
+    "__id": "recvqmy4ArfJSR",
+    "工具名": "Zed",
+    "产品定位": "Zed Industries 2026 发布 1.0 正式版的 AI 编辑器；Rust 编写的高性能本地 IDE，默认集成 Claude 3.5 Sonnet，支持自定义 LLM + 本地模型推理。",
+    "目标用户": "追求极致性能 / 启动速度的开发者；重视隐私 / 本地推理的用户；从 VS Code 迁移想要轻量替代的；Rust / 系统级 / 高频编辑场景。",
+    "使用建议": "性能强（Rust 优势）但 AI 功能成熟度暂不如 Cursor；适合对启动速度 / 资源占用敏感的用户；本地 LLM 推理需 GPU 支持；适合作为「主力 IDE + 偶尔 AI 补全」的组合。",
+    "竞品对比": "vs Cursor：Zed 性能 / 资源占优，Cursor AI 功能成熟度领先。vs VS Code + Copilot：Zed 是 AI 一等公民，VS Code 是插件扩展。vs Claude Code：Zed GUI IDE，Claude Code CLI Agent。"
+  }
+]

@@ -1,0 +1,42 @@
+[
+  {
+    "__id": "recvqmyicVtIsl",
+    "工具名": "Juggler",
+    "产品定位": "AI 编程工具（Juggler / juggler.dev 路线），新兴 AI coding IDE 玩家；定位为多任务 / 多 agent 并行实验性工具；强调「开发者体验」打磨；早期阶段（Beta / Preview）。",
+    "目标用户": "想尝试新兴 / 实验性 AI 编程工具的早期采用者；对多任务并行 + 多 agent 编排感兴趣的开发者；愿意承担新工具稳定性风险的个人开发者。",
+    "使用建议": "早期工具更适合「探索」而非「生产主力」；建议作为副工具配合 Cursor / Claude Code；关注工具后续版本迭代再考虑深度依赖；适合尝鲜。",
+    "竞品对比": "vs Conductor：Juggler 多任务并行（实验），Conductor macOS 多 agent 编排（更成熟）。vs Orca：Juggler IDE 形态，Orca CLI 编排器。vs Cursor：Juggler 新兴入场，Cursor 行业标杆。"
+  },
+  {
+    "__id": "recvqmyiD13O7o",
+    "工具名": "Eigent",
+    "产品定位": "开源多智能体工作流桌面应用（github.com/eigent-ai/eigent）；「全球首个多智能体工作流桌面应用程序」（2026-05 定位）；Claude Cowork + Codex 的本地免费替代品；2200+ commits 持续活跃。",
+    "目标用户": "想要本地 + 免费替代 Claude Cowork / Codex 的用户；多智能体协作研究者；桌面应用偏好（而非纯 CLI / IDE）的开发者；想要隐私本地化运行的团队。",
+    "使用建议": "Electron 桌面应用 + 后端服务架构；开源可深度定制；README 多语言（EN/CN/JA/PT-BR）国际化；Docker 部署支持；适合构建「本地 AI 员工」场景。",
+    "竞品对比": "vs Claude Code：Eigent 本地 + 免费 + 多 agent + 桌面，Claude Code 闭源 + 云端 + CLI。vs Codex：Eigent 本地 + 免费 + 多 agent，Codex 闭源 + 云端 + Apple 生态。vs MetaGPT：Eigent 桌面应用 + 多 agent，MetaGPT 框架 + 角色分工。"
+  },
+  {
+    "__id": "recvqmyjiqvfQO",
+    "工具名": "DeepSeek-Reasonix",
+    "产品定位": "专为 DeepSeek prefix-cache 优化的终端编码 Agent（github.com/esengine/reasonix）；append-only 运行循环 + Cache-First Loop 设计，V4 模型下缓存命中率高达 99.82%，长会话输入 token 成本降至约 1/5；三段架构：缓存优先循环 + 工具调用修复 + 字节级 prefix 匹配；Go 单二进制 + MCP 插件化；可双模型并行（executor+planner）。",
+    "目标用户": "DeepSeek API 重度用户；长会话 / 多轮编码场景（缓存优化能省 token）；想要 Go 高性能单二进制工具的极客；MCP 插件化扩展需求。",
+    "使用建议": "直接对接 DeepSeek API（按 token 付费，无中间商加价）；npm i -g reasonix && reasonix chat 一行启动；main-v2 分支是 1.0 Go 重写版本（性能 + 部署友好）；desktop v1.17.3 持续发布（2026-07-07）；DeepSeek V4 配合效果最佳（缓存 99.82%）；适合 DeepSeek 生态深度用户。",
+    "竞品对比": "vs Claude Code：Reasonix 仅 DeepSeek 模型 + prefix-cache 极致优化（99.82% 命中），Claude Code 多模型 + Anthropic 推理深。vs Cursor：Reasonix 终端专属 DeepSeek，Cursor IDE + 多模型。vs Aider：Reasonix 终端 + DeepSeek 专属 + append-only，Aider 终端 + 多 LLM + Git 集成。vs OpenCode：Reasonix 单 DeepSeek 深度优化，OpenCode 多 LLM 灵活。"
+  },
+  {
+    "__id": "recvqmyjIBIb97",
+    "工具名": "ToCodex",
+    "产品定位": "国产 AI 编程 IDE，2026-07-22 发布 v3.3.6 推出「全球首个通用型自学习自进化 Agent」；围绕记忆 / 经验 / 工作流三类可复用资产；多模型 API 聚合 + 16 种 Agent 模式 + 多 Agent 并行调度 + 移动端协同。",
+    "目标用户": "国产 AI 编程工具早期采用者；想要「自学习 / 自进化」能力的团队（沉淀记忆 / 经验 / 工作流可复用资产）；多模型 API 聚合需求（不想被单一 vendor 锁定）；移动端协同开发者。",
+    "使用建议": "注册即送 100 万 Token 体验额度（限时活动）；桌面 + IDE + 插件 + CLI + 移动端多形态；Skills 技能框架 + 检查点回滚 + 细粒度自动审批；适合复杂研发流程的国产替代选择。",
+    "竞品对比": "vs Cursor：ToCodex 自学习自进化 Agent + 国产 + 移动端，Cursor AI 原生 IDE + 海外。vs Claude Code：ToCodex 桌面 + IDE + 多形态 + 国产，Claude Code CLI + 推理深。vs Trae：ToCodex 自进化 + 多厂商模型聚合，Trae 字节 + Claude/GPT/豆包/DeepSeek。"
+  },
+  {
+    "__id": "recvqmyqzez7ns",
+    "工具名": "rowboat",
+    "产品定位": "桌面 AI 协作者（github.com/rowboatlabs/rowboat，RowBoat Labs YC 投资）；持久记忆 + 自动索引邮件 / 会议 / Slack / 对话为 Obsidian 风格反链知识图谱；内置 email / notes / browser / code mode 等多工作面；Apache-2.0 开源。",
+    "目标用户": "知识工作者 / 开发者需要持久 AI 协作者；Obsidian / 反链笔记爱好者；想要 AI 整合邮件 / 日历 / 会议 / Slack 工作流的用户；桌面 AI 协作者体验尝鲜者。",
+    "使用建议": "16.5k stars / 1.6k forks 社区活跃；v0.7.1 发布于 2026-07-07 持续更新；桌面端为主需要本机运行；适合作为「个人 AI 协作者」长期沉淀工作记忆；官网 rowboatlabs.com。",
+    "竞品对比": "vs Cursor：rowboat 桌面 AI 协作者 + 持久记忆 + 反链知识图谱，Cursor IDE + 短期任务。vs Claude Code：rowboat 桌面 + 长期记忆 + 知识管理，Claude Code CLI + 单任务。vs LM Studio Bionic：rowboat 本地 + 知识管理，LM Studio Bionic 本地 + 编程 / 研究。"
+  }
+]

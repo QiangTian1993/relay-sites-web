@@ -1,0 +1,42 @@
+[
+  {
+    "__id": "recvqmybG35B7L",
+    "工具名": "Tabnine",
+    "产品定位": "以色列 Codota 2013 年创立（2021-05 更名 Tabnine），全球 100 万+ 用户；专注 AI 代码补全 + 生成；支持企业内网部署（离线授权）+ 多架构（x86_64 / arm64 / Windows / Linux / macOS）；团队训练模型 + 开源训练模型融合。",
+    "目标用户": "企业内网 / 离网环境的开发团队；数据隐私 / 代码保密要求高的金融 / 政府 / 军工；多架构服务器环境的运维；想要稳定 + 长期支持的企业用户。",
+    "使用建议": "dl_binaries.sh 离线资源包适合内网部署；多架构支持（x86_64-unknown-linux-musl / aarch64-apple-darwin 等）；中高级开发者精准建议；内网版本更新机制完整。",
+    "竞品对比": "vs Copilot：Tabnine 企业内网部署强 + 数据隐私，Copilot 云端为主。vs Continue：Tabnine 闭源企业版，Continue 开源 + 模型路由灵活。vs Cody：Tabnine 专注补全 + 企业，Cody 大型代码库检索。"
+  },
+  {
+    "__id": "recvqmyc85xLcT",
+    "工具名": "JetBrains AI Assistant",
+    "产品定位": "JetBrains 官方 AI 编程助手（IDE 亲儿子）；多模型集成（JetBrains 自研 + 第三方模型）；支持远程开发；开源适配；不是单纯补全，是「开发者效率引擎」；深度集成 IntelliJ IDEA / PyCharm / WebStorm 等全家桶。",
+    "目标用户": "JetBrains 全家桶用户（已付费 IDE 想要原生 AI）；看重 IDE 深度集成 + 官方支持的团队；远程开发场景；习惯 JetBrains 快捷键 / 调试器 / 重构工具的高级开发者。",
+    "使用建议": "没有人比 JetBrains 更懂自家 IDE 的深层逻辑；多模型协作灵活适配场景（命名 / 重构 / 补全 / Chat）；远程开发 + 开源适配完善；官方文档里找不到的实战细节多。",
+    "竞品对比": "vs Copilot：JetBrains AI 是 IDE 亲儿子 + 深度集成，Copilot 是第三方插件跨 IDE。vs Cursor：JetBrains AI 不换 IDE（保持熟悉工作流），Cursor 换 IDE 深度集成。vs Claude Code：JetBrains AI GUI IDE 内，Claude Code CLI 为主。"
+  },
+  {
+    "__id": "recvqmycyjF0q0",
+    "工具名": "Orca",
+    "产品定位": "开源 AI 舰队编排工具（GitHub 7.3K Star）；核心卖点：让 Claude Code / Codex / Gemini 等多个 CLI 同时开工；解决「终端地狱」——多个 AI CLI 并排跑 + 手动切换的低效；统一 UI 监控多个 AI 任务。",
+    "目标用户": "同时使用多个 AI CLI（Claude Code + Codex + Gemini 等）的开发者；想要统一调度 AI agent 的个人 / 团队；想避免「空中交通管制员」手动切换的低效；多模型协作场景。",
+    "使用建议": "一个 UI 同时监控多个 AI 任务进度；适合「多模型协作」实验 / 任务；开源可定制；适合已有多个 CLI 订阅想提升调度效率的用户；不需要切换窗口。",
+    "竞品对比": "vs 单 CLI（Claude Code / Codex）：Orca 统一调度多 CLI，单 CLI 各自为战。vs Antigravity：Orca 编排现有 CLI，Antigravity 自建多 Agent 工作平台。vs Magentic-One：Orca 是 CLI 编排器，Magentic-One 是研究型多 Agent 框架。"
+  },
+  {
+    "__id": "recvqmycZkpw20",
+    "工具名": "Qoder",
+    "产品定位": "阿里 2025-10 推出的 Agentic Coding Platform for Real Software；面向真实软件开发的智能体编程平台；分层架构：基础设施（大模型 + AI Infra）+ 平台能力 + 应用；2025-12 开源 Agentic Coding 产品耐用度评测集。",
+    "目标用户": "想要「面向真实软件开发」（不只是 demo）的团队；阿里云 / 阿里生态用户；Java / 后端 / 企业级项目；看重平台可扩展性 + 自研模型能力的开发者。",
+    "使用建议": "注册送 1000 积分免费试用；GitHub 账号集成登录；三层架构（基础设施 / 平台 / 应用）适合复杂场景；新用户友好 + 阿里云打通；耐用度评测集开源可参考。",
+    "竞品对比": "vs Cursor：Qoder 阿里云生态 + 真实软件导向，Cursor 海外成熟 IDE。vs Claude Code：Qoder GUI IDE + Agent 平台，Claude Code CLI 为主。vs Antigravity：Qoder 阿里生态 + 真实软件，Antigravity Google 生态 + 通用 Agent 工作平台。"
+  },
+  {
+    "__id": "recvqmydqz5tnl",
+    "工具名": "Amazon Q Developer CLI",
+    "产品定位": "AWS 推出的 AI 编程 CLI 工具（从 CodeWhisperer 进化而来）；2026 已升级为多功能：内联补全 + 聊天面板 + 多步骤代理 + 命令行代理 + 代码转换作业；支持 MCP（本地 + 远程 server）；给现有 macOS / Linux 终端加 AI 能力。",
+    "目标用户": "AWS 生态用户；已用 CodeWhisperer 想升级到更强 AI 的团队；想要 CLI 形态 + AWS 集成的开发者；需要 MCP 集成（自定义工具 / 外部服务）；代码迁移 / 转换需求。",
+    "使用建议": "MCP 配置文件 ~/.aws/amazonq/cli-agents 支持本地 + 远程 server；CLI 提供 IDE 级体验（行内补全 + 聊天 + 多步骤代理）；适合已深度用 AWS 的团队；代码转换作业支持语言迁移。",
+    "竞品对比": "vs Claude Code：Amazon Q Developer AWS 生态 + MCP 强 + 代码转换，Claude Code Anthropic 推理深。vs Copilot CLI：Amazon Q Developer AWS 集成深，Copilot GitHub 集成深。vs Kiro：Amazon Q Developer CLI 为主，Kiro IDE 为主（都是 AWS 出品）。"
+  }
+]

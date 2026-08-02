@@ -1,0 +1,42 @@
+[
+  {
+    "__id": "recvqmyg2W9BPU",
+    "工具名": "Conductor",
+    "产品定位": "macOS 原生 AI 编程工具，专注于并行运行多个 Claude Code / Codex agent；类似 Orca 但深度 macOS 集成（菜单栏 / Spotlight / 快捷键）；解决「单一 Claude Code 实例不够用」的多任务并行场景。",
+    "目标用户": "macOS 重度用户（追求原生体验）；同时跑多个 AI 编程任务的开发者；Claude Code / Codex 重度订阅者；想要统一管理多 agent 任务的个人开发者。",
+    "使用建议": "菜单栏快速启动新 agent 会话；适合需要并行处理多个独立 coding 任务的场景；macOS 通知中心集成；适合把 AI agent 当「虚拟员工」协作编排。",
+    "竞品对比": "vs Orca：两家都是多 agent 编排器，Conductor macOS 原生 + Claude Code 集成，Orca 开源跨平台 + 多 CLI。vs 单 CLI：Conductor 并行调度多实例，单 CLI 一次一个任务。vs Antigravity：Conductor 编排现有 CLI，Antigravity 自建多 Agent 平台。"
+  },
+  {
+    "__id": "recvqmyguBfigB",
+    "工具名": "MetaGPT",
+    "产品定位": "开源多智能体框架（github.com/geekan/MetaGPT）；将多个 AI 模型整合，模仿现实世界软件公司运作；为产品经理 / 架构师 / 工程师等 agent 分配不同角色；核心理念「Code = SOP（标准操作流程）」；2025-09 发布用户智能体，开启端到端自主软件测试新范式。",
+    "目标用户": "想要研究多 agent 协作的开发者 / 研究者；想要自动化软件公司流程的初创团队；AI agent 编排框架爱好者；探索 AI 驱动协作系统的产品经理。",
+    "使用建议": "多智能体分工（PM / Architect / Engineer / QA）模拟真实公司；2025-09 后支持端到端自主软件测试；适合构建「AI 软件公司」概念验证；开源可深度定制。",
+    "竞品对比": "vs Magentic-One：MetaGPT 模拟软件公司角色分工，Magentic-One 是通用多 agent 系统（Orchestrator + specialists）。vs Devin：MetaGPT 多 agent 编排开源，Devin 单一自治代理闭源。vs Factory：MetaGPT 框架级开源，Factory 商业化平台。"
+  },
+  {
+    "__id": "recvqmygUPl1bF",
+    "工具名": "Magentic-One",
+    "产品定位": "微软 2024-11 发布的通用多代理系统（基于 AutoGen 框架）；通才（generalist）多智能体解决开放式 Web 和文件型任务；Orchestrator 代理负责任务分解 + 规划 + 跟踪进度 + 必要时纠偏；其他代理具备 Web 浏览等专项能力。",
+    "目标用户": "想要研究通用多 agent 系统的研究者；AutoGen 框架使用者；需要协调多个 AI 代理完成开放式任务的企业；Microsoft 生态 + Azure 云用户。",
+    "使用建议": "Orchestrator 自动协调 specialists 处理复杂工作流；适合 Web + 文件型任务自动化；AutoGen 框架内可深度定制；2026 已是 AI Agent 工程分水岭代表厂商之一。",
+    "竞品对比": "vs MetaGPT：Magentic-One 通用多 agent 编排（Orchestrator + specialists），MetaGPT 模拟软件公司角色分工。vs Factory：Magentic-One 研究框架开源，Factory 商业化企业平台。vs Orca：Magentic-One 自建多 agent，Orca 编排现有 CLI。"
+  },
+  {
+    "__id": "recvqmyhlJWyRF",
+    "工具名": "Superset",
+    "产品定位": "macOS AI 编程工具（superset.sh）；分支驱动的多文件编辑工作流；类似 Sourcery 团队出品的桌面 AI 编辑器；专注多分支并行开发场景下的 AI 辅助。",
+    "目标用户": "macOS 用户；频繁开多分支开发的工程师；想要分支级 AI 辅助的团队；喜欢 Sourcery 风格 AI 工具的开发者。",
+    "使用建议": "适合多分支并行开发场景；macOS 原生体验；与 git 工作流深度集成；适合在分支层面让 AI 辅助 review / 修改。",
+    "竞品对比": "vs Conductor：Superset 分支驱动编辑，Conductor 多 agent 并行调度。vs Cursor：Superset macOS 原生 + 分支，Cursor AI 原生 IDE。vs Claude Code：Superset GUI 分支编辑，Claude Code CLI 单工作流。"
+  },
+  {
+    "__id": "recvqmyhMTQ64M",
+    "工具名": "LM Studio Bionic",
+    "产品定位": "LM Studio 2026-07-17 发布的本地 AI Agent 工具；为开源模型（Open Models）打造的 Agent；可调用 GLM 5.2 / Qwen3.6 / Gemma4 / DeepSeek 等本地大模型；natively local（原生本地运行），处理编程 / 研究 / 复杂文档工作。",
+    "目标用户": "数据隐私 / 代码保密要求高的开发者；想要本地推理 + Agent 能力的团队；不愿被云端 LLM 绑定的用户；已有 GPU 工作站的 AI 编程爱好者。",
+    "使用建议": "完全本地运行（无数据上传）；支持多种主流开源模型（gpt-oss / Qwen3.6 / DeepSeek 等）；LM Studio 个人和工作免费；JS / Python SDK + MCP 客户端支持；当前是 initial preview 阶段。",
+    "竞品对比": "vs OpenCode：LM Studio Bionic 专为本地开源模型，OpenCode CLI + 多 LLM（云端为主）。vs Goose：LM Studio Bionic 本地优先，Goose 多 LLM 灵活（含云端）。vs Claude Code：LM Studio Bionic 本地开源模型，Claude Code 闭源 Anthropic 云端。"
+  }
+]

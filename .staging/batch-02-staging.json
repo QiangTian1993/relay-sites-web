@@ -1,0 +1,42 @@
+[
+  {
+    "__id": "recvqmy50DaFH4",
+    "工具名": "Claude Code",
+    "产品定位": "Anthropic 推出的终端 CLI 编程助手；2026 已支持 Computer Use + 远程操控；纯 CLI 无 GUI，深度依赖 Anthropic Claude 模型（推理能力突出）；CLI 可嵌入任何工作流。",
+    "目标用户": "习惯终端工作流的开发者；深度学习/根因分析任务（推理更深）；CLI 优先的 DevOps / 后端工程师；想要精细控制的高级开发者。",
+    "使用建议": "学习新技术 / 分析根因场景比 Cursor 更深；可嵌入 CI/CD、shell 脚本、自动化工作流；Computer Use 支持远程操控；与 IDE 类工具（Cursor）双持是 1+1>2。",
+    "竞品对比": "vs Cursor：Claude Code 是 CLI Agent（可嵌入工作流），Cursor 是 GUI IDE（编辑直观）。vs Deep Agents：Claude Code 闭源付费，Deep Agents 开源可定制。vs Codex CLI：两家头部 CLI 直接对标（推理深 vs 多智能体编排）。"
+  },
+  {
+    "__id": "recvqmy5rDhls1",
+    "工具名": "Codex CLI",
+    "产品定位": "OpenAI 2026-02 推出 macOS Codex 应用（多智能体并行作业），2026-05 计划 iPhone 版（转向通用 AI 生产力工具），2026-06 扩展 6 岗位插件覆盖 62 应用 / 110 技能。",
+    "目标用户": "OpenAI 生态用户；多智能体编排需求；移动端监控后台任务的开发者；想要通用 AI 生产力工具的个人。",
+    "使用建议": "多智能体融合是核心亮点；移动端 + 语音指令审批 code diff 适合异步工作流；6 岗位插件（创意/销售等）说明定位已超出纯编程；GPT-5.2-Codex 模型加持。",
+    "竞品对比": "vs Claude Code：Codex 多智能体 + 移动端，Claude Code CLI + 推理深。vs Cursor：Codex 应用 + 移动端，Cursor IDE。vs DeepSeek-Coder：Codex 多模态 + 生态深。"
+  },
+  {
+    "__id": "recvqmy5Tptsr1",
+    "工具名": "Aider",
+    "产品定位": "终端 AI 编程工具，强调 pair programming（开发者 + AI 协作）；支持多 LLM 后端（OpenAI/Anthropic/本地）；Git 原生集成（自动 commit + 生成 commit message）。",
+    "目标用户": "终端优先的开发者；想用自己 LLM API key 的用户（避免被 IDE 锁定）；Git 工作流重的项目；老派 pair programming 爱好者。",
+    "使用建议": "适合已有 Git 习惯的项目（自动 commit）；支持本地模型（隐私 / 成本敏感）；比 IDE 类轻量，比纯 CLI 类友好；模型可选是最大优势。",
+    "竞品对比": "vs Claude Code：Aider 多模型 + Git 原生 + 开源，Claude Code 闭源 Anthropic 为主。vs Cursor：Aider 终端，Cursor GUI。vs Cline：Aider 终端独立，Cline VS Code 扩展。"
+  },
+  {
+    "__id": "recvqmy6kT5KZL",
+    "工具名": "GitHub Copilot CLI",
+    "产品定位": "GitHub 2026-04 推向全面可用的 CLI 工具，作为 GitHub CLI（gh）扩展；终端 AI 辅助开发的一等入口；接入 GPT-4o / Claude 3.5 Sonnet 等多模型。",
+    "目标用户": "GitHub 生态用户（重 PR / Issue 工作流）；想要 CLI 形态但保留 Copilot 体验的开发者；VS Code + 终端双场景用户。",
+    "使用建议": "与 GitHub CLI 无缝集成（PR / Issue / Repo 操作直接调用 AI）；多模型切换灵活（GPT-4o / Claude 3.5）；响应速度亚秒级；适合已经在用 gh CLI 的开发者。",
+    "竞品对比": "vs Claude Code：Copilot CLI GitHub 生态集成深，Claude Code 推理深。vs Codex CLI：Copilot 多模型切换，Codex OpenAI 专精。vs Cursor：Copilot CLI 是补全类扩展，Cursor CLI 暂未单独发布。"
+  },
+  {
+    "__id": "recvqmy6MCwCb3",
+    "工具名": "Cline",
+    "产品定位": "VS Code 扩展形式的 AI 编程助手（曾用名 Claude Dev）；支持 Anthropic / OpenAI / DeepSeek 等多模型（OpenAI 兼容模式）；MCP 集成能力强（浏览器控制、文件系统等）。",
+    "目标用户": "VS Code 重度用户；想要 IDE 内 AI 但不愿订阅 Cursor/Copilot 的预算敏感用户；国内开发者（DeepSeek 兼容 + 便宜）；MCP 早期采用者。",
+    "使用建议": "配置灵活（多模型 + OpenAI 兼容模式）；VS Code 原生体验，迁移成本零；MCP 集成可控制浏览器等外部工具；性价比高（自备 API key，无平台抽成）。",
+    "竞品对比": "vs Cursor：Cline 是 VS Code 扩展 + 自备 key 便宜，Cursor 是 fork IDE。vs Claude Code：Cline IDE 内，Claude Code 终端。vs Continue：Cline MCP 强 + Agent 强，Continue 模型路由更灵活。"
+  }
+]

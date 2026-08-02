@@ -1,0 +1,176 @@
+{
+  "total": 42,
+  "success_count": 42,
+  "failed_count": 0,
+  "success": [
+    {
+      "id": "recvqmy2IAViHL",
+      "name": "Cursor"
+    },
+    {
+      "id": "recvqmy3dCUppd",
+      "name": "Windsurf"
+    },
+    {
+      "id": "recvqmy3GqFc2a",
+      "name": "Trae"
+    },
+    {
+      "id": "recvqmy48alBmf",
+      "name": "Antigravity"
+    },
+    {
+      "id": "recvqmy4ArfJSR",
+      "name": "Zed"
+    },
+    {
+      "id": "recvqmy50DaFH4",
+      "name": "Claude Code"
+    },
+    {
+      "id": "recvqmy5rDhls1",
+      "name": "Codex CLI"
+    },
+    {
+      "id": "recvqmy5Tptsr1",
+      "name": "Aider"
+    },
+    {
+      "id": "recvqmy6kT5KZL",
+      "name": "GitHub Copilot CLI"
+    },
+    {
+      "id": "recvqmy6MCwCb3",
+      "name": "Cline"
+    },
+    {
+      "id": "recvqmy7dW3Epn",
+      "name": "Goose"
+    },
+    {
+      "id": "recvqmy7FA6Cck",
+      "name": "Kiro"
+    },
+    {
+      "id": "recvqmy86fikLy",
+      "name": "Bolt.new"
+    },
+    {
+      "id": "recvqmy8xMtQDo",
+      "name": "Lovable"
+    },
+    {
+      "id": "recvqmy8Yc9GmA",
+      "name": "v0"
+    },
+    {
+      "id": "recvqmy9qb5Hvp",
+      "name": "Replit Agent"
+    },
+    {
+      "id": "recvqmy9VeWaxy",
+      "name": "Create.xyz"
+    },
+    {
+      "id": "recvqmyamQKZEq",
+      "name": "GitHub Copilot"
+    },
+    {
+      "id": "recvqmyaNLr3Wq",
+      "name": "Continue"
+    },
+    {
+      "id": "recvqmybfAVmf0",
+      "name": "Cody"
+    },
+    {
+      "id": "recvqmybG35B7L",
+      "name": "Tabnine"
+    },
+    {
+      "id": "recvqmyc85xLcT",
+      "name": "JetBrains AI Assistant"
+    },
+    {
+      "id": "recvqmycyjF0q0",
+      "name": "Orca"
+    },
+    {
+      "id": "recvqmycZkpw20",
+      "name": "Qoder"
+    },
+    {
+      "id": "recvqmydqz5tnl",
+      "name": "Amazon Q Developer CLI"
+    },
+    {
+      "id": "recvqmydRAAVcy",
+      "name": "Devin"
+    },
+    {
+      "id": "recvqmyei6h1VW",
+      "name": "OpenCode"
+    },
+    {
+      "id": "recvqmyeIIyJtX",
+      "name": "OpenHands"
+    },
+    {
+      "id": "recvqmyfaFYOOx",
+      "name": "Factory"
+    },
+    {
+      "id": "recvqmyfCCMaew",
+      "name": "Junie"
+    },
+    {
+      "id": "recvqmyg2W9BPU",
+      "name": "Conductor"
+    },
+    {
+      "id": "recvqmyguBfigB",
+      "name": "MetaGPT"
+    },
+    {
+      "id": "recvqmygUPl1bF",
+      "name": "Magentic-One"
+    },
+    {
+      "id": "recvqmyhlJWyRF",
+      "name": "Superset"
+    },
+    {
+      "id": "recvqmyhMTQ64M",
+      "name": "LM Studio Bionic"
+    },
+    {
+      "id": "recvqmyicVtIsl",
+      "name": "Juggler"
+    },
+    {
+      "id": "recvqmyiD13O7o",
+      "name": "Eigent"
+    },
+    {
+      "id": "recvqmyjiqvfQO",
+      "name": "DeepSeek-Reasonix"
+    },
+    {
+      "id": "recvqmyjIBIb97",
+      "name": "ToCodex"
+    },
+    {
+      "id": "recvqmyqzez7ns",
+      "name": "rowboat"
+    },
+    {
+      "id": "recvqxpANe8yUB",
+      "name": "OptMem"
+    },
+    {
+      "id": "recvqxpENYobvD",
+      "name": "Cindy"
+    }
+  ],
+  "failed": []
+}

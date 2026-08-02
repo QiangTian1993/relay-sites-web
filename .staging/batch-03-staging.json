@@ -1,0 +1,42 @@
+[
+  {
+    "__id": "recvqmy7dW3Epn",
+    "工具名": "Goose",
+    "产品定位": "Block（前 Square）推出的开源 AI agent 平台（block.github.io/goose）；不止代码建议，能 install / execute / edit / test；支持任意 LLM 后端；客户端 + CLI + IDE 多端集成。",
+    "目标用户": "想要开源 + 可扩展 AI agent 的开发者；Block / Square 生态；多 LLM 灵活切换需求；自部署 / 本地推理 / 数据隐私敏感用户。",
+    "使用建议": "开源可定制（不像 Cursor / Windsurf 闭源）；任意 LLM 后端（不被 vendor lock-in）；CLI / Desktop / IDE 多端集成；适合自动化工作流 + 自托管场景。",
+    "竞品对比": "vs OpenCode：两家都是开源 + 多 LLM + 可定制。vs Cursor：Goose 开源可自部署，Cursor 闭源 IDE。vs Claude Code：Goose 多 LLM + 开源，Claude Code 闭源 Anthropic 为主。"
+  },
+  {
+    "__id": "recvqmy7FA6Cck",
+    "工具名": "Kiro",
+    "产品定位": "亚马逊云科技 2025-07 预览、2025-11 正式可用的 AI IDE；首创 Spec-driven（规范驱动）开发模式，用 EARS 格式定义系统行为；与 Bedrock AgentCore（Firecracker microVM 运行时）集成，专注从原型到生产的工程化。",
+    "目标用户": "看重代码可维护性 / 生产化规范的团队；企业级 AI 开发流程（从原型到生产级）；AWS / Bedrock 生态用户；复杂迁移项目（Scala 转 Go 等）；架构师 / Tech Lead。",
+    "使用建议": "Specs 作为人机可读规范成为 AI 开发流程的基准线；预览期 25 万开发者使用，累计近 3 亿次开发请求；Socure 用此模式将 Scala 转 Go 从 3 周压缩到 2 天；适合需要长期维护的中大型项目。",
+    "竞品对比": "vs Cursor：Kiro 规范驱动（生产级可维护），Cursor 自由交互（原型快）。vs Claude Code：Kiro IDE + 规范，Claude Code CLI + 推理深。vs Windsurf：Kiro 偏团队 + AWS，Windsurf 偏个人 + 免费。"
+  },
+  {
+    "__id": "recvqmy86fikLy",
+    "工具名": "Bolt.new",
+    "产品定位": "StackBlitz 推出的 AI 驱动全栈 Web 开发平台；自然语言 → 多页应用 + 后端服务 + 数据库集成；核心技术：AI + WebContainers（浏览器内完整 Node.js 环境）；2026 还开源了 bolt-slides（网页式 slide 生成）。",
+    "目标用户": "想要「想法直接上线」的非纯开发者 / 产品经理；前端 / 全栈快速原型场景；技术初学者；需要 demo / MVP 快速验证的初创团队；方案 / 提案频繁的咨询 / 销售。",
+    "使用建议": "浏览器内完整开发环境（无需本地安装任何依赖）；自然语言驱动全栈生成（前端 + 后端 + DB）；适合 MVP / 概念验证；bolt-slides 让方案书生成变「活的网页」，适合客户演示。",
+    "竞品对比": "vs Lovable：Bolt.new 浏览器内 Node.js + 全栈生成，Lovable 移动端 + 氛围编码。vs v0：Bolt.new 全栈（前端+后端+DB），v0 仅前端 UI。vs Replit Agent：都有托管环境，Bolt.new 用 WebContainers，Replit 经典沙箱。"
+  },
+  {
+    "__id": "recvqmy8xMtQDo",
+    "工具名": "Lovable",
+    "产品定位": "2026-04 iOS / Android 双平台上线的无代码 AI 应用构建器；首创「氛围编码」（vibe coding）概念；语音 / 文本指令实时捕捉创意并完成应用原型；跨设备同步。",
+    "目标用户": "非技术背景的创意人士 / 设计师 / 产品经理；想要移动端随时开发的用户；快速 MVP 验证的初创团队；碎片化时间做原型的独立开发者。",
+    "使用建议": "跨设备同步（移动 ↔ 桌面无缝衔接）；语音指令适合碎片化时间记录灵感；适合做「灵感快速落 demo」；对非工程师最友好（无需读代码也能出原型）。",
+    "竞品对比": "vs Bolt.new：Lovable 移动端 + 氛围编码 + 无代码，Bolt.new 浏览器 + 全栈 + 需懂技术。vs v0：Lovable 全栈应用生成，v0 仅前端 UI。vs Replit Agent：Lovable 移动 + 语音，Replit 桌面 + 教育场景。"
+  },
+  {
+    "__id": "recvqmy8Yc9GmA",
+    "工具名": "v0",
+    "产品定位": "Vercel（前 ZEIT）推出的生成式 UI 系统；自然语言 → React + Tailwind + shadcn/ui 可运行代码；目标定位是「V0」（产品的第一个版本），可在 V1 / V2 迭代；前端开发最佳实践 + AI 的结合。",
+    "目标用户": "前端开发者；想要快速 UI 草图的设计师；产品经理（验证 UI 想法）；使用 Vercel / Next.js 生态的项目；shadcn/ui 粉丝。",
+    "使用建议": "自然语言描述需求，AI 直接生成 React + Tailwind + shadcn/ui 可运行代码；默认风格美观度高；适合做「产品第一个版本」的 UI；Next.js 项目无缝集成（Vercel 一手生态）。",
+    "竞品对比": "vs Bolt.new：v0 仅前端 UI（需自配后端），Bolt.new 全栈（前端 + 后端 + DB）。vs Lovable：v0 输出前端代码（开发者友好），Lovable 无代码应用（非工程师友好）。vs Cursor：v0 单点 UI 生成（无 IDE），Cursor 完整 IDE。"
+  }
+]

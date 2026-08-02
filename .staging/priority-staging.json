@@ -1,0 +1,202 @@
+[
+  {
+    "__id": "",
+    "工具名": "Cursor",
+    "链接": "[Cursor](https://cursor.com)",
+    "厂商": "Anysphere",
+    "我的状态": "弃用",
+    "类型": "全功能AI IDE",
+    "平台": "macOS, Windows, Linux",
+    "GitHub stars": "",
+    "支持模型": "Claude, GPT, Gemini",
+    "现有": {
+      "产品定位": "AI 原生 IDE 标杆，基于 VS Code 深度定制（fork），深度集成 AI 能力；面向专业开发者，强调「AI 协作者」而非「AI 补全」。2026 已支持云端虚拟机代理，Agent 可在云端独立开发环境并行执行任务。",
+      "目标用户": "专业开发者 / 全栈工程师；预算可承担 $20/月 Pro 订阅的个人和团队；不适合纯学生 / 预算紧张群体（72% 个人开发者表示难以长期负担）。",
+      "使用建议": "适合复杂跨文件修改 + 大型项目重构场景；Composer Agent 模式 + Tab 智能补全是杀手锏；多平台触发（桌面/网页/手机/Slack/GitHub）便于异步协作；迁移成本低（VS Code 生态 + 插件兼容）。预算紧的直接看 Trae。",
+      "竞品对比": "vs Windsurf：Cursor 全能重构强但 $20/月，Windsurf 免费 + Agent 原生 + 中文优先。vs Trae：Cursor 成熟，Trae 免费 + 中文 + 字节生态。vs Claude Code：Cursor 是 GUI IDE，Claude Code 是 CLI Agent。vs Copilot：Cursor 是 AI 协作者（深度整合），Copilot 是智能补全（插件定位）。",
+      "核心优势": "VS Code 衍生，Agent 模式最强，多文件编辑流畅，生态最成熟",
+      "主要劣势": "Agent 卡死会丢上下文；订阅制按用量收费",
+      "备注": "当前 vibe coding 工具事实标准"
+    }
+  },
+  {
+    "__id": "",
+    "工具名": "Claude Code",
+    "链接": "[Claude Code](https://claude.com/code)",
+    "厂商": "Anthropic",
+    "我的状态": "在用",
+    "类型": "CLI/Agent",
+    "平台": "macOS, Windows, Linux",
+    "GitHub stars": "",
+    "支持模型": "Claude",
+    "现有": {
+      "产品定位": "Anthropic 推出的终端 CLI 编程助手；2026 已支持 Computer Use + 远程操控；纯 CLI 无 GUI，深度依赖 Anthropic Claude 模型（推理能力突出）；CLI 可嵌入任何工作流。",
+      "目标用户": "习惯终端工作流的开发者；深度学习/根因分析任务（推理更深）；CLI 优先的 DevOps / 后端工程师；想要精细控制的高级开发者。",
+      "使用建议": "学习新技术 / 分析根因场景比 Cursor 更深；可嵌入 CI/CD、shell 脚本、自动化工作流；Computer Use 支持远程操控；与 IDE 类工具（Cursor）双持是 1+1>2。",
+      "竞品对比": "vs Cursor：Claude Code 是 CLI Agent（可嵌入工作流），Cursor 是 GUI IDE（编辑直观）。vs Deep Agents：Claude Code 闭源付费，Deep Agents 开源可定制。vs Codex CLI：两家头部 CLI 直接对标（推理深 vs 多智能体编排）。",
+      "核心优势": "多文件编辑 + 终端执行 + git 集成；CLAUDE.md 配置；Skills 系统",
+      "主要劣势": "改错可能牵连多个模块",
+      "备注": "Anthropic 出品，当前 Agent 模式最强"
+    }
+  },
+  {
+    "__id": "",
+    "工具名": "Windsurf",
+    "链接": "[Windsurf](https://codeium.com/windsurf)",
+    "厂商": "Codeium",
+    "我的状态": "弃用",
+    "类型": "全功能AI IDE",
+    "平台": "macOS, Windows, Linux",
+    "GitHub stars": "",
+    "支持模型": "Claude, GPT",
+    "现有": {
+      "产品定位": "Codeium 推出的首个 Agentic IDE（VS Code fork），主打「AI 协作搭档」；Cascade 系统实时上下文感知（自动追踪代码库变更），Agent+Copilot 协作模式，2026-03 Cascade 多文件联动编辑。",
+      "目标用户": "预算紧张但想要 AI Agent 能力的个人开发者 / 学生党 / 中小企业；本地 GPU 用户（隐私敏感 / 响应速度优先）；Web 开发为主的项目。",
+      "使用建议": "Cascade 自动追踪代码库新增文件 / 变量重命名，省去手动喂上下文；本地 AI 计算兼顾隐私（适合 GPU 机器）；免费版功能够用，$15/月 Pro 比 Cursor 便宜 25%；自然语言指令支持中文优先。",
+      "竞品对比": "vs Cursor：Windsurf 免费 + Agent 原生 + 中文 + 本地化，Cursor 全能但 $20/月。vs Trae：Windsurf 海外本地化优先，Trae 中文 + 字节生态。vs Copilot：Windsurf Agent 强 + 免费版够用，Copilot 生态深但 Agent 能力基础。",
+      "核心优势": "流式开发，每步 AI 实时建议（Cascade 模式）",
+      "主要劣势": "较新，社区不如 Cursor 大",
+      "备注": "Codeium 出品"
+    }
+  },
+  {
+    "__id": "",
+    "工具名": "Trae",
+    "链接": "[Trae](https://www.trae.ai)",
+    "厂商": "字节跳动",
+    "我的状态": "在用",
+    "类型": "全功能AI IDE",
+    "平台": "macOS, Windows",
+    "GitHub stars": "",
+    "支持模型": "Claude, GPT, DeepSeek",
+    "现有": {
+      "产品定位": "字节跳动 2025-01 发布的 AI 原生 IDE，专为中文开发者设计；VS Code 架构 + 内置 Claude 3.5/3.7、GPT-4o、DeepSeek、豆包；2026 已发 SOLO 正式版（桌面+网页独立端） + TRAE CN 企业版（92% 字节内部渗透率）。",
+      "目标用户": "中文开发者（界面 / 注释全中文，迁移零成本）；个人开发者（永久免费基础版 + 600 万+ 用户）；字节生态内企业；预算敏感但要 AI IDE 的中小团队。",
+      "使用建议": "中文开发者入门首选（免费 + 中文界面 + 中文注释）；SOLO 独立端支持桌面+网页协同 + 多任务并行 + 跨设备；TRAE CN 企业版承载 10 万文件 / 1.5 亿行代码容量；抖音生活服务团队 AI 代码贡献率 43%。",
+      "竞品对比": "vs Cursor：Trae 免费 + 中文 + 字节生态，Cursor 成熟但贵。vs Windsurf：Trae 中文为主，Windsurf 海外本地化优先。vs 国产同行：豆包/DeepSeek 集成 + 字节内部 92% 实战验证。",
+      "核心优势": "中文需求理解最强，国内访问稳定",
+      "主要劣势": "生态较新，插件少",
+      "备注": "国内开发者首选"
+    }
+  },
+  {
+    "__id": "",
+    "工具名": "Aider",
+    "链接": "[Aider](https://aider.chat)",
+    "厂商": "Aider",
+    "我的状态": "待调研",
+    "类型": "CLI/Agent",
+    "平台": "macOS, Windows, Linux",
+    "GitHub stars": "",
+    "支持模型": "Claude, GPT, 其他",
+    "现有": {
+      "产品定位": "终端 AI 编程工具，强调 pair programming（开发者 + AI 协作）；支持多 LLM 后端（OpenAI/Anthropic/本地）；Git 原生集成（自动 commit + 生成 commit message）。",
+      "目标用户": "终端优先的开发者；想用自己 LLM API key 的用户（避免被 IDE 锁定）；Git 工作流重的项目；老派 pair programming 爱好者。",
+      "使用建议": "适合已有 Git 习惯的项目（自动 commit）；支持本地模型（隐私 / 成本敏感）；比 IDE 类轻量，比纯 CLI 类友好；模型可选是最大优势。",
+      "竞品对比": "vs Claude Code：Aider 多模型 + Git 原生 + 开源，Claude Code 闭源 Anthropic 为主。vs Cursor：Aider 终端，Cursor GUI。vs Cline：Aider 终端独立，Cline VS Code 扩展。",
+      "核心优势": "开源老牌，多模型支持，git 集成成熟",
+      "主要劣势": "UI 较朴素，纯命令行",
+      "备注": "开源派经典"
+    }
+  },
+  {
+    "__id": "",
+    "工具名": "Cline",
+    "链接": "[Cline](https://github.com/cline/cline)",
+    "厂商": "Cline",
+    "我的状态": "待调研",
+    "类型": "CLI/Agent",
+    "平台": "macOS, Windows, Linux",
+    "GitHub stars": "64709",
+    "支持模型": "Claude, GPT",
+    "现有": {
+      "产品定位": "VS Code 扩展形式的 AI 编程助手（曾用名 Claude Dev）；支持 Anthropic / OpenAI / DeepSeek 等多模型（OpenAI 兼容模式）；MCP 集成能力强（浏览器控制、文件系统等）。",
+      "目标用户": "VS Code 重度用户；想要 IDE 内 AI 但不愿订阅 Cursor/Copilot 的预算敏感用户；国内开发者（DeepSeek 兼容 + 便宜）；MCP 早期采用者。",
+      "使用建议": "配置灵活（多模型 + OpenAI 兼容模式）；VS Code 原生体验，迁移成本零；MCP 集成可控制浏览器等外部工具；性价比高（自备 API key，无平台抽成）。",
+      "竞品对比": "vs Cursor：Cline 是 VS Code 扩展 + 自备 key 便宜，Cursor 是 fork IDE。vs Claude Code：Cline IDE 内，Claude Code 终端。vs Continue：Cline MCP 强 + Agent 强，Continue 模型路由更灵活。",
+      "核心优势": "VS Code 插件 + Agent，开源，BYO API",
+      "主要劣势": "需自己管理 API 成本",
+      "备注": "原 Claude Dev"
+    }
+  },
+  {
+    "__id": "",
+    "工具名": "Continue",
+    "链接": "[Continue](https://continue.dev)",
+    "厂商": "Continue",
+    "我的状态": "待调研",
+    "类型": "IDE插件",
+    "平台": "macOS, Windows, Linux",
+    "GitHub stars": "",
+    "支持模型": "Claude, GPT, 其他",
+    "现有": {
+      "产品定位": "开源（Apache-2.0）的 AI 代码助手，github.com/continuedev/continue；核心卖点：「连接任何模型和任何上下文」，在 VS Code + JetBrains 中构建自定义自动完成 + 聊天体验；config.yaml 灵活配置。",
+      "目标用户": "看重开源 + 可定制的开发者；想用自备 API key（BYOK）的用户；企业内网 / 数据隐私场景；多模型路由需求（Chat / Edit / Autocomplete / Embedding 四角色可独立配置）。",
+      "使用建议": "config.yaml 比 JSON 写起来更清爽 + 注释友好；可针对 Chat / Edit / Autocomplete / Embedding 四个角色配不同模型；自托管 / 本地推理友好；VS Code / JetBrains 双 IDE 支持。",
+      "竞品对比": "vs Cline：Continue 开源 + 模型路由灵活，Cline VS Code 扩展 + MCP 强 + Agent 强。vs Copilot：Continue 开源 + BYOK + 可定制，Copilot 闭源 + GitHub 生态。vs Cursor：Continue 插件式不换 IDE，Cursor AI 原生 IDE。",
+      "核心优势": "开源，支持自定义模型，本地运行",
+      "主要劣势": "配置稍复杂",
+      "备注": "开源 VS Code/JetBrains 插件"
+    }
+  },
+  {
+    "__id": "",
+    "工具名": "Cody",
+    "链接": "[Cody](https://sourcegraph.com/cody)",
+    "厂商": "Sourcegraph",
+    "我的状态": "待调研",
+    "类型": "IDE插件",
+    "平台": "macOS, Windows, Linux",
+    "GitHub stars": "",
+    "支持模型": "Claude, GPT",
+    "现有": {
+      "产品定位": "Sourcegraph 推出的 AI 编程助手（VS Code + IntelliJ 插件）；核心优势：基于 Sourcegraph 代码搜索平台，能深度理解大型代码库；上下文检索能力突出；支持中文对话。",
+      "目标用户": "大型代码库 / 复杂项目的团队（Sourcegraph 代码搜索加持）；企业级代码理解需求；VS Code / JetBrains 用户；已用 Sourcegraph 做代码搜索的团队。",
+      "使用建议": "免费试用（注册 Sourcegraph 账号即可）；基于 Sourcegraph 代码搜索能精准定位上下文；适合需要「跨文件 / 跨仓库」理解的项目；中文对话支持。",
+      "竞品对比": "vs Cursor：Cody 是插件 + 代码搜索强 + 大型仓库友好，Cursor 是 AI 原生 IDE。vs Copilot：Cody 大型代码库检索强，Copilot 行内补全 + 生态深。vs Continue：Cody 企业级代码搜索，Continue 开源 + 模型路由灵活。",
+      "核心优势": "代码库上下文最强（Sourcegraph 索引）",
+      "主要劣势": "依赖 Sourcegraph 服务",
+      "备注": "Sourcegraph 出品"
+    }
+  },
+  {
+    "__id": "",
+    "工具名": "GitHub Copilot",
+    "链接": "[GitHub Copilot](https://github.com/features/copilot)",
+    "厂商": "GitHub",
+    "我的状态": "弃用",
+    "类型": "IDE插件",
+    "平台": "macOS, Windows, Linux",
+    "GitHub stars": "",
+    "支持模型": "GPT",
+    "现有": {
+      "产品定位": "GitHub / Microsoft 2021 推出的 AI 编程助手（行业先驱），全球用户 300 万+；支持 37+ 编程语言；接入 GPT-4o / Claude 3.5 Sonnet 等多模型；行内代码补全 + Chat + Agent Mode 三件套。",
+      "目标用户": "VS Code / JetBrains / Xcode 全家桶用户（迁移成本零）；看重稳定 + 生态集成的团队；GitHub 重度用户（PR / Issue 工作流）；入门 AI 编程的首选。",
+      "使用建议": "$10/月 Pro 性价比高；2026 已开放 BYOK（接入 Claude API 跑 Claude 4.x）；Agent Mode 处理复杂任务可拆解；响应速度亚秒级；适合「插件即用、不换 IDE」的路线。",
+      "竞品对比": "vs Cursor：Copilot 是 IDE 插件扩展（不换编辑器），Cursor 是 AI 原生 IDE（换编辑器）。vs Claude Code：Copilot 多模型 + IDE 集成，Claude Code CLI + 推理深。vs Windsurf：Copilot 生态深 + 稳定，Windsurf Agent 原生 + 免费。",
+      "核心优势": "老牌，覆盖最广，企业级标准",
+      "主要劣势": "Agent 能力较弱",
+      "备注": "老牌霸主，VS Code/JetBrains 通用"
+    }
+  },
+  {
+    "__id": "",
+    "工具名": "Tabnine",
+    "链接": "[Tabnine](https://tabnine.com)",
+    "厂商": "Tabnine",
+    "我的状态": "待调研",
+    "类型": "IDE插件",
+    "平台": "macOS, Windows, Linux",
+    "GitHub stars": "",
+    "支持模型": "其他",
+    "现有": {
+      "产品定位": "以色列 Codota 2013 年创立（2021-05 更名 Tabnine），全球 100 万+ 用户；专注 AI 代码补全 + 生成；支持企业内网部署（离线授权）+ 多架构（x86_64 / arm64 / Windows / Linux / macOS）；团队训练模型 + 开源训练模型融合。",
+      "目标用户": "企业内网 / 离网环境的开发团队；数据隐私 / 代码保密要求高的金融 / 政府 / 军工；多架构服务器环境的运维；想要稳定 + 长期支持的企业用户。",
+      "使用建议": "dl_binaries.sh 离线资源包适合内网部署；多架构支持（x86_64-unknown-linux-musl / aarch64-apple-darwin 等）；中高级开发者精准建议；内网版本更新机制完整。",
+      "竞品对比": "vs Copilot：Tabnine 企业内网部署强 + 数据隐私，Copilot 云端为主。vs Continue：Tabnine 闭源企业版，Continue 开源 + 模型路由灵活。vs Cody：Tabnine 专注补全 + 企业，Cody 大型代码库检索。",
+      "核心优势": "企业级，私有模型，代码隐私",
+      "主要劣势": "Agent 能力弱",
+      "备注": "企业隐私首选，自家模型"
+    }
+  }
+]

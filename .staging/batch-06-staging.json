@@ -1,0 +1,42 @@
+[
+  {
+    "__id": "recvqmydRAAVcy",
+    "工具名": "Devin",
+    "产品定位": "Cognition Labs 2024-03 发布的「全球首位 AI 软件工程师」（华人团队创办，CEO Scott Wu）；自治代理模式，自带 shell / 代码编辑器 / Web 浏览器；端到端处理整个开发项目。",
+    "目标用户": "需要「端到端外包」开发任务的企业；想要尝试 AI 替代初级程序员的探索者；预算充足、愿意承担实验性工具风险的团队；对 AI 编程能力前沿有兴趣的开发者。",
+    "使用建议": "在明确指导下能像初级程序员一样独立完成任务；大约可持续独立工作 3 小时，之后开始出现偏差（需管理预期）；适合小到中等的软件开发项目；学习不熟悉技术 + 自动找 bug + 训练模型都能做。",
+    "竞品对比": "vs OpenHands：Devin 闭源商业化最早（2024），OpenHands 开源自部署。vs Cursor：Devin 自治代理（独立工作），Cursor 协作 IDE（人在回路）。vs Claude Code：Devin 端到端，Claude Code CLI 嵌入工作流。"
+  },
+  {
+    "__id": "recvqmyei6h1VW",
+    "工具名": "OpenCode",
+    "产品定位": "开源 AI 编程代理（CLI-first）；提供原生终端用户界面（TUI），可在熟悉的命令行环境中直接与 AI 交互；连接任何大语言模型，打破 vendor lock-in；2026 被视为「告别天价订阅」的开源选项。",
+    "目标用户": "想要开源 + 自由的开发者；预算紧张但要 AI 编程助手；多 LLM 切换需求；CLI 优先的开发者；想自己控制 LLM API key 的用户。",
+    "使用建议": "安装部署门槛低（保姆级教程）；原生 TUI 比 web 端更轻量；适合终端优先工作流；开源可深度定制；不绑定单一 vendor。",
+    "竞品对比": "vs Goose：两家都是开源 + 多 LLM CLI。vs Claude Code：OpenCode 开源 + 多 LLM，Claude Code 闭源 Anthropic。vs Aider：OpenCode 终端原生 TUI，Aider 终端 + pair programming + Git 集成。"
+  },
+  {
+    "__id": "recvqmyeIIyJtX",
+    "工具名": "OpenHands",
+    "产品定位": "github.com/openhands-agent 的开源 AI 软件工程师平台（前身 OpenDevin）；支持代码生成 + 命令行操作 + 网页浏览 + 多智能体协作；安全沙箱环境 + Docker 本地部署。",
+    "目标用户": "想要自托管 AI 软件工程师的开源用户；多智能体协作研究；本地 Docker 部署的隐私 / 安全需求；Devin 的开源替代品需求。",
+    "使用建议": "Docker 一键本地启动（避免环境 / 权限 / API Key 坑）；多代理协作机制可拆解复杂任务；安全沙箱适合企业内网；既能网页浏览又能写代码 + 执行命令。",
+    "竞品对比": "vs Devin：OpenHands 开源 + 自部署，Devin 闭源 + 商业化最早。vs Goose：OpenHands 偏 AI 软件工程师（多能力），Goose 偏 AI 编程 agent（多 LLM）。vs Claude Code：OpenHands 开源 + 多能力，Claude Code 闭源 + 推理深。"
+  },
+  {
+    "__id": "recvqmyfaFYOOx",
+    "工具名": "Factory",
+    "产品定位": "AI Agent 平台（Factory.ai）；「Droids」系列 agent 可执行代码审查 + 自主提交 PR + 端到端开发任务；面向企业的代码 agent 编排平台；2026 跻身 AI Agent 工程分水岭代表厂商。",
+    "目标用户": "企业级代码 agent 需求（PR 自动化 + 代码审查）；想要「AI 员工」（Droid）协助开发的企业；研究 long-horizon agent 编排的团队；CTO / 工程效能团队。",
+    "使用建议": "Droids 系列可针对不同任务配置（如 PR Reviewer / Bug Fixer / Feature Builder）；适合规模化代码协作；企业级权限 / 审计 / 合规完善；agent 编排可视化。",
+    "竞品对比": "vs Devin：Factory 偏企业 + 多 agent 编排，Devin 偏个人 + 端到端。vs Claude Code：Factory 编排多 agent，Claude Code 单 CLI 智能。vs OpenHands：Factory 商业化平台，OpenHands 开源自部署。"
+  },
+  {
+    "__id": "recvqmyfCCMaew",
+    "工具名": "Junie",
+    "产品定位": "JetBrains 2025-03 推出的 AI 编程智能体（对标 Cursor）；目前 Mac / Linux 私密预览；智能体式 AI（自主完成任务，不只是建议代码）；基准测试单次运行可完成 53.6% 任务。",
+    "目标用户": "JetBrains 全家桶用户（深度 IDE 集成）；想要 Cursor 替代品但不想换 IDE 的用户；对 JetBrains 品牌有信任的高级开发者；预算充足的企业。",
+    "使用建议": "开发者输入一条指令（如「实现带 UI 的书签管理 CRUD」），智能体即可完成（通常需人工评审细化）；2025-07 起多人实战分享（legacy code / pet projects / day-1 / day-2 评测）；适合 JetBrains 用户尝试 agent 能力。",
+    "竞品对比": "vs Cursor：Junie JetBrains IDE 集成（不换 IDE），Cursor 换 AI 原生 IDE。vs JetBrains AI Assistant：Junie 是 Agent（自主执行），Assistant 是补全（建议代码）。vs Claude Code：Junie GUI IDE + Agent，Claude Code CLI。"
+  }
+]

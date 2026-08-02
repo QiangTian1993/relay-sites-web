@@ -1,0 +1,42 @@
+[
+  {
+    "__id": "recvqmy9qb5Hvp",
+    "工具名": "Replit Agent",
+    "产品定位": "Replit 2026-03 发布 Agent 4，定位「迄今最快、最全能的智能编程代理」；加速氛围编程 + 构建生产级应用；浏览器内完整开发 + 部署环境（Replit 经典沙箱）。",
+    "目标用户": "编程初学者（学习资源丰富 + 操作便捷）；想要「开发 + 部署」一体化的全栈开发者；教学场景；快速验证想法的独立开发者。",
+    "使用建议": "Agent 4 在速度 + 任务处理广度上显著突破；适合「氛围编程」追求极致效率的场景；Replit 平台一键部署（无需配服务器）；内置教育生态适合新手。",
+    "竞品对比": "vs Bolt.new：都有托管环境，Replit 经典沙箱 + 教育生态，Bolt.new WebContainers + 全栈。vs Lovable：Replit 桌面 + 编程，Replit 教育场景深，Lovable 移动 + 氛围编码。vs Cursor：Replit 偏学习 + 部署，Cursor 偏专业 IDE。"
+  },
+  {
+    "__id": "recvqmy9VeWaxy",
+    "工具名": "Create.xyz",
+    "产品定位": "Create Inc（前 GPT Engineer 转型）推出的 AI 应用生成平台；自然语言 → 完整 Web 应用（前端 + 后端 + 数据库）；强调「vibe coding」平台化，让非工程师也能产出可发布应用。",
+    "目标用户": "非工程师创业者；想要快速出可发布 MVP 的团队；产品经理独立做 demo；预算紧但要全栈应用的初创团队。",
+    "使用建议": "比 Bolt.new 更偏「vibe coding」品牌定位；GPT Engineer 时代积累的 prompt 工程 + agent 编排；适合从想法 → 部署的端到端流程；与 Bolt.new / Lovable 形成「vibe coding 三剑客」。",
+    "竞品对比": "vs Bolt.new：Create.xyz vibe coding 品牌化 + 端到端，Bolt.new WebContainers + StackBlitz 生态。vs Lovable：Create.xyz 桌面 + 编程，Lovable 移动 + 无代码。vs Cursor：Create.xyz 应用生成平台，Cursor IDE。"
+  },
+  {
+    "__id": "recvqmyamQKZEq",
+    "工具名": "GitHub Copilot",
+    "产品定位": "GitHub / Microsoft 2021 推出的 AI 编程助手（行业先驱），全球用户 300 万+；支持 37+ 编程语言；接入 GPT-4o / Claude 3.5 Sonnet 等多模型；行内代码补全 + Chat + Agent Mode 三件套。",
+    "目标用户": "VS Code / JetBrains / Xcode 全家桶用户（迁移成本零）；看重稳定 + 生态集成的团队；GitHub 重度用户（PR / Issue 工作流）；入门 AI 编程的首选。",
+    "使用建议": "$10/月 Pro 性价比高；2026 已开放 BYOK（接入 Claude API 跑 Claude 4.x）；Agent Mode 处理复杂任务可拆解；响应速度亚秒级；适合「插件即用、不换 IDE」的路线。",
+    "竞品对比": "vs Cursor：Copilot 是 IDE 插件扩展（不换编辑器），Cursor 是 AI 原生 IDE（换编辑器）。vs Claude Code：Copilot 多模型 + IDE 集成，Claude Code CLI + 推理深。vs Windsurf：Copilot 生态深 + 稳定，Windsurf Agent 原生 + 免费。"
+  },
+  {
+    "__id": "recvqmyaNLr3Wq",
+    "工具名": "Continue",
+    "产品定位": "开源（Apache-2.0）的 AI 代码助手，github.com/continuedev/continue；核心卖点：「连接任何模型和任何上下文」，在 VS Code + JetBrains 中构建自定义自动完成 + 聊天体验；config.yaml 灵活配置。",
+    "目标用户": "看重开源 + 可定制的开发者；想用自备 API key（BYOK）的用户；企业内网 / 数据隐私场景；多模型路由需求（Chat / Edit / Autocomplete / Embedding 四角色可独立配置）。",
+    "使用建议": "config.yaml 比 JSON 写起来更清爽 + 注释友好；可针对 Chat / Edit / Autocomplete / Embedding 四个角色配不同模型；自托管 / 本地推理友好；VS Code / JetBrains 双 IDE 支持。",
+    "竞品对比": "vs Cline：Continue 开源 + 模型路由灵活，Cline VS Code 扩展 + MCP 强 + Agent 强。vs Copilot：Continue 开源 + BYOK + 可定制，Copilot 闭源 + GitHub 生态。vs Cursor：Continue 插件式不换 IDE，Cursor AI 原生 IDE。"
+  },
+  {
+    "__id": "recvqmybfAVmf0",
+    "工具名": "Cody",
+    "产品定位": "Sourcegraph 推出的 AI 编程助手（VS Code + IntelliJ 插件）；核心优势：基于 Sourcegraph 代码搜索平台，能深度理解大型代码库；上下文检索能力突出；支持中文对话。",
+    "目标用户": "大型代码库 / 复杂项目的团队（Sourcegraph 代码搜索加持）；企业级代码理解需求；VS Code / JetBrains 用户；已用 Sourcegraph 做代码搜索的团队。",
+    "使用建议": "免费试用（注册 Sourcegraph 账号即可）；基于 Sourcegraph 代码搜索能精准定位上下文；适合需要「跨文件 / 跨仓库」理解的项目；中文对话支持。",
+    "竞品对比": "vs Cursor：Cody 是插件 + 代码搜索强 + 大型仓库友好，Cursor 是 AI 原生 IDE。vs Copilot：Cody 大型代码库检索强，Copilot 行内补全 + 生态深。vs Continue：Cody 企业级代码搜索，Continue 开源 + 模型路由灵活。"
+  }
+]
