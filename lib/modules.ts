@@ -68,7 +68,7 @@ export const MODULES: KbModule[] = [
     subtitle: "Trending repos（按语言 / 时间窗筛选）",
     icon: "github",
     href: "/modules/github_trending",
-    enabled: false,
+    enabled: true,
   },
   {
     id: "skill_collection",

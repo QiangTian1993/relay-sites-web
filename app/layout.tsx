@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import Link from "next/link";
-import { Activity, GitCompareArrows, Wrench } from "lucide-react";
+import { Activity, Flame, GitCompareArrows, Wrench } from "lucide-react";
 import "./globals.css";
 
 const inter = Inter({
@@ -39,6 +39,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </Link>
               <Link href="/table/vibe_coding_tracker" className="flex shrink-0 items-center gap-2 border-r-2 border-black px-4 py-3 font-mono text-xs font-black uppercase tracking-wider hover:bg-black hover:text-white">
                 <Wrench className="h-4 w-4" /> 编程工具
+              </Link>
+              <Link href="/modules/github_trending" className="flex shrink-0 items-center gap-2 border-r-2 border-black px-4 py-3 font-mono text-xs font-black uppercase tracking-wider hover:bg-black hover:text-white">
+                <Flame className="h-4 w-4" /> 开源热榜
               </Link>
             </nav>
           </div>

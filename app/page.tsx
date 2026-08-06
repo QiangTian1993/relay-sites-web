@@ -6,17 +6,38 @@ import { latestFetchTime, calcFreshness } from "@/lib/freshness";
 export const dynamic = "force-static";
 
 export default async function Home() {
-  const [sitesData, groupsData, perfData, toolsData] = await Promise.all([
+  const [sitesData, groupsData, perfData, toolsData, trendingData] = await Promise.all([
     loadTable("relay_sites_tracker"),
     loadTable("relay_site_groups"),
     loadTable("relay_site_perf"),
     loadTable("vibe_coding_tracker"),
+    loadTable("github_trending"),
   ]);
 
   const siteCount = sitesData?.records.length ?? 0;
   const groupCount = groupsData?.records.length ?? 0;
   const perfCount = perfData?.records.length ?? 0;
   const toolCount = toolsData?.records.length ?? 0;
+  const trendingCount = trendingData?.records.length ?? 0;
+
+  const trendingLangs = new Set(
+    (trendingData?.records ?? []).map((r) => {
+      const raw = r["语言"];
+      return String(Array.isArray(raw) ? raw[0] ?? "" : raw ?? "");
+    }).filter(Boolean),
+  ).size;
+
+  const trendingDelta = (trendingData?.records ?? []).reduce((acc, r) => {
+    const raw = r["周期内新增星数"];
+    const n = typeof raw === "number" ? raw : Number(raw);
+    return acc + (Number.isFinite(n) ? n : 0);
+  }, 0);
+
+  const trendingLatestSync =
+    (trendingData?.records ?? []).map((r) => {
+      const t = Array.isArray(r["采集时间"]) ? String(r["采集时间"][0]) : String(r["采集时间"] ?? "");
+      return t;
+    }).filter(Boolean).sort().at(-1) ?? "—";
 
   const changedCount =
     groupsData?.records.filter((r) => {
@@ -39,7 +60,7 @@ export default async function Home() {
   const toc = [
     { num: "01", title: "模型倍率与可用性比价", active: true, href: "#module-01" },
     { num: "02", title: "Vibe Coding 工具全景", active: true, href: "#module-02" },
-    { num: "03", title: "开源热榜", active: false, href: "#module-03" },
+    { num: "03", title: "开源热榜", active: true, href: "#module-03" },
     { num: "04", title: "个人技能库", active: false, href: "#module-04" },
   ];
 
@@ -78,7 +99,7 @@ export default async function Home() {
               <div className="flex flex-wrap items-center gap-x-5 gap-y-1 font-mono text-xs text-black/40 uppercase tracking-wider">
                 <span className="font-black text-black">4 大顶级 Modules</span>
                 <span>·</span>
-                <span className="font-black text-black">{(siteCount + groupCount + toolCount).toLocaleString()}+ 真实情报记录</span>
+                <span className="font-black text-black">{(siteCount + groupCount + toolCount + trendingCount).toLocaleString()}+ 真实情报记录</span>
                 <span>·</span>
                 <span>已同步 {freshness.label}</span>
               </div>
@@ -126,7 +147,7 @@ export default async function Home() {
                 DATABASE TELEMETRY
               </div>
               <div className="font-mono text-xl font-black text-black">
-                {(siteCount + groupCount + toolCount).toLocaleString()} <span className="text-xs font-normal text-black/50">条实测记录已入库</span>
+                {(siteCount + groupCount + toolCount + trendingCount).toLocaleString()} <span className="text-xs font-normal text-black/50">条实测记录已入库</span>
               </div>
             </div>
           </div>
@@ -231,15 +252,58 @@ export default async function Home() {
         </div>
       </article>
 
-      {/* ── Modules 03 & 04: Coming Soon ─────────────────────────── */}
+      {/* ── Module 03: GitHub 热榜 ─────────────────────────────── */}
+      <article id="module-03" className="border-b-2 border-black bg-white group transition-colors hover:bg-[#FAFAFA]">
+        <div className="grid grid-cols-[56px_1fr] md:grid-cols-[72px_1fr_240px]">
+          <NumCol num="03" variant="accent" />
+          <div className="p-6 md:p-10 md:border-r-2 border-black">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-black/40">
+                MODULE 03 · GitHub Trending Repos
+              </p>
+              <span className="border border-swiss-accent/40 bg-swiss-accent/5 px-2 py-0.5 font-mono text-[10px] font-bold text-swiss-accent">
+                每日双更 · 定时采集
+              </span>
+            </div>
+            <h2 className="text-2xl md:text-3xl font-black mb-3 group-hover:text-swiss-accent transition-colors">
+              开源热榜 — GitHub Trending 大盘
+            </h2>
+            <p className="text-sm text-black/60 leading-relaxed max-w-3xl mb-6">
+              每日 08:00 / 21:00 自动采集 GitHub Trending，覆盖 daily / weekly / monthly
+              时间窗与 6 种主流语言。星数增量一目了然，快速掌握开源动态。
+            </p>
+            <div className="inline-flex flex-wrap border-l-2 border-t-2 border-black">
+              {[
+                { label: "REPOS 收录", value: trendingCount, accent: false },
+                { label: "LANGS 语言", value: trendingLangs, accent: false },
+                { label: "★ 周期增量", value: trendingDelta, accent: true },
+                { label: "SYNC 最近同步", value: trendingLatestSync, accent: false, text: true },
+              ].map(({ label, value, accent, text }) => (
+                <div
+                  key={label}
+                  className={`border-r-2 border-b-2 border-black px-6 py-4 ${accent ? "bg-swiss-accent/5" : "bg-white"}`}
+                >
+                  <div className={`font-mono font-black tabular-nums ${text ? "text-base md:text-lg" : "text-3xl"} ${accent ? "text-swiss-accent" : ""}`}>
+                    {typeof value === "number" ? value.toLocaleString() : String(value).slice(5, 16)}
+                  </div>
+                  <div className={`font-mono text-[9px] uppercase tracking-widest mt-1 ${accent ? "text-swiss-accent/70" : "text-black/40"}`}>
+                    {label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="hidden md:flex flex-col p-6 justify-center bg-[#FBFBF8] group-hover:bg-white transition-colors">
+            <Btn href="/modules/github_trending" label="进入开源热榜大盘" primary />
+          </div>
+        </div>
+        <div className="md:hidden flex gap-3 border-t-2 border-black p-4">
+          <Btn href="/modules/github_trending" label="进入开源热榜大盘" primary />
+        </div>
+      </article>
+
+      {/* ── Module 04: Coming Soon ──────────────────────────────── */}
       {[
-        {
-          num: "03",
-          id: "module-03",
-          tag: "MODULE 03 · GitHub Trending Repos",
-          title: "开源热榜",
-          desc: "接入 GitHub Trending 数据，按语言、时间段筛选热门仓库，快速掌握开源动态。",
-        },
         {
           num: "04",
           id: "module-04",
