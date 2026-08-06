@@ -1,6 +1,13 @@
 import { RelayV1Explorer } from "@/components/relay-v1-explorer";
 import { loadTable } from "@/lib/data-loader";
 import { buildRelayV1Data } from "@/lib/relay-v1";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "AI 中转站比价大盘",
+  description: "多平台 AI 中转服务横向对比：模型倍率、分组计费、7 天可用率与网络延迟实测打点，一站式选型。",
+  alternates: { canonical: "/relay" },
+};
 
 export const dynamic = "force-static";
 

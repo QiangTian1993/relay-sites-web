@@ -1,6 +1,7 @@
 // Swiss Style Detail Page —— already implemented in data-detail.tsx
 
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { loadTable, loadAllTables } from "@/lib/data-loader";
 import { getVisibleTable, VISIBLE_TABLES } from "@/lib/tables";
 import { buildModelOfferSummaries } from "@/lib/relay-product";
@@ -26,6 +27,32 @@ export async function generateStaticParams() {
 
 interface Params {
   params: { name: string; id: string };
+}
+
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const table = getVisibleTable(params.name);
+  if (!table) return {};
+  const data = await loadTable(table.id);
+  if (!data) return {};
+  const recordId = decodeURIComponent(params.id);
+  const record = data.records.find(
+    (r) =>
+      r.__id === recordId ||
+      String(r[table.primaryKey] ?? "") === recordId ||
+      String(r["站点ID"] ?? "") === recordId ||
+      String(r.site_id ?? "") === recordId
+  );
+  if (!record) return {};
+  const name = String(record[table.titleField] ?? record[table.primaryKey] ?? "");
+  const domain = String(record["域名"] ?? "").replace(/^https?:\/\//i, "").replace(/\/.*$/, "");
+  const desc = [String(record["产品定位"] ?? ""), String(record["描述"] ?? ""), String(record["中文描述"] ?? "")]
+    .find((s) => s.trim().length > 0)
+    ?.slice(0, 150);
+  return {
+    title: domain ? `${name} (${domain})` : name,
+    description: desc ?? `${table.displayName}详情 · ${name}`,
+    alternates: { canonical: `/table/${params.name}/${encodeURIComponent(params.id)}` },
+  };
 }
 
 export default async function RecordDetailPage({ params }: Params) {

@@ -3,8 +3,9 @@ import { loadTable } from "@/lib/data-loader";
 import TrendingExplorer from "@/components/trending-explorer";
 
 export const metadata: Metadata = {
-  title: "开源热榜 — GitHub Trending · 信息杂货铺",
+  title: "开源热榜 — GitHub Trending",
   description: "GitHub Trending 定时采集：按语言、时间窗筛选热门仓库，掌握开源动态。",
+  alternates: { canonical: "/modules/github_trending" },
 };
 
 export const dynamic = "force-static";
@@ -20,5 +21,32 @@ export default async function GithubTrendingPage() {
     if (t && (!latestSync || t > latestSync)) latestSync = t;
   }
 
-  return <TrendingExplorer records={records} fetchedAt={latestSync ?? undefined} />;
+  // ItemList 结构化数据（今日榜 Top 20，服务端注入）
+  const dailyItems = records
+    .filter((r) => Array.isArray(r["周期"]) ? r["周期"][0] === "daily" : r["周期"] === "daily")
+    .filter((r) => String(Array.isArray(r["榜单"]) ? r["榜单"][0] : r["榜单"] ?? "") === "all")
+    .slice(0, 20);
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "GitHub 今日热榜 Top 20",
+    description: "GitHub Trending 每日定时采集的开源热门仓库",
+    itemListElement: dailyItems.map((r, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: String(r["仓库"] ?? ""),
+      url: String(r["链接"] ?? "").match(/\]\((https?:\/\/[^)]+)\)/)?.[1] ?? "",
+      description: String(r["中文描述"] ?? r["描述"] ?? "").slice(0, 200),
+    })),
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
+      />
+      <TrendingExplorer records={records} fetchedAt={latestSync ?? undefined} />
+    </>
+  );
 }

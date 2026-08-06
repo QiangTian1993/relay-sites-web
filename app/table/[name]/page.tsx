@@ -10,6 +10,7 @@ import { ToolsExplorer } from "@/components/explorer/tools-explorer";
 import { FreshnessBanner } from "@/components/freshness-banner";
 import { IconSites, IconTools } from "@/components/icons";
 import { RelaySubNav } from "@/components/relay-sub-nav";
+import type { Metadata } from "next";
 
 export const dynamicParams = false;
 
@@ -19,6 +20,16 @@ export function generateStaticParams() {
 
 interface Params {
   params: { name: string };
+}
+
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const table = getVisibleTable(params.name);
+  if (!table) return {};
+  return {
+    title: `${table.displayName}大盘`,
+    description: table.description,
+    alternates: { canonical: `/table/${params.name}` },
+  };
 }
 
 export default async function TableListPage({ params }: Params) {

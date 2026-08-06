@@ -19,8 +19,38 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "信息杂货铺 — Relay Index",
-  description: "AI 中转站比价、编程工具横评、开源热榜。AI 世界实用情报，按模块收集成册。",
+  metadataBase: new URL("https://www.xiuxai.com/relay-index/"),
+  title: {
+    default: "信息杂货铺 — Relay Index",
+    template: "%s | 信息杂货铺",
+  },
+  description:
+    "AI 中转站比价、编程工具横评、开源热榜。AI 世界实用情报，按模块收集成册。",
+  keywords: [
+    "AI 中转站",
+    "模型比价",
+    "GitHub 热榜",
+    "AI 编程工具",
+    "开源项目",
+    "信息杂货铺",
+  ],
+  openGraph: {
+    type: "website",
+    locale: "zh_CN",
+    url: "https://www.xiuxai.com/relay-index/",
+    siteName: "信息杂货铺",
+    title: "信息杂货铺 — Relay Index",
+    description:
+      "AI 中转站比价、编程工具横评、开源热榜。AI 世界实用情报，按模块收集成册。",
+    images: [{ url: "https://www.xiuxai.com/relay-index/icon.svg" }],
+  },
+  twitter: {
+    card: "summary",
+    title: "信息杂货铺 — Relay Index",
+    description: "AI 中转站比价、编程工具横评、开源热榜。",
+    images: ["https://www.xiuxai.com/relay-index/icon.svg"],
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

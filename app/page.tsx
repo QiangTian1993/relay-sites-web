@@ -1,9 +1,14 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import type { Metadata } from "next";
 import { loadTable } from "@/lib/data-loader";
 import { latestFetchTime, calcFreshness } from "@/lib/freshness";
 
 export const dynamic = "force-static";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default async function Home() {
   const [sitesData, groupsData, perfData, toolsData, trendingData] = await Promise.all([
@@ -64,8 +69,23 @@ export default async function Home() {
     { num: "04", title: "个人技能库", active: false, href: "#module-04" },
   ];
 
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "信息杂货铺 — Relay Index",
+    alternateName: "AI 中转站比价 / GitHub 热榜 / AI 编程工具",
+    url: "https://www.xiuxai.com/relay-index/",
+    description:
+      "AI 世界的实用情报收集成册：AI 中转站模型比价、Vibe Coding 工具横评、GitHub 开源热榜，按模块收集成册。",
+    inLanguage: "zh-CN",
+  };
+
   return (
     <div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+      />
       {/* ── Hero ─────────────────────────────────────────────────── */}
       <section className="border-b-2 border-black bg-white">
         <div className="grid lg:grid-cols-[1fr_320px]">
