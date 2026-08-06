@@ -42,25 +42,37 @@ export default function TrendingExplorer({ records, fetchedAt }: Props) {
 
   const [period, setPeriod] = useState<Period>(availablePeriods[0] ?? "daily");
   const [view, setView] = useState<View>("rank");
+  const [category, setCategory] = useState("all");
   const [lang, setLang] = useState("all");
   const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortKey>("rank");
 
-  // 语言分类（含当前周期计数）
-  const langStats = useMemo(() => {
+  // 功能分类（含当前周期计数）
+  const categoryStats = useMemo(() => {
     const map = new Map<string, number>();
     for (const r of records) {
       if (periodOf(r) !== period) continue;
-      const l = String(r["语言"] ?? "").trim();
-      if (!l) continue;
-      map.set(l, (map.get(l) ?? 0) + 1);
+      const c = String(Array.isArray(r["功能分类"]) ? r["功能分类"][0] : r["功能分类"] ?? "").trim();
+      if (!c) continue;
+      map.set(c, (map.get(c) ?? 0) + 1);
     }
     return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
   }, [records, period]);
 
+  // 语言（次要筛选）
+  const languages = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of records) {
+      const l = String(r["语言"] ?? "").trim();
+      if (l) set.add(l);
+    }
+    return Array.from(set).sort();
+  }, [records]);
+
   const filtered = useMemo(() => {
     const rows = records.filter((r) => {
       if (periodOf(r) !== period) return false;
+      if (category !== "all" && String(Array.isArray(r["功能分类"]) ? r["功能分类"][0] : r["功能分类"] ?? "") !== category) return false;
       if (lang !== "all" && String(r["语言"] ?? "") !== lang) return false;
       return matchesSearch(r, query, ["仓库", "描述", "语言"]);
     });
@@ -77,7 +89,7 @@ export default function TrendingExplorer({ records, fetchedAt }: Props) {
     const sorted = [...rows].sort(by[view === "soar" ? "delta" : sortBy]);
     // 飙升榜只展示有增量的仓库
     return view === "soar" ? sorted.filter((r) => deltaOf(r) > 0) : sorted;
-  }, [records, period, lang, query, sortBy, view]);
+  }, [records, period, category, lang, query, sortBy, view]);
 
   const stats = useMemo(() => {
     const deltaTotal = filtered.reduce((acc, r) => acc + (toNumber(r["周期内新增星数"]) ?? 0), 0);
@@ -110,7 +122,7 @@ export default function TrendingExplorer({ records, fetchedAt }: Props) {
               开源热榜<span className="text-swiss-accent">.</span>
             </h1>
             <p className="text-sm text-white/60 leading-relaxed max-w-2xl">
-              覆盖 14 个语言分类，今日 / 本周 / 本月三个时间窗。热榜看生态风向，飙升榜看增长最快的项目。
+              覆盖 14 个语言、11 个功能分类，今日 / 本周 / 本月三个时间窗。热榜看生态风向，飙升榜看增长最快的项目。
             </p>
           </div>
           <div className="hidden md:flex flex-col justify-between border-l-2 border-white/15 p-6">
@@ -128,7 +140,7 @@ export default function TrendingExplorer({ records, fetchedAt }: Props) {
             <p className="text-xs text-black/55 leading-relaxed max-w-3xl">
               榜单来源为 <span className="font-black text-black">GitHub Trending 官方榜单</span>，每日 08:00 / 21:00 自动采集（北京时间）。
               「热榜」按官方榜单位次排列；「飙升榜」按周期内新增星数排序，反映增速最快的项目。
-              可按语言分类、搜索仓库 / 描述，或按星数 / Fork 重新排序。
+              按功能分类（AI 应用 / 开发者工具 / 框架等）浏览，可按语言、搜索、星数 / Fork 二次筛选。
             </p>
           </div>
           <div className="flex flex-wrap gap-x-5 gap-y-1 font-mono text-[10px] uppercase tracking-widest text-black/40 md:justify-end">
@@ -173,6 +185,18 @@ export default function TrendingExplorer({ records, fetchedAt }: Props) {
             ))}
           </div>
 
+          {/* 语言（次要筛选） */}
+          <select
+            value={lang}
+            onChange={(e) => setLang(e.target.value)}
+            className="border-2 border-black bg-white px-3 py-2 font-mono text-xs font-black uppercase tracking-wider focus:outline-none focus:bg-swiss-accent/10"
+          >
+            <option value="all">ALL 语言</option>
+            {languages.map((l) => (
+              <option key={l} value={l}>{l}</option>
+            ))}
+          </select>
+
           {/* 搜索 */}
           <div className="flex min-w-[220px] flex-1 items-center gap-2 border-2 border-black px-3 py-2">
             <Search className="h-3.5 w-3.5 shrink-0 text-black/40" />
@@ -203,29 +227,29 @@ export default function TrendingExplorer({ records, fetchedAt }: Props) {
           )}
         </div>
 
-        {/* 语言分类 chips */}
+        {/* 功能分类 chips */}
         <div className="flex flex-wrap items-center gap-1.5 border-t-2 border-black px-4 md:px-5 py-3">
           <button
-            onClick={() => setLang("all")}
+            onClick={() => setCategory("all")}
             className={`px-3 py-1 font-mono text-[10px] font-black uppercase tracking-wider border-2 transition-colors ${
-              lang === "all"
+              category === "all"
                 ? "border-black bg-black text-white"
                 : "border-black/15 text-black/50 hover:border-black hover:text-black"
             }`}
           >
             ALL <span className="opacity-50">({records.filter((r) => periodOf(r) === period).length})</span>
           </button>
-          {langStats.map(([l, count]) => (
+          {categoryStats.map(([c, count]) => (
             <button
-              key={l}
-              onClick={() => setLang(l === lang ? "all" : l)}
+              key={c}
+              onClick={() => setCategory(c === category ? "all" : c)}
               className={`px-3 py-1 font-mono text-[10px] font-black uppercase tracking-wider border-2 transition-colors ${
-                lang === l
+                category === c
                   ? "border-black bg-swiss-accent text-black"
                   : "border-black/15 text-black/50 hover:border-black hover:text-black"
               }`}
             >
-              {l} <span className="opacity-50">({count})</span>
+              {c} <span className="opacity-50">({count})</span>
             </button>
           ))}
         </div>

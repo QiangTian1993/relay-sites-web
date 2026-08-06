@@ -211,6 +211,7 @@ export const TABLES: TableConfig[] = [
       { key: "链接", label: "链接", type: "url" },
       { key: "描述", label: "描述", type: "longtext", searchable: true },
       { key: "语言", label: "语言", type: "text", filterable: true, sortable: true },
+      { key: "功能分类", label: "功能分类", type: "single-select", filterable: true },
       { key: "总星数", label: "总星数", type: "number", sortable: true, formatHint: "thousands" },
       { key: "周期内新增星数", label: "周期内新增星数", type: "number", sortable: true, formatHint: "thousands" },
       { key: "Fork 数", label: "Fork 数", type: "number", sortable: true, formatHint: "thousands" },

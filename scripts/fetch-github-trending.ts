@@ -154,6 +154,70 @@ function parseRepos(html: string): TrendingRepo[] {
   return repos;
 }
 
+// ============ 功能分类（规则匹配仓库名+描述） ============
+
+// 按规则顺序优先命中；关键词 \b 词边界匹配（小写）
+const CATEGORY_RULES: Array<{ category: string; keywords: string[] }> = [
+  {
+    category: "AI 应用",
+    keywords: ["ai", "llm", "ai agent", "agentic", "agent", "agents", "gpt", "chatgpt", "claude", "copilot", "deepseek", "mcp", "rag", "prompt", "inference", "diffusion", "llama", "language model", "neural", "genai", "vision", "模型", "智能体", "大模型"],
+  },
+  {
+    category: "开发者工具",
+    keywords: ["cli", "command line", "command-line", "terminal", "debug", "lint", "compiler", "ide", "editor", "testing", "test runner", "ci", "build tool", "git", "github", "static analysis", "sdk", "api client", "devtool", "developer tool", "code quality", "package manager", "fuzzy finder", "status page"],
+  },
+  {
+    category: "框架与运行时",
+    keywords: ["framework", "runtime", "library", "react", "vue", "angular", "next.js", "svelte", "spring", "django", "rails", "flask", "fastapi", "engine", "programming language", "编译器", "组件库"],
+  },
+  {
+    category: "数据与存储",
+    keywords: ["database", "sql", "nosql", "redis", "postgres", "mysql", "mongodb", "vector", "data pipeline", "etl", "streaming", "kafka", "olap", "data warehouse", "embedded", "json", "数据"],
+  },
+  {
+    category: "可视化与 UI",
+    keywords: ["ui", "component", "chart", "dashboard", "visualization", "design system", "icon", "animation", "css", "tailwind", "figma", "界面"],
+  },
+  {
+    category: "安全与网络",
+    keywords: ["security", "vulnerability", "pentest", "exploit", "firewall", "proxy", "vpn", "network", "http", "dns", "scanner", "cryptography", "auth", "oauth", "privacy", "threat", "subdomain", "seo", "安全"],
+  },
+  {
+    category: "运维与云",
+    keywords: ["kubernetes", "k8s", "docker", "container", "devops", "monitoring", "observability", "deploy", "infrastructure", "terraform", "serverless", "cloud", "运维", "容器"],
+  },
+  {
+    category: "学习与资源",
+    keywords: ["tutorial", "learn", "book", "cheatsheet", "interview", "awesome", "roadmap", "course", "examples", "internship", "job", "algorithm", "教程", "学习", "面试"],
+  },
+  {
+    category: "效率与产品",
+    keywords: ["note", "notes", "browser", "document", "pdf", "video", "audio", "music", "productivity", "task", "todo", "calendar", "email", "download", "notification", "messaging", "communication", "publish", "publishing", "笔记", "写作", "效率"],
+  },
+  {
+    category: "游戏与娱乐",
+    keywords: ["game", "gaming", "emulator", "minecraft", "游戏"],
+  },
+  {
+    category: "Web3 与区块链",
+    keywords: ["bitcoin", "ethereum", "blockchain", "crypto", "web3", "defi", "nft", "链", "区块"],
+  },
+];
+
+const CATEGORY_OTHER = "其他";
+
+function categorize(repoName: string, description: string): string {
+  const haystack = `${repoName} ${description}`.toLowerCase();
+  for (const rule of CATEGORY_RULES) {
+    for (const kw of rule.keywords) {
+      // 含空格的短语用 includes，单词用词边界
+      const re = kw.includes(" ") ? new RegExp(kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) : new RegExp(`\\b${kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`);
+      if (re.test(haystack)) return rule.category;
+    }
+  }
+  return CATEGORY_OTHER;
+}
+
 // ============ 飞书 lark-cli 封装（与 sync-remote-data.ts 同模式） ============
 
 interface LarkJson {
@@ -224,6 +288,13 @@ const CREATE_TABLE_FIELDS = [
   { type: "text", name: "链接", style: { type: "url" } },
   { type: "text", name: "描述" },
   { type: "text", name: "语言" },
+  {
+    type: "select",
+    name: "功能分类",
+    options: CATEGORY_RULES.map((r, i) => ({ name: r.category, hue: "Blue", lightness: "Light" })).concat([
+      { name: CATEGORY_OTHER, hue: "Gray", lightness: "Light" },
+    ]),
+  },
   { type: "number", name: "总星数", style: { type: "plain", precision: 0, thousands_separator: true } },
   { type: "number", name: "周期内新增星数", style: { type: "plain", precision: 0, thousands_separator: true } },
   { type: "number", name: "Fork 数", style: { type: "plain", precision: 0, thousands_separator: true } },
@@ -348,6 +419,7 @@ function toFields(repo: TrendingRepo): Record<string, unknown> {
     链接: repo.url,
     描述: repo.description,
     语言: repo.language,
+    功能分类: categorize(repo.repo, repo.description),
     总星数: repo.stars,
     周期内新增星数: repo.starsDelta,
     "Fork 数": repo.forks,
