@@ -210,6 +210,7 @@ export const TABLES: TableConfig[] = [
       { key: "仓库", label: "仓库", type: "text", searchable: true, sortable: true, primary: true },
       { key: "链接", label: "链接", type: "url" },
       { key: "描述", label: "描述", type: "longtext", searchable: true },
+      { key: "中文描述", label: "中文描述", type: "longtext", searchable: true, primary: true },
       { key: "语言", label: "语言", type: "text", filterable: true, sortable: true },
       { key: "功能分类", label: "功能分类", type: "single-select", filterable: true },
       { key: "总星数", label: "总星数", type: "number", sortable: true, formatHint: "thousands" },

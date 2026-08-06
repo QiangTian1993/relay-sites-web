@@ -87,6 +87,8 @@ interface TrendingRepo {
   stars: number | null;
   forks: number | null;
   starsDelta: number | null;
+  /** LLM 翻译的中文描述（无 key 或失败时为空） */
+  chineseDescription?: string;
 }
 
 async function fetchTrendingPage(): Promise<string> {
@@ -218,6 +220,86 @@ function categorize(repoName: string, description: string): string {
   return CATEGORY_OTHER;
 }
 
+// ============ 中文描述翻译（OpenAI 兼容 LLM，默认智谱 GLM-4-Flash 免费档） ============
+
+const LLM_API_KEY = process.env.LLM_API_KEY ?? "";
+const LLM_BASE_URL = (process.env.LLM_BASE_URL ?? "https://open.bigmodel.cn/api/paas/v4").replace(/\/+$/, "");
+const LLM_MODEL = process.env.LLM_MODEL ?? "glm-4-flash";
+const TRANSLATE_BATCH = 10;
+
+async function translateBatch(descs: string[]): Promise<Array<string | null>> {
+  if (descs.length === 0) return [];
+  const prompt = [
+    "你是翻译助手。下面每一行是一条 GitHub 仓库描述，请逐条翻译成简体中文。",
+    "要求：",
+    "- 每一条译文单独一行，不要编号，不要引号，不要 JSON",
+    "- 技术名词、专有名词、库名保留原文",
+    "- 保持简洁，不添加解释",
+    `- 必须输出与输入行数一致的 ${descs.length} 行译文`,
+    "",
+    "待翻译：",
+    ...descs,
+    "",
+    "译文：",
+  ].join("\n");
+  const res = await fetch(`${LLM_BASE_URL}/chat/completions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${LLM_API_KEY}` },
+    body: JSON.stringify({
+      model: LLM_MODEL,
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.2,
+      max_tokens: 2048,
+    }),
+    signal: AbortSignal.timeout(60000),
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`翻译 API HTTP ${res.status}`);
+  const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
+  const content = json.choices?.[0]?.message?.content ?? "";
+
+  // 解析优先级：JSON 数组 → 按行拆分
+  const arr = content.match(/\[[\s\S]*\]/)?.[0];
+  if (arr) {
+    try {
+      const parsed = JSON.parse(arr) as unknown;
+      if (Array.isArray(parsed) && parsed.every((x) => typeof x === "string") && parsed.length === descs.length) {
+        return parsed;
+      }
+    } catch {
+      // 落空走行拆分
+    }
+  }
+  const lines = content
+    .split("\n")
+    .map((l) => l.trim().replace(/^[-*\d.\s]+/, "").replace(/^["'`]+|["'`]+$/g, ""))
+    .filter(Boolean);
+  if (lines.length !== descs.length) {
+    throw new Error(`翻译响应行数 ${lines.length} != ${descs.length}`);
+  }
+  return lines;
+}
+
+/** 串行分批翻译；单批失败重试 2 次，仍失败返回 null 占位（保留英文原文） */
+async function translateAll(descs: string[]): Promise<Array<string | null>> {
+  const out: Array<string | null> = new Array(descs.length).fill(null);
+  for (let start = 0; start < descs.length; start += TRANSLATE_BATCH) {
+    const batch = descs.slice(start, start + TRANSLATE_BATCH);
+    let result: Array<string | null> | null = null;
+    for (let attempt = 1; attempt <= 3 && !result; attempt++) {
+      try {
+        result = await translateBatch(batch);
+      } catch (e) {
+        log(`  ⏸ 翻译批次 ${Math.floor(start / TRANSLATE_BATCH) + 1} 失败 (attempt ${attempt}): ${e instanceof Error ? e.message : e}`);
+        if (attempt < 3) await sleep(2000 * attempt);
+      }
+    }
+    if (result) out.splice(start, batch.length, ...result);
+    await sleep(200); // 智谱 1 并发限制，串行节流
+  }
+  return out;
+}
+
 // ============ 飞书 lark-cli 封装（与 sync-remote-data.ts 同模式） ============
 
 interface LarkJson {
@@ -287,6 +369,7 @@ const CREATE_TABLE_FIELDS = [
   { type: "number", name: "排名", style: { type: "plain", precision: 0, thousands_separator: true } },
   { type: "text", name: "链接", style: { type: "url" } },
   { type: "text", name: "描述" },
+  { type: "text", name: "中文描述" },
   { type: "text", name: "语言" },
   {
     type: "select",
@@ -376,8 +459,9 @@ function larkBatchUpdate(tableId: string, rows: Array<{ record_id: string; field
   if (rows.length === 0) return;
   const updateRecords: Record<string, Record<string, unknown>> = {};
   for (const row of rows) {
+    // 过滤空值（含空字符串），避免把已有字段（如中文描述）清空
     updateRecords[row.record_id] = Object.fromEntries(
-      Object.entries(row.fields).filter(([, value]) => value !== null && value !== undefined),
+      Object.entries(row.fields).filter(([, value]) => value !== null && value !== undefined && value !== ""),
     );
   }
   const j = runLark([
@@ -413,7 +497,7 @@ function formatFeishuDate(value: Date): string {
 // ============ Main ============
 
 function toFields(repo: TrendingRepo): Record<string, unknown> {
-  return {
+  const fields: Record<string, unknown> = {
     排名: repo.rank,
     仓库: repo.repo,
     链接: repo.url,
@@ -426,6 +510,9 @@ function toFields(repo: TrendingRepo): Record<string, unknown> {
     周期: since,
     采集时间: formatFeishuDate(new Date(NOW_MS)),
   };
+  // 中文描述为空时省略字段（更新路径避免覆盖已有译文；无 LLM key 时保持纯英文）
+  if (repo.chineseDescription) fields["中文描述"] = repo.chineseDescription;
+  return fields;
 }
 
 async function main() {
@@ -455,12 +542,33 @@ async function main() {
 
   const existing = await withRetry(() => larkListAll(tableId), "record-list");
   const existingByKey = new Map<string, string>();
+  const cachedZhByKey = new Map<string, { desc: string; zh: string }>();
   for (const rec of existing) {
     const repo = String(rec.fields["仓库"] ?? "");
     const period = String(rec.fields["周期"] ?? "");
-    if (repo) existingByKey.set(`${repo}::${period}`, rec.id);
+    if (!repo) continue;
+    existingByKey.set(`${repo}::${period}`, rec.id);
+    const zh = String(rec.fields["中文描述"] ?? "");
+    // 中文描述与原文相同视为未翻译（早期版本误写），不缓存
+    if (zh && zh !== String(rec.fields["描述"] ?? "")) cachedZhByKey.set(`${repo}::${period}`, { desc: String(rec.fields["描述"] ?? ""), zh });
   }
   log(`表内已有 ${existing.length} 条记录`);
+
+  // 中文描述翻译：已有译文且描述未变则复用，否则走 LLM（无 key 时跳过）
+  if (LLM_API_KEY) {
+    const toTranslate = repos.filter((r) => {
+      if (!r.description) return false;
+      const cached = cachedZhByKey.get(`${r.repo}::${since}`);
+      return !(cached && cached.desc === r.description);
+    });
+    if (toTranslate.length > 0) {
+      log(`翻译 ${toTranslate.length} 条描述（${LLM_MODEL}）...`);
+      const results = await translateAll(toTranslate.map((r) => r.description));
+      toTranslate.forEach((r, i) => {
+        if (results[i]) r.chineseDescription = results[i];
+      });
+    }
+  }
 
   const toCreate: Record<string, unknown>[] = [];
   const toUpdate: Array<{ record_id: string; fields: Record<string, unknown> }> = [];

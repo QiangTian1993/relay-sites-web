@@ -74,7 +74,7 @@ export default function TrendingExplorer({ records, fetchedAt }: Props) {
       if (periodOf(r) !== period) return false;
       if (category !== "all" && String(Array.isArray(r["功能分类"]) ? r["功能分类"][0] : r["功能分类"] ?? "") !== category) return false;
       if (lang !== "all" && String(r["语言"] ?? "") !== lang) return false;
-      return matchesSearch(r, query, ["仓库", "描述", "语言"]);
+      return matchesSearch(r, query, ["仓库", "描述", "中文描述", "语言"]);
     });
     const deltaOf = (r: KeyedRecord) => toNumber(r["周期内新增星数"]) ?? 0;
     const starsOf = (r: KeyedRecord) => toNumber(r["总星数"]) ?? 0;
@@ -293,7 +293,8 @@ export default function TrendingExplorer({ records, fetchedAt }: Props) {
               const delta = toNumber(r["周期内新增星数"]);
               const forks = toNumber(r["Fork 数"]);
               const langText = String(r["语言"] ?? "").trim();
-              const desc = String(r["描述"] ?? "").trim();
+              const zhDesc = String(Array.isArray(r["中文描述"]) ? r["中文描述"][0] : r["中文描述"] ?? "").trim();
+              const desc = (zhDesc || String(r["描述"] ?? "").trim()).slice(0, 140);
               const href = repoLink(r["链接"]);
               const isSoar = view === "soar";
               // 飙升榜相对排名（带增量内） + 官方位次
