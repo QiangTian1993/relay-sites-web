@@ -1,0 +1,92 @@
+# GitHub Trending 定时采集 → 飞书 KB（github_trending 表）
+# 4 个定时任务（均为北京时间）：
+#   - 每日 08:00 / 21:00：daily 榜（全语言 + 主要语言）
+#   - 每周日 08:00：weekly 榜（全语言）
+#   - 每月 1 日 08:00：monthly 榜（全语言）
+# 手动触发：Actions → GitHub Trending Sync → Run workflow（since 可选）
+# 所需 Secrets：FEISHU_APP_ID / FEISHU_APP_SECRET / FEISHU_BASE_TOKEN
+
+name: GitHub Trending Sync
+
+on:
+  schedule:
+    - cron: "0 0 * * *"    # 每日 08:00 (UTC+8)
+    - cron: "0 13 * * *"   # 每日 21:00 (UTC+8)
+    - cron: "0 0 * * 0"    # 每周日 08:00 (UTC+8)
+    - cron: "0 0 1 * *"    # 每月 1 日 08:00 (UTC+8)
+  workflow_dispatch:
+    inputs:
+      since:
+        description: 榜单周期
+        type: choice
+        default: daily
+        options:
+          - daily
+          - weekly
+          - monthly
+
+permissions:
+  contents: read
+
+# 同一时刻只跑一批（每日 08:00 与每周日 08:00 会重叠触发，串行避免冲突）
+concurrency:
+  group: github-trending-sync
+  cancel-in-progress: false
+
+env:
+  FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+  FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+  FEISHU_BASE_TOKEN: ${{ secrets.FEISHU_BASE_TOKEN }}
+
+jobs:
+  daily:
+    name: 每日榜 (since=daily)
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.schedule == '0 0 * * *' ||
+      github.event.schedule == '0 13 * * *'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        lang: [all, javascript, python, typescript, go, rust]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: 采集并同步到飞书
+        run: npx tsx scripts/fetch-github-trending.ts --since ${{ github.event.inputs.since || 'daily' }} --lang ${{ matrix.lang }}
+
+  weekly:
+    name: 每周榜 (since=weekly)
+    if: github.event.schedule == '0 0 * * 0'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: 采集并同步到飞书
+        run: npx tsx scripts/fetch-github-trending.ts --since weekly --lang all
+
+  monthly:
+    name: 每月榜 (since=monthly)
+    if: github.event.schedule == '0 0 1 * *'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: 采集并同步到飞书
+        run: npx tsx scripts/fetch-github-trending.ts --since monthly --lang all

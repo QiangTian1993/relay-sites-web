@@ -112,6 +112,12 @@ function PriceCell({ offer, siteGroups, isBest }: { offer: RelayV1Offer; siteGro
   const effectivePrice = offerPrice(offer, siteGroups);
   const basePrice = offer.modelType === "image" ? offer.perCallPrice : (offer.inputRate ?? offer.outputRate);
   const hasGroupMultiplier = effectivePrice != null && basePrice != null && Math.abs(effectivePrice - basePrice) > 1e-6;
+  const derivedSource = offer.priceSource === "family_group"
+    ? "通用模型基准 × 分组倍率"
+    : offer.priceSource === "related_group"
+      ? "分组模型基准 × 分组倍率"
+      : null;
+
 
   if (offer.modelType === "image") {
     return (
@@ -134,7 +140,9 @@ function PriceCell({ offer, siteGroups, isBest }: { offer: RelayV1Offer; siteGro
         {isBest && <span className="bg-swiss-accent px-2 py-1 font-mono text-[10px] font-black uppercase tracking-widest text-white">LOWEST</span>}
       </div>
       <p className="mt-1 font-mono text-xs text-black/55">
-        {hasGroupMultiplier ? (
+        {derivedSource ? (
+          <span className="text-amber-700 font-bold">{derivedSource}</span>
+        ) : hasGroupMultiplier ? (
           <span className="text-swiss-accent font-bold">基础 {formatMultiplier(offer.inputRate)} × 分组最低</span>
         ) : (
           <>IN {formatMultiplier(offer.inputRate)} · OUT {formatMultiplier(offer.outputRate)}</>
@@ -320,6 +328,18 @@ export function RelayV1Explorer({ data }: RelayV1ExplorerProps) {
       return compareNullable(a.priceValue, b.priceValue, "asc");
     });
   }, [data.sites, measuredOnly, minimumAvailability, presetFilter, selectedModel, siteQuery, sortKey]);
+  const unmatchedSites = useMemo(() => {
+    const query = siteQuery.trim().toLocaleLowerCase().replace(/^https?:\/\//, "").replace(/\/$/, "");
+    return data.sites
+      .filter((site) => !site.offers.some((offer) => offer.modelName.toLocaleLowerCase() === selectedModel.toLocaleLowerCase()))
+      .filter((site) => {
+        if (!query) return true;
+        const searchTarget = `${site.id} ${site.name} ${site.domain} ${site.providers.join(" ")}`.toLocaleLowerCase();
+        return searchTarget.includes(query);
+      })
+      .sort((a, b) => a.name.localeCompare(b.name, "zh-CN"));
+  }, [data.sites, selectedModel, siteQuery]);
+
 
   const finitePrices = rows.map((row) => row.priceValue).filter((value): value is number => value != null);
   const lowestPrice = finitePrices.length ? Math.min(...finitePrices) : null;
@@ -389,7 +409,7 @@ export function RelayV1Explorer({ data }: RelayV1ExplorerProps) {
 
       <section className="border-b-4 border-black bg-[#f4f4f0] p-4 sm:p-8 lg:p-12">
         <div className="mb-4 flex items-center gap-2 font-mono text-xs font-black uppercase tracking-[0.2em]">
-          <SlidersHorizontal className="h-4 w-4" /> Filters / Exact Model Match
+          <SlidersHorizontal className="h-4 w-4" /> Filters / Model & Group Match
         </div>
         <div className="grid border-l-2 border-t-2 border-black bg-white lg:grid-cols-12">
           <label className="border-b-2 border-r-2 border-black p-4 lg:col-span-5">
@@ -529,6 +549,28 @@ export function RelayV1Explorer({ data }: RelayV1ExplorerProps) {
             </details>
           );
           })}
+        {unmatchedSites.length > 0 && (
+          <section className="mt-8 border-2 border-dashed border-black/35 bg-[#f4f4f0] p-4 sm:p-6">
+            <div className="flex flex-wrap items-baseline justify-between gap-3 border-b-2 border-black/20 pb-3">
+              <div>
+                <div className="font-mono text-xs font-black uppercase tracking-[0.2em] text-swiss-accent">Catalog coverage</div>
+                <h3 className="mt-1 text-xl font-black">已收录但暂无「{selectedModel}」报价</h3>
+              </div>
+              <span className="font-mono text-sm font-black">{unmatchedSites.length} 站</span>
+            </div>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {unmatchedSites.map((site) => (
+                <Link key={site.id} href={`/table/relay_sites_tracker/${encodeURIComponent(site.id)}`} className="border border-black/25 bg-white p-3 transition-colors hover:border-black hover:bg-white">
+                  <div className="font-black">{site.name}</div>
+                  <div className="mt-1 truncate font-mono text-xs text-black/50">{site.domain || "NO DOMAIN"}</div>
+                  <div className="mt-2 font-mono text-[10px] uppercase tracking-wider text-black/45">
+                    {site.offers.length > 0 ? `其他模型 ${site.offers.length} 条` : "暂无模型明细"}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
         </div>
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 font-mono text-[11px] text-black/45">

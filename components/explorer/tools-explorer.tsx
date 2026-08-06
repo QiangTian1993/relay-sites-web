@@ -35,6 +35,8 @@ export function ToolsExplorer({ records }: Props) {
   const [compareOpen, setCompareOpen] = useState(false);
 
   const rows = useMemo<ToolRow[]>(() => records.map(buildToolRow), [records]);
+  const activityRows = useMemo(() => rows.filter((row) => row.activityBenefit), [rows]);
+
 
   const allTypes = useMemo(() => {
     const s = new Set<string>();
@@ -141,6 +143,27 @@ export function ToolsExplorer({ records }: Props) {
           </button>
         ))}
       </div>
+      {activityRows.length > 0 && (
+        <section className="border-2 border-swiss-accent bg-swiss-bg">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-swiss-accent bg-swiss-accent px-4 py-3 text-swiss-bg">
+            <span className="font-mono text-sm font-black uppercase tracking-widest">活动权益 / Membership Offers</span>
+            <span className="font-mono text-xs font-black">{activityRows.length} 条</span>
+          </div>
+          <div className="grid gap-px bg-swiss-accent sm:grid-cols-2">
+            {activityRows.map((row) => (
+              <Link key={row.id} href={`/table/vibe_coding_tracker/${encodeURIComponent(row.id)}`} className="bg-swiss-bg p-4 transition-colors hover:bg-swiss-muted">
+                <div className="flex items-baseline justify-between gap-3">
+                  <strong className="font-black">{row.name}</strong>
+                  <span className="font-mono text-[10px] font-black uppercase tracking-widest text-swiss-accent">查看详情</span>
+                </div>
+                <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-swiss-fg/70">{row.activityBenefit}</p>
+                {row.activityPeriod && <div className="mt-2 font-mono text-xs text-swiss-fg/45">{row.activityPeriod}</div>}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
 
       {/* Filter Bar */}
       <section className="border-2 border-swiss-fg bg-swiss-bg">
@@ -307,6 +330,13 @@ function ToolListRow({ row, selected, compareDisabled, onToggleCompare }: {
             {row.advantages}
           </p>
         )}
+        {row.activityBenefit && (
+          <div className="mt-3 flex flex-wrap items-start gap-3 border-l-4 border-swiss-accent bg-swiss-muted px-3 py-2">
+            <span className="shrink-0 font-mono text-[10px] font-black uppercase tracking-widest text-swiss-accent">活动权益</span>
+            <span className="min-w-0 text-xs leading-relaxed text-swiss-fg/75">{row.activityBenefit}</span>
+          </div>
+        )}
+
 
         {/* Row 3: meta chips */}
         <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs text-swiss-fg/40">

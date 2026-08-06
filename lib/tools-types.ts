@@ -19,6 +19,9 @@ export interface ToolRow {
   githubUrl: string | null;
   stars: number | null;
   pricing: string;
+  activityBenefit: string;
+  activityUrl: string;
+  activityPeriod: string;
   advantages: string;
   disadvantages: string;
   useCases: string[];
@@ -72,6 +75,9 @@ export function buildToolRow(record: KeyedRecord): ToolRow {
     githubUrl: typeof record["GitHub URL"] === "string" && record["GitHub URL"] ? String(record["GitHub URL"]) : null,
     stars: typeof record["GitHub Stars"] === "number" && Number.isFinite(record["GitHub Stars"]) ? Number(record["GitHub Stars"]) : null,
     pricing: String(record["定价"] ?? "未标注"),
+    activityBenefit: String(record["活动权益"] ?? ""),
+    activityUrl: String(record["活动链接"] ?? ""),
+    activityPeriod: String(record["活动期限"] ?? ""),
     advantages: String(record["核心优势"] ?? ""),
     disadvantages: String(record["主要劣势"] ?? ""),
     useCases: toStrArray(record["适用场景"]),

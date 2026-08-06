@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "fetch": "tsx scripts/fetch-data.ts",
+    "trending": "tsx scripts/fetch-github-trending.ts",
     "lint": "next lint"
   },
   "dependencies": {

@@ -2,6 +2,7 @@ import type { KeyedRecord } from "./types";
 
 export type ChangeDirection = "up" | "down" | null;
 export type RiskLevel = "high" | "medium" | "low";
+export type RelayV1OfferSource = "model_rate" | "related_group" | "family_group";
 
 export interface RelayV1Offer {
   id: string;
@@ -14,6 +15,7 @@ export interface RelayV1Offer {
   perCallPrice: number | null;
   enabledGroups: string[];
   fetchedAt: string;
+  priceSource?: RelayV1OfferSource;
 }
 
 export interface RelayV1Group {
@@ -153,10 +155,81 @@ function parseRelatedModels(value: unknown): string[] {
     return [];
   }
 }
+function parseRelatedModel(value: string): { name: string; inputRate: number } | null {
+  const match = value.match(/^(.+?)\s*[×x]\s*(-?(?:\d+\.?\d*|\.\d+))\s*x?\s*$/i);
+  if (!match) return null;
+  const name = match[1].trim();
+  const inputRate = Number(match[2]);
+  if (!name || !Number.isFinite(inputRate)) return null;
+  return { name, inputRate };
+}
+
 
 function parseChangeDirection(value: unknown): ChangeDirection {
+
   const raw = Array.isArray(value) ? value[0] : value;
   return raw === "up" || raw === "down" ? raw : null;
+}
+interface ModelBaseline {
+  name: string;
+  inputRate: number;
+  outputRate: number | null;
+  occurrences: number;
+}
+
+function modeNumber(values: number[]): number | null {
+  if (values.length === 0) return null;
+  const counts = new Map<number, number>();
+  for (const value of values) counts.set(value, (counts.get(value) ?? 0) + 1);
+  return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0])[0][0];
+}
+
+function buildModelBaselines(
+  modelRateRecords: KeyedRecord[],
+  groupsBySite: Map<string, RelayV1Group[]>,
+): Map<string, ModelBaseline> {
+  const inputs = new Map<string, { name: string; input: number[]; output: number[] }>();
+  const add = (name: string, inputRate: number | null, outputRate: number | null) => {
+    if (!name || inputRate == null) return;
+    const key = name.toLocaleLowerCase();
+    const current = inputs.get(key) ?? { name, input: [], output: [] };
+    current.input.push(inputRate);
+    if (outputRate != null) current.output.push(outputRate);
+    inputs.set(key, current);
+  };
+
+  for (const record of modelRateRecords) {
+    add(String(record.model_name ?? "").trim(), numberOrNull(record.rate_input), numberOrNull(record.rate_output));
+  }
+  for (const groups of groupsBySite.values()) {
+    for (const group of groups) {
+      for (const relatedModel of group.relatedModels) {
+        const parsed = parseRelatedModel(relatedModel);
+        if (parsed) add(parsed.name, parsed.inputRate, null);
+      }
+    }
+  }
+
+  return new Map(
+    [...inputs.entries()]
+      .map(([key, value]) => [key, {
+        name: value.name,
+        inputRate: modeNumber(value.input) ?? 0,
+        outputRate: modeNumber(value.output),
+        occurrences: value.input.length,
+      }] as const)
+      .filter(([, baseline]) => baseline.inputRate > 0),
+  );
+}
+
+function isOpenAIGroup(name: string): boolean {
+  const normalized = name.toLocaleLowerCase();
+  if (/claude|anthropic|kiro|cc[-_ ]/.test(normalized)) return false;
+  return /codex|gpt|openai|chatgpt|(^|[^a-z])(pro|plus)([^a-z]|$)/.test(normalized);
+}
+
+function isOpenAIModel(name: string): boolean {
+  return /^(?:gpt-|o[1-4](?:[-.]|$)|codex|chatgpt-)/i.test(name);
 }
 
 export function assessRemarkRisk(remark: string): { level: RiskLevel; reason: string } {
@@ -186,9 +259,33 @@ export function buildRelayV1Data(
   groupRecords: KeyedRecord[],
   performanceRecords: KeyedRecord[],
 ): RelayV1Data {
+  const siteRecordIds = new Set(siteRecords.map((record) => String(record.__id ?? "")).filter(Boolean));
+  const siteIdByBusinessKey = new Map<string, string>();
+  const siteIdByName = new Map<string, string>();
+  const siteIdByHost = new Map<string, string>();
+  for (const record of siteRecords) {
+    const recordId = String(record.__id ?? "");
+    const businessKey = String(record["站点ID"] ?? "").trim();
+    const name = String(record["名称"] ?? "").trim();
+    const host = String(record["域名"] ?? "").replace(/^https?:\/\//i, "").replace(/\/.*$/, "").toLowerCase();
+    if (!recordId) continue;
+    if (businessKey) siteIdByBusinessKey.set(businessKey, recordId);
+    if (name) siteIdByName.set(name, recordId);
+    if (host) siteIdByHost.set(host, recordId);
+  }
+
+  const resolveModelRateSiteId = (record: KeyedRecord): string => {
+    const rawSiteId = String(record.site_id ?? "").trim();
+    if (siteRecordIds.has(rawSiteId)) return rawSiteId;
+    return siteIdByBusinessKey.get(rawSiteId)
+      ?? siteIdByName.get(String(record.site_name ?? "").trim())
+      ?? siteIdByHost.get(String(record.source_domain ?? "").replace(/^https?:\/\//i, "").replace(/\/.*$/, "").toLowerCase())
+      ?? rawSiteId;
+  };
+
   const offersBySite = new Map<string, RelayV1Offer[]>();
   for (const record of modelRateRecords) {
-    const siteId = String(record.site_id ?? "");
+    const siteId = resolveModelRateSiteId(record);
     const modelName = String(record.model_name ?? "").trim();
     if (!siteId || !modelName) continue;
     const offer: RelayV1Offer = {
@@ -235,6 +332,78 @@ export function buildRelayV1Data(
     current.push(group);
     groupsBySite.set(siteId, current);
   }
+  const modelBaselines = buildModelBaselines(modelRateRecords, groupsBySite);
+  const commonOpenAIModels = [...modelBaselines.values()]
+    .filter((baseline) => baseline.occurrences >= 5 && isOpenAIModel(baseline.name) && !/image/i.test(baseline.name));
+
+  const exactModelsBySite = new Map<string, Set<string>>();
+  for (const [siteId, offers] of offersBySite) {
+    exactModelsBySite.set(siteId, new Set(offers.map((offer) => offer.modelName.toLocaleLowerCase())));
+  }
+
+  // Some market snapshots expose model names and their base ratios only through
+  // each group's related_models_json. For groups without that list, infer the
+  // common OpenAI model family from the group name and use the mode of observed
+  // model ratios as the generic baseline. The UI still applies the group rate.
+  for (const [siteId, groups] of groupsBySite) {
+    const exactModels = exactModelsBySite.get(siteId) ?? new Set<string>();
+    const fallbackOffers = new Map<string, RelayV1Offer>();
+    for (const group of groups) {
+      if (group.rateMin == null) continue;
+      for (const relatedModel of group.relatedModels) {
+        const parsed = parseRelatedModel(relatedModel);
+        if (!parsed) continue;
+        const normalizedName = parsed.name.toLocaleLowerCase();
+        if (exactModels.has(normalizedName)) continue;
+        const existing = fallbackOffers.get(normalizedName);
+        if (existing) {
+          if (!existing.enabledGroups.includes(group.name)) existing.enabledGroups.push(group.name);
+          continue;
+        }
+        fallbackOffers.set(normalizedName, {
+          id: `${group.id}:${parsed.name}`,
+          modelName: parsed.name,
+          modelType: "unknown",
+          inputRate: parsed.inputRate,
+          outputRate: null,
+          cacheRate: null,
+          createCacheRate: null,
+          perCallPrice: null,
+          enabledGroups: [group.name],
+          fetchedAt: group.updatedAt,
+          priceSource: "related_group",
+        });
+      }
+      if (group.relatedModels.length === 0 && isOpenAIGroup(group.name)) {
+        for (const baseline of commonOpenAIModels) {
+          const normalizedName = baseline.name.toLocaleLowerCase();
+          if (exactModels.has(normalizedName)) continue;
+          const existing = fallbackOffers.get(normalizedName);
+          if (existing) {
+            if (!existing.enabledGroups.includes(group.name)) existing.enabledGroups.push(group.name);
+            continue;
+          }
+          fallbackOffers.set(normalizedName, {
+            id: `${group.id}:${baseline.name}`,
+            modelName: baseline.name,
+            modelType: "text",
+            inputRate: baseline.inputRate,
+            outputRate: baseline.outputRate,
+            cacheRate: null,
+            createCacheRate: null,
+            perCallPrice: null,
+            enabledGroups: [group.name],
+            fetchedAt: group.updatedAt,
+            priceSource: "family_group",
+          });
+        }
+      }
+    }
+    if (fallbackOffers.size > 0) {
+      offersBySite.set(siteId, [...(offersBySite.get(siteId) ?? []), ...fallbackOffers.values()]);
+    }
+  }
+
 
   const performanceBySite = new Map<string, RelayV1Performance>();
   const performanceByKey = new Map<string, RelayV1Performance>();
@@ -311,7 +480,7 @@ export function buildRelayV1Data(
     totals: {
       sites: sites.length,
       groups: groupRecords.length,
-      offers: modelRateRecords.length,
+      offers: sites.reduce((total, site) => total + site.offers.length, 0),
       measuredSites: performanceBySite.size,
       changedGroups: groupRecords.filter((record) => parseChangeDirection(record.change_direction)).length,
       riskyGroups: [...groupsBySite.values()].flat().filter((group) => group.riskLevel !== "low").length,

@@ -110,6 +110,25 @@ export function ToolsDetail({ row }: { row: ToolRow }) {
           <Attribute label="团队协作/DevBox" value={row.types.some(t => /IDE|Agent/i.test(t)) ? "支持远程环境" : "单机客户端"} />
         </div>
       </section>
+      {row.activityBenefit && (
+        <section className="border-b-2 border-swiss-fg bg-swiss-muted/40">
+          <div className="mx-auto max-w-[1600px] px-5 py-6 sm:px-6 sm:py-8">
+            <div className="border-l-4 border-swiss-accent bg-white p-4 sm:p-5">
+              <div className="font-mono text-xs font-black uppercase tracking-widest text-swiss-accent">活动权益</div>
+              <p className="mt-2 font-mono text-sm leading-6 text-swiss-fg/80">{row.activityBenefit}</p>
+              <div className="mt-3 flex flex-wrap gap-4 font-mono text-xs text-swiss-fg/50">
+                {row.activityPeriod && <span>期限：{row.activityPeriod}</span>}
+                {row.activityUrl && (
+                  <a href={row.activityUrl} target="_blank" rel="noreferrer" className="font-black text-swiss-fg underline decoration-swiss-accent decoration-2 underline-offset-4 hover:text-swiss-accent">
+                    查看活动说明 <IconExternal className="ml-1 inline h-3.5 w-3.5" />
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
 
       {/* 选型决策情报与对比看板 */}
       <section className="border-b-2 border-swiss-fg bg-swiss-bg">
