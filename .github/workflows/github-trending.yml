@@ -4,7 +4,7 @@
 #   - 每周日 08:00：weekly 榜（全语言）
 #   - 每月 1 日 08:00：monthly 榜（全语言）
 # 手动触发：Actions → GitHub Trending Sync → Run workflow（since 可选）
-# 所需 Secrets：FEISHU_APP_ID / FEISHU_APP_SECRET / FEISHU_BASE_TOKEN
+# 所需 Secrets：FEISHU_APP_ID / FEISHU_APP_SECRET（有 base 写权限的 app）/ FEISHU_BASE_TOKEN
 
 name: GitHub Trending Sync
 
@@ -58,8 +58,13 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - name: 采集并同步到飞书
-        run: npx tsx scripts/fetch-github-trending.ts --since ${{ github.event.inputs.since || 'daily' }} --lang ${{ matrix.lang }}
+      - name: 安装 lark-cli 并采集同步
+        run: |
+          npx -y @larksuite/cli@latest install
+          export PATH="$HOME/.lark-cli/bin:$HOME/.local/bin:$PATH"
+          lark-cli --version
+          echo "$FEISHU_APP_SECRET" | lark-cli config init --app-id "$FEISHU_APP_ID" --app-secret-stdin
+          npx tsx scripts/fetch-github-trending.ts --since ${{ github.event.inputs.since || 'daily' }} --lang ${{ matrix.lang }}
 
   weekly:
     name: 每周榜 (since=weekly)
@@ -73,8 +78,13 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - name: 采集并同步到飞书
-        run: npx tsx scripts/fetch-github-trending.ts --since weekly --lang all
+      - name: 安装 lark-cli 并采集同步
+        run: |
+          npx -y @larksuite/cli@latest install
+          export PATH="$HOME/.lark-cli/bin:$HOME/.local/bin:$PATH"
+          lark-cli --version
+          echo "$FEISHU_APP_SECRET" | lark-cli config init --app-id "$FEISHU_APP_ID" --app-secret-stdin
+          npx tsx scripts/fetch-github-trending.ts --since weekly --lang all
 
   monthly:
     name: 每月榜 (since=monthly)
@@ -88,5 +98,10 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - name: 采集并同步到飞书
-        run: npx tsx scripts/fetch-github-trending.ts --since monthly --lang all
+      - name: 安装 lark-cli 并采集同步
+        run: |
+          npx -y @larksuite/cli@latest install
+          export PATH="$HOME/.lark-cli/bin:$HOME/.local/bin:$PATH"
+          lark-cli --version
+          echo "$FEISHU_APP_SECRET" | lark-cli config init --app-id "$FEISHU_APP_ID" --app-secret-stdin
+          npx tsx scripts/fetch-github-trending.ts --since monthly --lang all

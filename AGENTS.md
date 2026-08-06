@@ -40,5 +40,5 @@ AI 中转站模块包含两个互补但视角不同的视图，统一通过 [`co
 * **数据流向**：`飞书 KB Bitable (knowledge-base-2026)` / `市场数据源` → `scripts/fetch-data.ts` → `data/*.json` 本地缓存 + 探针实测数据自动生成 → 前端展示。
 * **数据命令**：
   * **抓取飞书数据 & 自动更新全站探针**：`npm run fetch`（使用 `lark-cli` 应用 Bot 身份 `cli_aa819ef0aa785bb4` 自动抓取各表数据并触发全量 165+ 站点的并发网络延迟/可用率打点，更新 `data/relay_site_perf.json`）。
-  * **采集 GitHub 热榜 → 飞书**：`npm run trending`（本地手动）；定时由 `.github/workflows/github-trending.yml` 驱动（每日 08:00/21:00 抓 daily 榜 6 个语言、每周日抓 weekly、每月 1 日抓 monthly，均为北京时间），写入飞书 `github_trending` 表（`tbl4UDd9AP1Fzlfz`），键为 (仓库, 周期) 幂等 upsert，脚本会自动建表兜底。
+  * **采集 GitHub 热榜 → 飞书**：`npm run trending`（本地手动）；定时由 `.github/workflows/github-trending.yml` 驱动（每日 08:00/21:00 抓 daily 榜 6 个语言、每周日抓 weekly、每月 1 日抓 monthly，均为北京时间），写入飞书 `github_trending` 表（`tbl4UDd9AP1Fzlfz`），键为 (仓库, 周期) 幂等 upsert，脚本会自动建表兜底。写路径走 lark-cli subprocess，默认 bot 身份（user 身份实测无写权限），`LARK_AS` 可覆盖。
   * **同步市场数据至飞书**：`npx tsx scripts/sync-remote-data.ts`
