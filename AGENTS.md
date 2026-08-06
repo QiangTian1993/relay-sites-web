@@ -42,3 +42,18 @@ AI 中转站模块包含两个互补但视角不同的视图，统一通过 [`co
   * **抓取飞书数据 & 自动更新全站探针**：`npm run fetch`（使用 `lark-cli` 应用 Bot 身份 `cli_aa819ef0aa785bb4` 自动抓取各表数据并触发全量 165+ 站点的并发网络延迟/可用率打点，更新 `data/relay_site_perf.json`）。
   * **采集 GitHub 热榜 → 飞书**：`npm run trending`（本地手动）；定时由本机 **launchd**（`~/Library/LaunchAgents/com.relay-sites.github-trending.plist` → `scripts/cron-runner.sh` 分发）驱动：每日 08:00/21:00 抓 daily 榜 6 个语言、每周日 08:00 追加 weekly、每月 1 日 08:00 追加 monthly（均为北京时间），日志在 `~/logs/github-trending-YYYYMM.log`。写入飞书 `github_trending` 表（`tbl4UDd9AP1Fzlfz`），键为 (仓库, 周期) 幂等 upsert，脚本会自动建表兜底。写路径走 lark-cli subprocess，默认 bot 身份（user 身份实测无写权限），`LARK_AS` 可覆盖。`.github/workflows/github-trending.yml` 为可选备胎（需 GitHub 账户 Actions 解锁 + secrets：FEISHU_APP_ID/FEISHU_APP_SECRET/FEISHU_BASE_TOKEN）。
   * **同步市场数据至飞书**：`npx tsx scripts/sync-remote-data.ts`
+
+---
+
+## 5. 部署
+
+* **线上地址**：`https://www.xiuxai.com/relay-index/`（子路径，`trailingSlash: true`）
+* **服务器**：`124.222.88.183`（腾讯云，root，ssh 免密；shell 为 zsh，命令输出顶部有腾讯云扫码横幅需过滤）
+* **形态**：nginx（`/etc/nginx/conf.d/xiuxai.conf`）`location ^~ /relay-index/` 反代 → Docker 容器 `relay-sites-web`（127.0.0.1:3000）
+* **部署流程**（手动，无 CI）：
+  1. 本地 `npm run fetch`（更新 `data/*.json`，含探针；**部署机不联网拉飞书**，数据必须随包上传）
+  2. `rsync -az --delete -e "ssh -o BatchMode=yes" --exclude node_modules --exclude .next --exclude .git --exclude .omx --exclude .staging --exclude ".env*" --exclude .DS_Store --exclude "*.log" --exclude tsconfig.tsbuildinfo ./ root@124.222.88.183:/opt/relay-sites-web/`
+  3. 服务器：`cd /opt/relay-sites-web && docker build --build-arg NEXT_PUBLIC_BASE_PATH=/relay-index -t relay-sites-web:relay-index .`
+  4. 服务器：`docker rm -f relay-sites-web && docker run -d --name relay-sites-web --restart unless-stopped -p 127.0.0.1:3000:3000 relay-sites-web:relay-index`
+  5. 验证：`curl -sL https://www.xiuxai.com/relay-index/` 200、`/modules/github_trending/` 200（注意斜杠重定向）
+* **注意**：`data/*.json` 不入 git（gitignore），每次部署前本地先 `npm run fetch`；服务器 `/opt/relay-sites-web` 非 git 仓库，是 rsync 镜像。
