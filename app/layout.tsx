@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import Link from "next/link";
 import { Activity, Flame, GitCompareArrows, Wrench } from "lucide-react";
+import SiteFooter from "@/components/site-footer";
 import "./globals.css";
 
 const inter = Inter({
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </header>
         <main className="mx-auto max-w-[1600px]">{children}</main>
+        <SiteFooter />
       </body>
     </html>
   );
