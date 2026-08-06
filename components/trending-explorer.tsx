@@ -42,10 +42,21 @@ export default function TrendingExplorer({ records, fetchedAt }: Props) {
 
   const [period, setPeriod] = useState<Period>(availablePeriods[0] ?? "daily");
   const [view, setView] = useState<View>("rank");
+  const [board, setBoard] = useState("all"); // all=官方全语言榜; merged=全部合并; 其他=语言榜 slug
   const [category, setCategory] = useState("all");
   const [lang, setLang] = useState("all");
   const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortKey>("rank");
+
+  // 榜单（官方 all 榜 + 各语言榜）
+  const boards = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of records) {
+      const b = String(Array.isArray(r["榜单"]) ? r["榜单"][0] : r["榜单"] ?? "").trim();
+      if (b) set.add(b);
+    }
+    return Array.from(set).sort((a, b) => (a === "all" ? -1 : b === "all" ? 1 : a.localeCompare(b)));
+  }, [records]);
 
   // 功能分类（含当前周期计数）
   const categoryStats = useMemo(() => {
@@ -72,6 +83,10 @@ export default function TrendingExplorer({ records, fetchedAt }: Props) {
   const filtered = useMemo(() => {
     const rows = records.filter((r) => {
       if (periodOf(r) !== period) return false;
+      const boardOf = String(Array.isArray(r["榜单"]) ? r["榜单"][0] : r["榜单"] ?? "");
+      if (board === "merged") return true;
+      if (board !== "all" && boardOf !== board) return false;
+      if (board === "all" && boardOf !== "all") return false;
       if (category !== "all" && String(Array.isArray(r["功能分类"]) ? r["功能分类"][0] : r["功能分类"] ?? "") !== category) return false;
       if (lang !== "all" && String(r["语言"] ?? "") !== lang) return false;
       return matchesSearch(r, query, ["仓库", "描述", "中文描述", "语言"]);
@@ -89,7 +104,7 @@ export default function TrendingExplorer({ records, fetchedAt }: Props) {
     const sorted = [...rows].sort(by[view === "soar" ? "delta" : sortBy]);
     // 飙升榜只展示有增量的仓库
     return view === "soar" ? sorted.filter((r) => deltaOf(r) > 0) : sorted;
-  }, [records, period, category, lang, query, sortBy, view]);
+  }, [records, period, board, category, lang, query, sortBy, view]);
 
   const stats = useMemo(() => {
     const deltaTotal = filtered.reduce((acc, r) => acc + (toNumber(r["周期内新增星数"]) ?? 0), 0);
@@ -184,6 +199,19 @@ export default function TrendingExplorer({ records, fetchedAt }: Props) {
               </button>
             ))}
           </div>
+
+          {/* 榜单（排名按榜独立；默认官方全语言榜） */}
+          <select
+            value={board}
+            onChange={(e) => setBoard(e.target.value)}
+            className="border-2 border-black bg-white px-3 py-2 font-mono text-xs font-black uppercase tracking-wider focus:outline-none focus:bg-swiss-accent/10"
+          >
+            <option value="all">官方全语言榜</option>
+            <option value="merged">全部合并</option>
+            {boards.filter((b) => b !== "all").map((b) => (
+              <option key={b} value={b}>{`${b} 榜`}</option>
+            ))}
+          </select>
 
           {/* 语言（次要筛选） */}
           <select
@@ -311,11 +339,18 @@ export default function TrendingExplorer({ records, fetchedAt }: Props) {
                         <div className="font-mono text-[8px] uppercase tracking-widest text-black/40 mt-1">#{idx + 1} 飙升</div>
                       </div>
                     ) : (
-                      <span className={`font-mono text-2xl md:text-3xl font-black tabular-nums ${
-                        rank === 1 ? "text-swiss-accent" : rank <= 3 ? "text-black" : "text-black/25"
-                      }`}>
-                        {rank}
-                      </span>
+                      <div className="text-center">
+                        <span className={`font-mono text-2xl md:text-3xl font-black tabular-nums ${
+                          rank === 1 ? "text-swiss-accent" : rank <= 3 ? "text-black" : "text-black/25"
+                        }`}>
+                          {rank}
+                        </span>
+                        {board === "merged" && (
+                          <div className="font-mono text-[8px] uppercase tracking-widest text-black/40 mt-1">
+                            {String(Array.isArray(r["榜单"]) ? r["榜单"][0] : r["榜单"] ?? "")}
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
 

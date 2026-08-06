@@ -371,6 +371,7 @@ const CREATE_TABLE_FIELDS = [
   { type: "text", name: "描述" },
   { type: "text", name: "中文描述" },
   { type: "text", name: "语言" },
+  { type: "text", name: "榜单" },
   {
     type: "select",
     name: "功能分类",
@@ -504,6 +505,7 @@ function toFields(repo: TrendingRepo): Record<string, unknown> {
     描述: repo.description,
     语言: repo.language,
     功能分类: categorize(repo.repo, repo.description),
+    榜单: lang, // 榜单来源（all / 语言 slug）
     总星数: repo.stars,
     周期内新增星数: repo.starsDelta,
     "Fork 数": repo.forks,
@@ -546,8 +548,10 @@ async function main() {
   for (const rec of existing) {
     const repo = String(rec.fields["仓库"] ?? "");
     const period = String(rec.fields["周期"] ?? "");
+    const board = String(rec.fields["榜单"] ?? "");
     if (!repo) continue;
-    existingByKey.set(`${repo}::${period}`, rec.id);
+    // 键 = 仓库 + 周期 + 榜单（同一仓库在 all 榜与语言榜排名独立）
+    existingByKey.set(`${repo}::${period}::${board}`, rec.id);
     const zh = String(rec.fields["中文描述"] ?? "");
     // 中文描述与原文相同视为未翻译（早期版本误写），不缓存
     if (zh && zh !== String(rec.fields["描述"] ?? "")) cachedZhByKey.set(`${repo}::${period}`, { desc: String(rec.fields["描述"] ?? ""), zh });
@@ -573,7 +577,7 @@ async function main() {
   const toCreate: Record<string, unknown>[] = [];
   const toUpdate: Array<{ record_id: string; fields: Record<string, unknown> }> = [];
   for (const repo of repos) {
-    const key = `${repo.repo}::${since}`;
+    const key = `${repo.repo}::${since}::${lang}`;
     const recordId = existingByKey.get(key);
     const fields = toFields(repo);
     if (recordId) toUpdate.push({ record_id: recordId, fields });
