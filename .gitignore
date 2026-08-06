@@ -13,3 +13,4 @@ dist/
 # 数据 JSON（用 .gitignore 排除，cron 拉取；想保留可以删这两行）
 data/*.json
 !data/.gitkeep
+tsconfig.tsbuildinfo
