@@ -50,7 +50,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lang: [all, javascript, python, typescript, go, rust]
+        lang: [all, javascript, python, typescript, go, rust, java, c++, c, shell, php, swift, kotlin, ruby]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

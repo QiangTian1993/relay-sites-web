@@ -1,14 +1,16 @@
 "use client";
 
-// GitHub 热榜浏览组件 —— 周期 / 语言 / 搜索 / 排序 筛选
+// GitHub 热榜浏览组件 —— 周期 / 语言分类 / 搜索 / 排序 / 飙升榜
 // 数据来自飞书 github_trending 表（scripts/fetch-github-trending.ts 定时采集）
+// 榜单口径：GitHub Trending 官方榜；飙升榜 = 按周期内新增星数降序
 
 import { useMemo, useState } from "react";
-import { ArrowUpRight, Flame, Search } from "lucide-react";
+import { ArrowUpRight, Flame, Info, Search } from "lucide-react";
 import type { KeyedRecord } from "@/lib/types";
 import { inferOptions, matchesSearch, toNumber, toStringArray, formatNumber } from "@/lib/record-utils";
 
 type Period = "daily" | "weekly" | "monthly";
+type View = "rank" | "soar";
 type SortKey = "rank" | "stars" | "delta" | "forks";
 
 interface Props {
@@ -26,6 +28,8 @@ function periodOf(record: KeyedRecord): string {
   return toStringArray(record["周期"])[0] ?? "";
 }
 
+const PERIOD_ORDER: Period[] = ["daily", "weekly", "monthly"];
+
 export default function TrendingExplorer({ records, fetchedAt }: Props) {
   const availablePeriods = useMemo(() => {
     const set = new Set<Period>();
@@ -33,18 +37,26 @@ export default function TrendingExplorer({ records, fetchedAt }: Props) {
       const p = periodOf(r) as Period;
       if (p === "daily" || p === "weekly" || p === "monthly") set.add(p);
     }
-    return (["daily", "weekly", "monthly"] as Period[]).filter((p) => set.has(p));
+    return PERIOD_ORDER.filter((p) => set.has(p));
   }, [records]);
 
   const [period, setPeriod] = useState<Period>(availablePeriods[0] ?? "daily");
+  const [view, setView] = useState<View>("rank");
   const [lang, setLang] = useState("all");
   const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortKey>("rank");
 
-  const languages = useMemo(
-    () => inferOptions(records, "语言").filter((l) => l.length > 0),
-    [records],
-  );
+  // 语言分类（含当前周期计数）
+  const langStats = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const r of records) {
+      if (periodOf(r) !== period) continue;
+      const l = String(r["语言"] ?? "").trim();
+      if (!l) continue;
+      map.set(l, (map.get(l) ?? 0) + 1);
+    }
+    return Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
+  }, [records, period]);
 
   const filtered = useMemo(() => {
     const rows = records.filter((r) => {
@@ -62,8 +74,10 @@ export default function TrendingExplorer({ records, fetchedAt }: Props) {
       delta: (a, b) => deltaOf(b) - deltaOf(a),
       forks: (a, b) => forksOf(b) - forksOf(a),
     };
-    return [...rows].sort(by[sortBy]);
-  }, [records, period, lang, query, sortBy]);
+    const sorted = [...rows].sort(by[view === "soar" ? "delta" : sortBy]);
+    // 飙升榜只展示有增量的仓库
+    return view === "soar" ? sorted.filter((r) => deltaOf(r) > 0) : sorted;
+  }, [records, period, lang, query, sortBy, view]);
 
   const stats = useMemo(() => {
     const deltaTotal = filtered.reduce((acc, r) => acc + (toNumber(r["周期内新增星数"]) ?? 0), 0);
@@ -96,8 +110,7 @@ export default function TrendingExplorer({ records, fetchedAt }: Props) {
               开源热榜<span className="text-swiss-accent">.</span>
             </h1>
             <p className="text-sm text-white/60 leading-relaxed max-w-2xl">
-              GitHub Trending 每日 08:00 / 21:00 自动采集（daily 榜 6 个语言，周日 weekly、每月 1 日 monthly），
-              按时间窗与语言筛选，掌握开源动态。
+              覆盖 14 个语言分类，今日 / 本周 / 本月三个时间窗。热榜看生态风向，飙升榜看增长最快的项目。
             </p>
           </div>
           <div className="hidden md:flex flex-col justify-between border-l-2 border-white/15 p-6">
@@ -107,9 +120,44 @@ export default function TrendingExplorer({ records, fetchedAt }: Props) {
         </div>
       </section>
 
+      {/* ── 说明块 ─────────────────────────────────────────────── */}
+      <section className="border-b-2 border-black bg-[#FBFBF8]">
+        <div className="grid md:grid-cols-[1fr_auto] gap-4 p-4 md:p-5">
+          <div className="flex gap-3 items-start">
+            <Info className="h-4 w-4 shrink-0 mt-0.5 text-swiss-accent" />
+            <p className="text-xs text-black/55 leading-relaxed max-w-3xl">
+              榜单来源为 <span className="font-black text-black">GitHub Trending 官方榜单</span>，每日 08:00 / 21:00 自动采集（北京时间）。
+              「热榜」按官方榜单位次排列；「飙升榜」按周期内新增星数排序，反映增速最快的项目。
+              可按语言分类、搜索仓库 / 描述，或按星数 / Fork 重新排序。
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-x-5 gap-y-1 font-mono text-[10px] uppercase tracking-widest text-black/40 md:justify-end">
+            <span>14 语言分类</span>
+            <span>· daily / weekly / monthly</span>
+            <span>· 幂等合并</span>
+          </div>
+        </div>
+      </section>
+
       {/* ── Filters ────────────────────────────────────────────── */}
       <section className="border-b-2 border-black bg-white">
         <div className="flex flex-wrap items-center gap-3 p-4 md:p-5">
+          {/* 视图：热榜 / 飙升榜 */}
+          <div className="flex border-2 border-black">
+            {([["rank", "热榜"], ["soar", "飙升榜"]] as Array<[View, string]>).map(([v, label]) => (
+              <button
+                key={v}
+                onClick={() => setView(v)}
+                className={`flex items-center gap-1.5 px-4 py-2 font-mono text-xs font-black uppercase tracking-wider transition-colors ${
+                  view === v ? "bg-black text-white" : "bg-white text-black hover:bg-swiss-accent/10"
+                }`}
+              >
+                {v === "soar" && <Flame className="h-3.5 w-3.5 text-swiss-accent" />}
+                {label}
+              </button>
+            ))}
+          </div>
+
           {/* 周期 */}
           <div className="flex border-2 border-black">
             {availablePeriods.map((p) => (
@@ -117,25 +165,13 @@ export default function TrendingExplorer({ records, fetchedAt }: Props) {
                 key={p}
                 onClick={() => setPeriod(p)}
                 className={`px-4 py-2 font-mono text-xs font-black uppercase tracking-wider transition-colors ${
-                  period === p ? "bg-black text-white" : "bg-white text-black hover:bg-swiss-accent/10"
+                  period === p ? "bg-swiss-accent text-black" : "bg-white text-black hover:bg-swiss-accent/10"
                 }`}
               >
                 {periodLabel[p]}
               </button>
             ))}
           </div>
-
-          {/* 语言 */}
-          <select
-            value={lang}
-            onChange={(e) => setLang(e.target.value)}
-            className="border-2 border-black bg-white px-3 py-2 font-mono text-xs font-black uppercase tracking-wider focus:outline-none focus:bg-swiss-accent/10"
-          >
-            <option value="all">ALL 语言</option>
-            {languages.map((l) => (
-              <option key={l} value={l}>{l}</option>
-            ))}
-          </select>
 
           {/* 搜索 */}
           <div className="flex min-w-[220px] flex-1 items-center gap-2 border-2 border-black px-3 py-2">
@@ -148,21 +184,50 @@ export default function TrendingExplorer({ records, fetchedAt }: Props) {
             />
           </div>
 
-          {/* 排序 */}
-          <div className="flex items-center gap-1">
-            <span className="font-mono text-[9px] uppercase tracking-widest text-black/40 mr-1">SORT</span>
-            {sortOptions.map((opt) => (
-              <button
-                key={opt.key}
-                onClick={() => setSortBy(opt.key)}
-                className={`px-2.5 py-1.5 font-mono text-[10px] font-black uppercase tracking-wider transition-colors ${
-                  sortBy === opt.key ? "bg-swiss-accent text-black" : "text-black/50 hover:text-black"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
+          {/* 排序（飙升榜固定按增量） */}
+          {view === "rank" && (
+            <div className="flex items-center gap-1">
+              <span className="font-mono text-[9px] uppercase tracking-widest text-black/40 mr-1">SORT</span>
+              {sortOptions.map((opt) => (
+                <button
+                  key={opt.key}
+                  onClick={() => setSortBy(opt.key)}
+                  className={`px-2.5 py-1.5 font-mono text-[10px] font-black uppercase tracking-wider transition-colors ${
+                    sortBy === opt.key ? "bg-swiss-accent text-black" : "text-black/50 hover:text-black"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* 语言分类 chips */}
+        <div className="flex flex-wrap items-center gap-1.5 border-t-2 border-black px-4 md:px-5 py-3">
+          <button
+            onClick={() => setLang("all")}
+            className={`px-3 py-1 font-mono text-[10px] font-black uppercase tracking-wider border-2 transition-colors ${
+              lang === "all"
+                ? "border-black bg-black text-white"
+                : "border-black/15 text-black/50 hover:border-black hover:text-black"
+            }`}
+          >
+            ALL <span className="opacity-50">({records.filter((r) => periodOf(r) === period).length})</span>
+          </button>
+          {langStats.map(([l, count]) => (
+            <button
+              key={l}
+              onClick={() => setLang(l === lang ? "all" : l)}
+              className={`px-3 py-1 font-mono text-[10px] font-black uppercase tracking-wider border-2 transition-colors ${
+                lang === l
+                  ? "border-black bg-swiss-accent text-black"
+                  : "border-black/15 text-black/50 hover:border-black hover:text-black"
+              }`}
+            >
+              {l} <span className="opacity-50">({count})</span>
+            </button>
+          ))}
         </div>
 
         {/* Stats strip */}
@@ -191,12 +256,14 @@ export default function TrendingExplorer({ records, fetchedAt }: Props) {
             <p className="text-sm text-black/60">
               {records.length === 0
                 ? "热榜数据尚未采集 —— 运行 npm run trending 或等待定时任务写入飞书 github_trending 表。"
-                : "当前筛选条件下没有记录。"}
+                : view === "soar"
+                  ? "当前筛选条件下没有带增量的仓库。"
+                  : "当前筛选条件下没有记录。"}
             </p>
           </div>
         ) : (
           <ul className="divide-y-2 divide-black">
-            {filtered.map((r) => {
+            {filtered.map((r, idx) => {
               const rank = toNumber(r["排名"]) ?? 0;
               const stars = toNumber(r["总星数"]);
               const delta = toNumber(r["周期内新增星数"]);
@@ -204,17 +271,27 @@ export default function TrendingExplorer({ records, fetchedAt }: Props) {
               const langText = String(r["语言"] ?? "").trim();
               const desc = String(r["描述"] ?? "").trim();
               const href = repoLink(r["链接"]);
+              const isSoar = view === "soar";
+              // 飙升榜相对排名（带增量内） + 官方位次
+              const deltaPct = stars && stars > 0 && delta ? Math.min(100, Math.round((delta / stars) * 1000)) : 0;
               return (
-                <li key={String(r.__id)} className="group grid grid-cols-[44px_1fr] md:grid-cols-[56px_1fr_160px_120px] items-stretch hover:bg-white transition-colors">
-                  {/* 排名 */}
-                  <div className={`flex items-center justify-center border-r-2 border-black py-4 ${
-                    rank <= 3 ? "bg-swiss-accent/15" : ""
-                  }`}>
-                    <span className={`font-mono text-2xl md:text-3xl font-black tabular-nums ${
-                      rank === 1 ? "text-swiss-accent" : rank <= 3 ? "text-black" : "text-black/25"
-                    }`}>
-                      {rank}
-                    </span>
+                <li key={String(r.__id)} className="group grid grid-cols-[44px_1fr] md:grid-cols-[64px_1fr_160px_120px] items-stretch hover:bg-white transition-colors">
+                  {/* 排名 / 增量 */}
+                  <div className={`flex items-center justify-center border-r-2 border-black py-4 ${isSoar ? "bg-swiss-accent/10" : rank <= 3 ? "bg-swiss-accent/15" : ""}`}>
+                    {isSoar ? (
+                      <div className="text-center">
+                        <div className={`font-mono text-2xl md:text-3xl font-black tabular-nums leading-none ${delta && delta >= 500 ? "text-swiss-accent" : "text-black"}`}>
+                          {delta !== null ? `+${formatNumber(delta)}` : "—"}
+                        </div>
+                        <div className="font-mono text-[8px] uppercase tracking-widest text-black/40 mt-1">#{idx + 1} 飙升</div>
+                      </div>
+                    ) : (
+                      <span className={`font-mono text-2xl md:text-3xl font-black tabular-nums ${
+                        rank === 1 ? "text-swiss-accent" : rank <= 3 ? "text-black" : "text-black/25"
+                      }`}>
+                        {rank}
+                      </span>
+                    )}
                   </div>
 
                   {/* 仓库主体 */}
@@ -230,8 +307,16 @@ export default function TrendingExplorer({ records, fetchedAt }: Props) {
                         <ArrowUpRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
                       </a>
                       {langText && (
-                        <span className="border border-black/20 bg-black/5 px-2 py-0.5 font-mono text-[10px] font-bold text-black/70">
+                        <button
+                          onClick={() => setLang(langText === lang ? "all" : langText)}
+                          className="border border-black/20 bg-black/5 px-2 py-0.5 font-mono text-[10px] font-bold text-black/70 hover:bg-swiss-accent/20 transition-colors"
+                        >
                           {langText}
+                        </button>
+                      )}
+                      {isSoar && deltaPct > 0 && (
+                        <span className="font-mono text-[9px] text-black/35">
+                          ★ {deltaPct / 10}‰ 当日增长
                         </span>
                       )}
                     </div>
