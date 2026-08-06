@@ -208,7 +208,11 @@ async function feishu(
       await sleep(backoff);
       return feishu(method, url, body, retriesLeft - 1);
     }
-    throw new Error(`飞书 ${method} ${url} 失败 (code ${err.code}): ${err.msg}`);
+    const hint =
+      json?.code === 91403
+        ? "（应用无该 Base 的写入权限：请在飞书多维表格分享设置中把应用添加为可编辑协作者）"
+        : "";
+    throw new Error(`飞书 ${method} ${url} 失败 (code ${err.code}): ${err.msg}${hint}`);
   }
   return json;
 }
