@@ -50,7 +50,8 @@ AI 中转站模块包含两个互补但视角不同的视图，统一通过 [`co
 * **线上地址**：`https://www.xiuxai.com/relay-index/`（子路径，`trailingSlash: true`）
 * **服务器**：`124.222.88.183`（腾讯云，root，ssh 免密；shell 为 zsh，命令输出顶部有腾讯云扫码横幅需过滤）
 * **形态**：nginx（`/etc/nginx/conf.d/xiuxai.conf`）`location ^~ /relay-index/` 反代 → Docker 容器 `relay-sites-web`（127.0.0.1:3000）
-* **部署流程**（手动，无 CI）：
+* **一键部署**：`./scripts/deploy.sh`（数据 fetch → rsync → 服务器 docker 构建 → 容器重启 → 本地+公网健康检查）；数据没变时 `--skip-fetch` 跳过拉取
+* **手动流程**（脚本等价）：
   1. 本地 `npm run fetch`（更新 `data/*.json`，含探针；**部署机不联网拉飞书**，数据必须随包上传）
   2. `rsync -az --delete -e "ssh -o BatchMode=yes" --exclude node_modules --exclude .next --exclude .git --exclude .omx --exclude .staging --exclude ".env*" --exclude .DS_Store --exclude "*.log" --exclude tsconfig.tsbuildinfo ./ root@124.222.88.183:/opt/relay-sites-web/`
   3. 服务器：`cd /opt/relay-sites-web && docker build --build-arg NEXT_PUBLIC_BASE_PATH=/relay-index -t relay-sites-web:relay-index .`
