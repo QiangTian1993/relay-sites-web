@@ -75,6 +75,7 @@ export const TABLES: TableConfig[] = [
       { key: "分组倍率", label: "分组倍率", type: "text", primary: true },
       { key: "最低倍率", label: "最低倍率", type: "number", sortable: true, formatHint: "rate" },
       { key: "框架", label: "框架", type: "single-select", filterable: true },
+      { key: "模型检测", label: "模型检测", type: "longtext", searchable: true },
       { key: "备注", label: "备注", type: "longtext" },
       { key: "最后检查", label: "最后检查", type: "date" },
     ],

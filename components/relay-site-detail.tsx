@@ -35,6 +35,7 @@ export function RelaySiteDetail({ record, performance, groups, modelOffers }: Pr
   const name = String(record["名称"] ?? "未命名站点");
   const domain = String(record["域名"] ?? "");
   const note = String(record["备注"] ?? "");
+  const modelCheck = String(record["模型检测"] ?? "");
   const access = parseAccessSignals(note);
   const providerRates = String(record["分组倍率"] ?? "")
     .split("|")
@@ -118,6 +119,11 @@ export function RelaySiteDetail({ record, performance, groups, modelOffers }: Pr
                 {hasRefund && <span className="border border-emerald-600 bg-emerald-50 px-2 py-0.5 font-mono text-xs font-bold text-emerald-700">退款保障</span>}
                 {isPurePro && <span className="border border-purple-600 bg-purple-50 px-2 py-0.5 font-mono text-xs font-bold text-purple-700">官网纯血Pro</span>}
                 {noVerify && <span className="border border-amber-600 bg-amber-50 px-2 py-0.5 font-mono text-xs font-bold text-amber-700">免验证注册</span>}
+                {modelCheck && (
+                  <span className="border border-emerald-600 bg-emerald-50 px-2 py-0.5 font-mono text-xs font-bold text-emerald-700">
+                    {modelCheck.includes("通过") && !modelCheck.includes("不足") ? "模型检测·通过" : "模型检测·见详情"}
+                  </span>
+                )}
                 <EvidenceTag available={modelOffers.length > 0} label={modelOffers.length > 0 ? `${modelOffers.length} 个可用模型` : "未录入模型明细"} />
                 {performance && <EvidenceTag available={false} label="第三方实测打点" />}
                 <ChangeBadge direction={siteChange.direction} delta={siteChange.delta} />
@@ -189,6 +195,15 @@ export function RelaySiteDetail({ record, performance, groups, modelOffers }: Pr
                 <span className="font-bold text-emerald-700">{String(performance?.consecutive_failures ?? 0)} 次</span>
               </li>
             </ul>
+          </div>
+
+          <div className="border-2 border-swiss-fg bg-white p-4">
+            <div className="font-black text-sm text-swiss-fg uppercase tracking-wider mb-2">🔬 模型真实性检测</div>
+            <p className="text-swiss-fg/80 leading-relaxed text-xs whitespace-pre-line">
+              {modelCheck
+                ? modelCheck
+                : "未执行模型真实性检测（gpt56 混用检测器：Juice 指纹 / 输出完整性 / 提示覆盖）。"}
+            </p>
           </div>
         </div>
       </DetailSection>
