@@ -17,9 +17,20 @@ interface CostEstimatorProps {
 }
 
 interface RankedSite extends SiteOfferPair {
+  inputCostPer1M: number | null;
+  outputCostPer1M: number | null;
+  cacheCreationCostPer1M: number | null;
+  cacheReadCostPer1M: number | null;
+  blendedCostPer1M: number | null;
   monthlyCostCny: number | null; // null = 图片模型按次计费，无法按 token 量估算
-  cacheReadPer1M: number | null; // 缓存读取单价 ¥/1M（null = 无有效基准或图片模型）
   tags: SiteFeatureTags;
+}
+
+interface TokenUsageProfile {
+  inputShare: number;
+  outputShare: number;
+  cacheCreationShare: number;
+  cacheReadShare: number;
 }
 
 const SHOW_OPTIONS = [
@@ -28,6 +39,17 @@ const SHOW_OPTIONS = [
   { value: 50, label: "Top 50" },
   { value: 0, label: "全部" },
 ] as const;
+
+// 用户 sub2api 实例 2026-05 完整月聚合：
+// 输入 239,304,270；输出 10,778,679；缓存创建 0；缓存读取 2,050,872,576。
+// sub2api 的总 token 口径是四类 token 之和，费用亦按四类分别计价后相加。
+const SUB2API_PROFILE_TOTAL_TOKENS = 2_300_955_525;
+const SUB2API_USAGE_PROFILE: TokenUsageProfile = {
+  inputShare: 239_304_270 / SUB2API_PROFILE_TOTAL_TOKENS,
+  outputShare: 10_778_679 / SUB2API_PROFILE_TOTAL_TOKENS,
+  cacheCreationShare: 0,
+  cacheReadShare: 2_050_872_576 / SUB2API_PROFILE_TOTAL_TOKENS,
+};
 
 function formatEffective(formula: PriceFormulaBreakdown): string {
   const v = formula.effectivePrice;
@@ -42,41 +64,44 @@ export function RelayCostEstimator({ selectedModel, sites }: CostEstimatorProps)
   const [tokenMillions, setTokenMillions] = useState<number>(20); // 默认 20M tokens/月
   const [showCount, setShowCount] = useState<number>(0); // 0 = 全部展示
 
-  // 缓存参考档：固定 80% 命中率（Cursor/Claude Code 典型场景），不要求用户输入
-  // 命中率因使用模式而异，此处仅作参考区间下界
-  const CACHE_HIT_REF = 0.8;
-
-  // 全量站点参与成本计算与排序（不截断）
-  // 口径与主列表 DetailPanel 一致：输入价 = estimatedRmbPer1MTokens（已含分组折扣/一口价/积分归一化）
-  // 缓存模型（对齐 Anthropic 官方计费，80% 参考档）：
-  //   - 命中部分 h×T：按缓存读取价（= 输入到手价 × 站 rate_cache；未填按 × 0.1）
-  //   - 新增部分 (1-h)×T：按输入价 + 缓存写入价双计（= 输入到手价 × 站 rate_create_cache；未填按 × 1.25）
-  //   缓存倍率一律相对"本站输入到手价"折算（官方标准：读取 0.1、写入 1.25），
-  //   避免填了缓存字段的站被按官方基准误判（深度折扣站缓存价会虚高数倍）
+  // 按 sub2api 的真实账单公式逐项计费：
+  // 总费用 = 输入 token×输入价 + 输出 token×输出价 + 缓存创建 token×创建价 + 缓存读取 token×读取价。
+  // tokenMillions 表示四类 token 的总量；构成比例来自用户 sub2api 2026-05 完整月实测。
   const rankedSites = useMemo<RankedSite[]>(() => {
-    const h = CACHE_HIT_REF;
     return sites
       .map((item) => {
-        const costPer1M = item.formula.estimatedRmbPer1MTokens;
-        const readPer1M =
-          costPer1M != null && costPer1M > 0
-            ? costPer1M * (item.offer.cacheRate ?? 0.1)
+        const inputCostPer1M = item.formula.estimatedRmbPer1MTokens;
+        const hasInputPrice = inputCostPer1M != null && inputCostPer1M > 0;
+        const inputRate = item.offer.inputRate;
+        const outputRate = item.offer.outputRate;
+        const outputCostPer1M = hasInputPrice
+          ? inputRate != null && inputRate > 0 && outputRate != null && outputRate > 0
+            ? inputCostPer1M * (outputRate / inputRate)
+            : inputCostPer1M
+          : null;
+        const cacheReadCostPer1M = hasInputPrice
+          ? inputCostPer1M * (item.offer.cacheRate ?? 0.1)
+          : null;
+        const cacheCreationCostPer1M = hasInputPrice
+          ? inputCostPer1M * (item.offer.createCacheRate ?? 1.25)
+          : null;
+        const blendedCostPer1M =
+          hasInputPrice && outputCostPer1M != null && cacheReadCostPer1M != null && cacheCreationCostPer1M != null
+            ? SUB2API_USAGE_PROFILE.inputShare * inputCostPer1M +
+              SUB2API_USAGE_PROFILE.outputShare * outputCostPer1M +
+              SUB2API_USAGE_PROFILE.cacheCreationShare * cacheCreationCostPer1M +
+              SUB2API_USAGE_PROFILE.cacheReadShare * cacheReadCostPer1M
             : null;
-        const writePer1M =
-          costPer1M != null && costPer1M > 0
-            ? costPer1M * (item.offer.createCacheRate ?? 1.25)
-            : null;
-        const monthlyCostCny =
-          costPer1M != null && costPer1M > 0
-            ? tokenMillions *
-              (readPer1M != null && writePer1M != null
-                ? (1 - h) * (costPer1M + writePer1M) + h * readPer1M
-                : costPer1M)
-            : null;
+        const monthlyCostCny = blendedCostPer1M != null ? tokenMillions * blendedCostPer1M : null;
+
         return {
           ...item,
+          inputCostPer1M: hasInputPrice ? inputCostPer1M : null,
+          outputCostPer1M,
+          cacheCreationCostPer1M,
+          cacheReadCostPer1M,
+          blendedCostPer1M,
           monthlyCostCny,
-          cacheReadPer1M: readPer1M,
           tags: extractSiteTags(item.site),
         };
       })
@@ -104,7 +129,7 @@ export function RelayCostEstimator({ selectedModel, sites }: CostEstimatorProps)
               💡 月度消耗与成本预估器 (Token Cost Estimator)
             </h3>
             <p className="font-mono text-[11px] text-black/55">
-              拖动预估用量，测算在不同中转站使用 <strong className="text-black">{selectedModel}</strong> 的月度账单（¥/月，含分组折扣与 80% 缓存命中参考）
+              拖动总 Token 用量，按 sub2api 实测的输入 / 输出 / 缓存构成逐项测算 <strong className="text-black">{selectedModel}</strong> 月度账单
             </p>
           </div>
         </div>
@@ -128,21 +153,21 @@ export function RelayCostEstimator({ selectedModel, sites }: CostEstimatorProps)
               <input
                 type="range"
                 min="1"
-                max="100"
+                max="1000"
                 step="1"
                 value={tokenMillions}
                 onChange={(e) => setTokenMillions(Number(e.target.value))}
                 className="h-2 w-full cursor-pointer appearance-none bg-black/10 accent-swiss-accent"
               />
               <div className="mt-2 flex justify-between font-mono text-[10px] text-black/45">
-                <span>1M (测试试用)</span>
-                <span>20M (Cursor中度)</span>
-                <span>50M (高频代码)</span>
-                <span>100M (团队重度)</span>
+                <span>1M</span>
+                <span>100M</span>
+                <span>500M</span>
+                <span>1000M</span>
               </div>
 
               <p className="mt-4 border-t-2 border-dashed border-black/20 pt-2.5 font-mono text-[10px] leading-4 text-black/45">
-                月费用含 80% 缓存命中参考（Cursor/Claude Code 典型场景，命中率因负载而异）。命中部分按缓存读取价计（输入到手价 × 站缓存倍率，未填按 0.1×），新增部分按输入 + 缓存写入双计（未填按 1.25×）。缓存读取价见「缓存读取」列。
+                采用你服务器 sub2api 2026-05 完整月实测构成：输入 10.40% · 输出 0.47% · 缓存读取 89.13% · 缓存创建 0%。四类 Token 分别乘各自价格后相加；不再使用固定命中率猜测。
               </p>
             </div>
 
@@ -175,9 +200,12 @@ export function RelayCostEstimator({ selectedModel, sites }: CostEstimatorProps)
                       )}
                     </div>
                     <div className="mt-1 flex flex-wrap gap-1 font-mono text-[9px] text-black/50">
-                      <span>到手 {formatEffective(item.formula)}</span>
-                      {item.cacheReadPer1M != null && (
-                        <span className="bg-black/5 px-1">缓存 ¥{item.cacheReadPer1M.toFixed(3)}/1M</span>
+                      <span>输入到手 {formatEffective(item.formula)}</span>
+                      {item.blendedCostPer1M != null && (
+                        <span className="bg-black/5 px-1">混合 ¥{item.blendedCostPer1M.toFixed(3)}/1M</span>
+                      )}
+                      {item.cacheReadCostPer1M != null && (
+                        <span className="bg-black/5 px-1">缓存 ¥{item.cacheReadCostPer1M.toFixed(3)}/1M</span>
                       )}
                       {item.tags.hasInvoice && <span className="bg-black/5 px-1">可开票</span>}
                     </div>
@@ -212,13 +240,13 @@ export function RelayCostEstimator({ selectedModel, sites }: CostEstimatorProps)
             </div>
 
             <div className="mt-2.5 max-h-[420px] overflow-auto border-2 border-black bg-white">
-              <table className="w-full min-w-[780px] font-mono text-xs">
+              <table className="w-full min-w-[800px] font-mono text-xs">
                 <thead className="sticky top-0 z-10 bg-black text-white">
                   <tr>
                     <th className="px-2.5 py-2 text-left font-black uppercase tracking-wider">#</th>
                     <th className="px-2.5 py-2 text-left font-black uppercase tracking-wider">站点</th>
-                    <th className="px-2.5 py-2 text-right font-black uppercase tracking-wider">到手价</th>
-                    <th className="px-2.5 py-2 text-right font-black uppercase tracking-wider">缓存读取 ¥/1M</th>
+                    <th className="px-2.5 py-2 text-right font-black uppercase tracking-wider">输入到手</th>
+                    <th className="px-2.5 py-2 text-right font-black uppercase tracking-wider">混合价 ¥/1M</th>
                     <th className="px-2.5 py-2 text-right font-black uppercase tracking-wider">月费用 ¥</th>
                     <th className="px-2.5 py-2 text-right font-black uppercase tracking-wider">7D 可用率</th>
                     <th className="px-2.5 py-2 text-left font-black uppercase tracking-wider">特性</th>
@@ -244,8 +272,15 @@ export function RelayCostEstimator({ selectedModel, sites }: CostEstimatorProps)
                           )}
                         </td>
                         <td className="whitespace-nowrap px-2.5 py-1.5 text-right">{formatEffective(item.formula)}</td>
-                        <td className="whitespace-nowrap px-2.5 py-1.5 text-right">
-                          {item.cacheReadPer1M != null ? `¥${item.cacheReadPer1M.toFixed(3)}` : "--"}
+                        <td
+                          className="whitespace-nowrap px-2.5 py-1.5 text-right"
+                          title={
+                            item.blendedCostPer1M != null
+                              ? `输入 ¥${item.inputCostPer1M?.toFixed(3)} / 输出 ¥${item.outputCostPer1M?.toFixed(3)} / 缓存读取 ¥${item.cacheReadCostPer1M?.toFixed(3)} / 缓存创建 ¥${item.cacheCreationCostPer1M?.toFixed(3)}`
+                              : undefined
+                          }
+                        >
+                          {item.blendedCostPer1M != null ? `¥${item.blendedCostPer1M.toFixed(3)}` : "--"}
                         </td>
                         <td className="whitespace-nowrap px-2.5 py-1.5 text-right font-black text-swiss-accent">
                           {item.monthlyCostCny != null
