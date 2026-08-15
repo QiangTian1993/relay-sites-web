@@ -66,6 +66,7 @@ export default async function Home() {
     { num: "01", title: "模型倍率与可用性比价", active: true, href: "#module-01" },
     { num: "02", title: "Vibe Coding 工具全景", active: true, href: "#module-02" },
     { num: "03", title: "开源热榜", active: true, href: "#module-03" },
+    { num: "05", title: "模型真实性质检中心", active: true, href: "/detector" },
     { num: "04", title: "个人技能库", active: false, href: "#module-04" },
   ];
 
@@ -319,6 +320,41 @@ export default async function Home() {
         </div>
         <div className="md:hidden flex gap-3 border-t-2 border-black p-4">
           <Btn href="/modules/github_trending" label="进入开源热榜大盘" primary />
+        </div>
+      </article>
+
+      {/* ── Module 05: 模型真实性质检中心 ───────────────────────── */}
+      <article id="module-05" className="border-b-2 border-black bg-white group transition-colors hover:bg-[#FAFAFA]">
+        <div className="grid grid-cols-[56px_1fr] md:grid-cols-[72px_1fr_240px]">
+          <NumCol num="05" variant="dark" />
+          <div className="p-6 md:p-10 md:border-r-2 border-black">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-black/40">
+                MODULE 05 · GPT-5.6 / Juice / Probe
+              </p>
+              <span className="border border-black bg-black px-2 py-0.5 font-mono text-[10px] font-bold text-white">
+                在线硬探针检测
+              </span>
+            </div>
+            <h2 className="text-2xl md:text-3xl font-black mb-3 group-hover:text-swiss-accent transition-colors">
+              模型真实性与混用质检中心
+            </h2>
+            <p className="text-sm text-black/60 leading-relaxed max-w-3xl mb-6">
+              针对 GPT-5.6 (Sol/Terra/Luna)、GPT-4o、Claude 真实性的在线硬探针检测。
+              检测 Juice 结构指纹、固有行为分布与隐藏提示覆盖，提供透明的质量校验与防混用测评。
+            </p>
+            <div className="flex flex-wrap gap-4 text-xs font-mono font-bold text-black/80">
+              <span className="border border-black/20 bg-[#F8F8F6] px-3 py-1.5">⚡ Juice 结构指纹</span>
+              <span className="border border-black/20 bg-[#F8F8F6] px-3 py-1.5">📊 固有行为概率匹配</span>
+              <span className="border border-black/20 bg-[#F8F8F6] px-3 py-1.5">🔒 零 Key 落盘机制</span>
+            </div>
+          </div>
+          <div className="hidden md:flex flex-col p-6 justify-center bg-[#FBFBF8] group-hover:bg-white transition-colors">
+            <Btn href="/detector" label="进入在线质检中心" primary />
+          </div>
+        </div>
+        <div className="md:hidden flex gap-3 border-t-2 border-black p-4">
+          <Btn href="/detector" label="进入在线质检中心" primary />
         </div>
       </article>
 

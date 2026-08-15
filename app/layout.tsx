@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import Link from "next/link";
-import { Activity, Flame, GitCompareArrows, Wrench } from "lucide-react";
+import { Activity, Flame, GitCompareArrows, Send, ShieldCheck, Wrench } from "lucide-react";
 import SiteFooter from "@/components/site-footer";
 import "./globals.css";
 
@@ -64,17 +64,30 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <span className="font-black tracking-[-0.03em]">RELAY INDEX</span>
               <span className="hidden font-mono text-[10px] text-white/55 sm:inline">V1</span>
             </Link>
-            <nav className="flex min-w-0 flex-1 overflow-x-auto">
-              <Link href="/relay" className="flex shrink-0 items-center gap-2 border-r-2 border-black px-4 py-3 font-mono text-xs font-black uppercase tracking-wider hover:bg-black hover:text-white">
-                <Activity className="h-4 w-4" /> AI 中转站
-              </Link>
-              <Link href="/table/vibe_coding_tracker" className="flex shrink-0 items-center gap-2 border-r-2 border-black px-4 py-3 font-mono text-xs font-black uppercase tracking-wider hover:bg-black hover:text-white">
-                <Wrench className="h-4 w-4" /> 编程工具
-              </Link>
-              <Link href="/modules/github_trending" className="flex shrink-0 items-center gap-2 border-r-2 border-black px-4 py-3 font-mono text-xs font-black uppercase tracking-wider hover:bg-black hover:text-white">
-                <Flame className="h-4 w-4" /> 开源热榜
-              </Link>
-            </nav>
+            <div className="flex min-w-0 flex-1 items-stretch justify-between">
+              <nav className="flex min-w-0 flex-1 overflow-x-auto">
+                <Link href="/relay" className="flex shrink-0 items-center gap-2 border-r-2 border-black px-4 py-3 font-mono text-xs font-black uppercase tracking-wider hover:bg-black hover:text-white">
+                  <Activity className="h-4 w-4" /> AI 中转站
+                </Link>
+                <Link href="/detector" className="flex shrink-0 items-center gap-2 border-r-2 border-black px-4 py-3 font-mono text-xs font-black uppercase tracking-wider hover:bg-black hover:text-white">
+                  <ShieldCheck className="h-4 w-4 text-swiss-accent" /> 模型质检
+                </Link>
+                <Link href="/table/vibe_coding_tracker" className="flex shrink-0 items-center gap-2 border-r-2 border-black px-4 py-3 font-mono text-xs font-black uppercase tracking-wider hover:bg-black hover:text-white">
+                  <Wrench className="h-4 w-4" /> 编程工具
+                </Link>
+                <Link href="/modules/github_trending" className="flex shrink-0 items-center gap-2 border-r-2 border-black px-4 py-3 font-mono text-xs font-black uppercase tracking-wider hover:bg-black hover:text-white">
+                  <Flame className="h-4 w-4" /> 开源热榜
+                </Link>
+              </nav>
+              <a
+                href="https://t.me/+ZMc2ZPruuQkyN2U1"
+                target="_blank"
+                rel="noreferrer"
+                className="flex shrink-0 items-center gap-2 border-l-2 border-black bg-swiss-accent/10 px-4 py-3 font-mono text-xs font-black text-swiss-accent uppercase tracking-wider hover:bg-swiss-accent hover:text-white transition-colors"
+              >
+                <Send className="h-4 w-4" /> TG 社群
+              </a>
+            </div>
           </div>
         </header>
         <main className="mx-auto max-w-[1600px]">{children}</main>

@@ -11,7 +11,7 @@ from typing import Any, Callable, TypeVar
 from .utils import canonical_json, utc_now
 
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 T = TypeVar("T")
 
 
@@ -60,6 +60,7 @@ class SQLiteStateStore:
                 kind TEXT NOT NULL,
                 status TEXT NOT NULL,
                 claimed_model TEXT,
+                request_model TEXT,
                 safe_endpoint TEXT,
                 config_json TEXT NOT NULL,
                 config_hash TEXT NOT NULL,
@@ -135,6 +136,9 @@ class SQLiteStateStore:
             CREATE INDEX IF NOT EXISTS idx_results_session ON results(session_id, result_id);
             """
         )
+        columns = {str(row[1]) for row in connection.execute("PRAGMA table_info(sessions)")}
+        if "request_model" not in columns:
+            connection.execute("ALTER TABLE sessions ADD COLUMN request_model TEXT")
         connection.execute(
             "INSERT INTO metadata(key,value) VALUES('schema_version',?) "
             "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
@@ -200,6 +204,7 @@ class SQLiteStateStore:
         config_hash: str,
         official: bool,
         claimed_model: str | None = None,
+        request_model: str | None = None,
         safe_endpoint: str | None = None,
     ) -> None:
         now = utc_now()
@@ -215,9 +220,9 @@ class SQLiteStateStore:
                     raise ValueError("existing session configuration does not match")
                 return
             connection.execute(
-                "INSERT INTO sessions(session_id,kind,status,claimed_model,safe_endpoint,config_json,config_hash,official,created_at,updated_at) "
-                "VALUES(?,?,?,?,?,?,?,?,?,?)",
-                (session_id, kind, status, claimed_model, safe_endpoint, config_json, config_hash, int(official), now, now),
+                "INSERT INTO sessions(session_id,kind,status,claimed_model,request_model,safe_endpoint,config_json,config_hash,official,created_at,updated_at) "
+                "VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+                (session_id, kind, status, claimed_model, request_model or claimed_model, safe_endpoint, config_json, config_hash, int(official), now, now),
             )
             connection.commit()
 
@@ -229,6 +234,7 @@ class SQLiteStateStore:
             if row is None:
                 return None
             value = dict(row)
+            value["request_model"] = value.get("request_model") or value.get("claimed_model")
             value["config"] = json.loads(value.pop("config_json"))
             value["official"] = bool(value["official"])
             return value
@@ -384,11 +390,15 @@ class SQLiteStateStore:
         def write(connection: sqlite3.Connection) -> int | None:
             def transaction() -> int | None:
                 attempt = connection.execute(
-                    "SELECT session_id,job_id FROM attempts WHERE attempt_id=?",
+                    "SELECT a.session_id,a.job_id,a.status,j.status AS job_status "
+                    "FROM attempts a JOIN jobs j ON j.session_id=a.session_id AND j.job_id=a.job_id "
+                    "WHERE a.attempt_id=?",
                     (attempt_id,),
                 ).fetchone()
                 if attempt is None:
                     raise KeyError(f"attempt not found: {attempt_id}")
+                if attempt["status"] != "running" or attempt["job_status"] != "pending":
+                    return None
                 connection.execute(
                     "UPDATE attempts SET completed_at=?,status=?,stage=?,category=?,retryable=?,http_status=?,safe_message=? WHERE attempt_id=?",
                     (now, status, stage, category, int(retryable), http_status, safe_message, attempt_id),
@@ -435,6 +445,30 @@ class SQLiteStateStore:
 
     def record_cancelled(self, session_id: str, job_id: str, result: dict[str, Any]) -> int:
         return self.record_terminal_result(session_id, job_id, "cancelled", result)
+
+    def cancel_running_attempts(self, session_id: str, job_ids: set[str], *, category: str) -> int:
+        if not job_ids:
+            return 0
+        now = utc_now()
+
+        def write(connection: sqlite3.Connection) -> int:
+            placeholders = ",".join("?" for _ in job_ids)
+            cursor = connection.execute(
+                f"UPDATE attempts SET completed_at=?,status='cancelled',stage='transport',category=?,"
+                "retryable=0,safe_message=? WHERE session_id=? AND status='running' "
+                f"AND job_id IN ({placeholders})",
+                (
+                    now,
+                    category,
+                    "用户已停止检测，仍在途的请求已取消",
+                    session_id,
+                    *sorted(job_ids),
+                ),
+            )
+            connection.commit()
+            return int(cursor.rowcount)
+
+        return self._write(write)
 
     def reconcile_incomplete_attempts(self, session_id: str, max_attempts: int) -> dict[str, int]:
         now = utc_now()

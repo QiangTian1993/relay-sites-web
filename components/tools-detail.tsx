@@ -140,21 +140,21 @@ export function ToolsDetail({ row }: { row: ToolRow }) {
             <div className="border-2 border-swiss-fg bg-white p-4">
               <div className="font-black text-sm text-swiss-fg uppercase tracking-wider mb-2">🎯 最佳推荐场景</div>
               <p className="text-swiss-fg/80 leading-relaxed text-xs">
-                {row.targetUsers ? row.targetUsers : (row.useCases.length > 0 ? row.useCases.join(" · ") : "适合日常辅助代码生成与工程调试")}
+                {row.targetUsers ? row.targetUsers : (row.useCases.length > 0 ? row.useCases.join(" · ") : "适合日常全栈开发辅助、自动化代码生成与复杂工程调试。")}
               </p>
             </div>
 
             <div className="border-2 border-swiss-fg bg-white p-4">
-              <div className="font-black text-sm text-swiss-fg uppercase tracking-wider mb-2">⚖️ 核心竞争劣势/避坑</div>
+              <div className="font-black text-sm text-swiss-fg uppercase tracking-wider mb-2">⚖️ 核心避坑/注意要点</div>
               <p className="text-swiss-fg/80 leading-relaxed text-xs">
-                {row.disadvantages ? row.disadvantages : "暂无显著避坑提示，建议配合默认模型试用"}
+                {row.disadvantages ? row.disadvantages : "整体体验平稳，建议优先使用官方默认推荐模型或按需绑定自定义 API Key 以保障并发。"}
               </p>
             </div>
 
             <div className="border-2 border-swiss-fg bg-white p-4">
-              <div className="font-black text-sm text-swiss-fg uppercase tracking-wider mb-2">📊 竞品替代分析</div>
+              <div className="font-black text-sm text-swiss-fg uppercase tracking-wider mb-2">📊 竞品替代与部署建议</div>
               <p className="text-swiss-fg/80 leading-relaxed text-xs">
-                {row.competitor ? row.competitor : `参考 ${row.name} 同类产品的免费额度与 Agent 协作流畅度表现`}
+                {row.competitor ? row.competitor : `可横向对比 ${row.name} 同类产品的免费额度、上下文窗口深度及多 Agent 协作流畅度表现。`}
               </p>
             </div>
           </div>

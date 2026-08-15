@@ -14,3 +14,6 @@ dist/
 data/*.json
 !data/.gitkeep
 tsconfig.tsbuildinfo
+__pycache__/
+*.pyc
+scripts/gpt56-detector/gpt56_vnext_runs/

@@ -8,6 +8,7 @@ import math
 from pathlib import Path
 import secrets
 import threading
+import unicodedata
 import time
 from typing import Any, Callable
 from urllib.parse import urlsplit, urlunsplit
@@ -31,18 +32,36 @@ from .presets import (
     probability_runtime_spec,
     selected_profiles,
 )
-from .probability_model import ProbabilityModel, load_baseline, verify_baseline
+from .probability_model import COMPLETION_RATIO, ProbabilityModel, load_baseline, verify_baseline
 from .retention import RawRetention, RetentionWriteError
+from .runtime_policy import load_runtime_policy, resolve_decision_policy
 from .store import SQLiteStateStore
-from .transport import StreamingTransport, TransportError
-from .utils import deterministic_job_id, sha256_text, utc_now
+from .transport import RequestCancellationController, StreamingTransport, TransportCancelled, TransportError
+from .utils import canonical_json, deterministic_job_id, normalize_api_base_url, sha256_text, utc_now
 from .verdict import build_overall_verdict
 
 
-DEFAULT_BASELINE = Path(__file__).with_name("baselines") / "trusted_likelihood_v2.json"
+DEFAULT_BASELINE = Path(__file__).with_name("baselines") / "trusted_fingerprint_v3.json"
+DEFAULT_RUNTIME_POLICY = Path(__file__).with_name("baselines") / "fingerprint_runtime_policy_v4_1_1.json"
 TRANSIENT_STATUSES = {408, 429, 500, 502, 503, 504}
+CANCELLATION_POLL_SECONDS = 0.10
+CANCELLATION_GRACE_SECONDS = 3.0
 KNOWN_COVERAGE_VALUES = {8, 12, 16, 20, 24, 32, 40, 48, 64, 84, 96, 128, 512, 768, 960, 4085, 40805, 40855, 40085}
-HARD_TITLES = {"Juice混用", "仅概率探针混用"}
+ERROR_CATEGORY_CN = {
+    "user_cancelled": "用户已停止请求",
+    "cancelled_before_send": "用户停止前尚未发送",
+    "cancelled_in_flight": "用户停止时请求仍在途",
+    "cancelled_before_retry": "用户停止后未继续重试",
+    "timeout": "请求超时",
+    "upstream_http_error": "上游HTTP错误",
+    "truncated_or_invalid_stream": "流式响应不完整或格式错误",
+    "response_incomplete": "上游返回未完成响应",
+    "response_failed": "上游明确返回响应失败",
+    "connection_or_transport_error": "网络连接或传输错误",
+    "process_interrupted": "检测进程意外中断",
+    "attempt_budget_exhausted_after_restart": "恢复后发现重试次数已用完",
+    "stopped_before_retry": "用户停止后未继续重试",
+}
 
 
 def _new_coverage_value() -> int:
@@ -200,20 +219,28 @@ class DetectorSession:
         self,
         *,
         base_url: str,
-        model: str,
+        claimed_model: str | None = None,
+        request_model: str | None = None,
+        model: str | None = None,
         api_key: str,
         config: dict[str, Any],
         directory: str | Path,
         baseline_path: str | Path = DEFAULT_BASELINE,
+        runtime_policy_path: str | Path = DEFAULT_RUNTIME_POLICY,
         retention_enabled: bool = False,
         retention_directory: str | Path | None = None,
     ):
-        if not base_url.strip() or not model.strip() or not api_key:
+        claimed_model = str(claimed_model or model or "").strip()
+        request_model = str(request_model or claimed_model).strip()
+        if not base_url.strip() or not claimed_model or not request_model or not api_key:
             raise ValueError("candidate API address, model, and key are required")
-        if model not in {"gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna"}:
+        if claimed_model not in {"gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna"}:
             raise ValueError("claimed model must be gpt-5.6-sol, gpt-5.6-terra, or gpt-5.6-luna")
-        self.base_url = base_url.rstrip("/")
-        self.model = model
+        if any(unicodedata.category(character) in {"Cc", "Cf", "Zl", "Zp"} for character in request_model):
+            raise ValueError("实际请求模型不能包含换行或控制字符")
+        self.base_url = normalize_api_base_url(base_url)
+        self.claimed_model = claimed_model
+        self.request_model = request_model
         self.api_key = api_key
         self.config = normalize_config(config)
         self.directory = Path(directory)
@@ -223,9 +250,10 @@ class DetectorSession:
         self.session_id = requested_session or uuid.uuid4().hex
         self.catalog = load_catalog()
         self.baseline = load_baseline(baseline_path)
+        self.runtime_policy = load_runtime_policy(runtime_policy_path, baseline_path=baseline_path)
         full_runtime_spec = probability_runtime_spec(self.config)
         builtin_ids = set(PROBABILITY_PROBES)
-        formal_components: list[tuple[ProbabilityModel, dict[str, Any], str]] = []
+        formal_components: list[tuple[ProbabilityModel, dict[str, Any], str, dict[str, Any] | None]] = []
         reference_custom: list[tuple[ProbabilityModel, dict[str, Any], str]] = []
         if full_runtime_spec is not None:
             builtin_cells = {
@@ -234,11 +262,12 @@ class DetectorSession:
             }
             if builtin_cells:
                 builtin_spec = {
-                    "name": full_runtime_spec["name"] + ":builtin",
+                    "name": full_runtime_spec["name"],
                     "cells": builtin_cells,
                     "contracts": {key: full_runtime_spec["contracts"][key] for key in builtin_cells},
                 }
-                formal_components.append((ProbabilityModel(self.baseline), builtin_spec, "builtin"))
+                decision_policy = resolve_decision_policy(self.runtime_policy, self.config, builtin_spec)
+                formal_components.append((ProbabilityModel(self.baseline), builtin_spec, "builtin", decision_policy))
         for custom in self.config.get("custom_probes", []):
             if custom.get("enabled", True) is False:
                 continue
@@ -259,9 +288,10 @@ class DetectorSession:
             custom_spec = {"name": f"custom:{probe_id}", "cells": cells, "contracts": contracts}
             reference_custom.append((ProbabilityModel(artifact), custom_spec, probe_id))
         self.runtime_spec = full_runtime_spec
-        self.formal_probability_models = formal_components
-        self.reference_probability_models = reference_custom
+        self.formal_fingerprint_models = formal_components
+        self.reference_fingerprint_models = reference_custom
         self.stop_event = threading.Event()
+        self.cancellation = RequestCancellationController()
         self._running_lock = threading.RLock()
         self._closed = False
         self.store.create_session(
@@ -271,7 +301,8 @@ class DetectorSession:
             config=self.config,
             config_hash=self.config["config_hash"],
             official=bool(self.config["official"]),
-            claimed_model=self.model,
+            claimed_model=self.claimed_model,
+            request_model=self.request_model,
             safe_endpoint=_safe_endpoint(self.base_url),
         )
         prior = self.store.session(self.session_id)
@@ -288,6 +319,7 @@ class DetectorSession:
             self.api_key,
             timeout=300.0 if "native_codex" in self.config["request_formats"] or "fixed_32k_history" in self.config["context_modes"] else 180.0,
             capture_exchange=self.retention is not None,
+            cancellation=self.cancellation,
         )
 
     def close(self) -> None:
@@ -298,9 +330,29 @@ class DetectorSession:
         self.store.close()
         self._closed = True
 
-    def stop(self) -> None:
+    def stop(self) -> dict[str, Any]:
+        previous = self.store.session(self.session_id) or {}
+        previous_status = str(previous.get("status") or "unknown")
+        if previous_status not in {"running", "stopping", "interrupted"}:
+            return {
+                "accepted": False,
+                "session_id": self.session_id,
+                "previous_status": previous_status,
+                "current_status": previous_status,
+                "stop_requested_at": previous.get("stop_requested_at"),
+                "active_requests_cancelled": 0,
+            }
         self.stop_event.set()
-        self.store.request_stop(self.session_id)
+        requested_at = self.store.request_stop(self.session_id)
+        cancelled = self.transport.cancel_all()
+        return {
+            "accepted": True,
+            "session_id": self.session_id,
+            "previous_status": previous_status,
+            "current_status": "stopping",
+            "stop_requested_at": requested_at,
+            "active_requests_cancelled": cancelled,
+        }
 
     def progress_snapshot(self) -> dict[str, Any]:
         return self.store.progress(self.session_id)
@@ -317,10 +369,11 @@ class DetectorSession:
             self._run_jobs(jobs, requester)
             if not self.stop_event.is_set():
                 self.store.append_event(self.session_id, "run_end", cycle=0, payload=self.store.progress(self.session_id))
-                self.store.update_session_status(self.session_id, "complete")
-            else:
-                self.store.update_session_status(self.session_id, "stopped")
             report = self.build_report()
+            self.store.update_session_status(
+                self.session_id,
+                "stopped" if self.stop_event.is_set() else "complete",
+            )
             return report
 
     def run_continuous(
@@ -360,8 +413,9 @@ class DetectorSession:
                 self.store.append_event(self.session_id, "cycle_sleep", cycle=cycle, payload={"seconds": delay})
                 if sleep_between:
                     self.stop_event.wait(delay)
+            report = self.build_report()
             self.store.update_session_status(self.session_id, "stopped" if self.stop_event.is_set() else "complete")
-            return self.build_report()
+            return report
 
     def _continuous_cycle_jobs(self, cycle: int) -> list[dict[str, Any]]:
         jobs: list[dict[str, Any]] = []
@@ -424,7 +478,7 @@ class DetectorSession:
 
     def _request(self, job: dict[str, Any]) -> dict[str, Any]:
         result = self.transport.post(
-            model=self.model,
+            model=self.request_model,
             messages=job["messages"],
             effort=job["effort"],
             request_format=job["request_format"],
@@ -448,6 +502,7 @@ class DetectorSession:
         iterator = iter(pending)
         futures: dict[Any, dict[str, Any]] = {}
         executor = ThreadPoolExecutor(max_workers=workers, thread_name_prefix="gpt56-detector")
+        cancellation_deadline: float | None = None
 
         def submit_next() -> bool:
             if self.stop_event.is_set():
@@ -463,61 +518,68 @@ class DetectorSession:
             for _ in range(workers):
                 submit_next()
             while futures:
-                done, _pending = wait(tuple(futures), return_when=FIRST_COMPLETED)
+                done, _pending = wait(
+                    tuple(futures),
+                    timeout=CANCELLATION_POLL_SECONDS,
+                    return_when=FIRST_COMPLETED,
+                )
+                if not done:
+                    if self.stop_event.is_set():
+                        if cancellation_deadline is None:
+                            self.transport.cancel_all()
+                            cancellation_deadline = time.monotonic() + CANCELLATION_GRACE_SECONDS
+                        if time.monotonic() >= cancellation_deadline:
+                            break
+                    continue
                 for future in done:
                     futures.pop(future)
                     future.result()
                     submit_next()
         finally:
+            active_job_ids = {str(job["job_id"]) for job in futures.values()}
+            if self.stop_event.is_set():
+                self.transport.cancel_all()
             for future in futures:
                 future.cancel()
-            executor.shutdown(wait=True, cancel_futures=True)
+            executor.shutdown(wait=False, cancel_futures=True)
             if self.stop_event.is_set():
-                for job in self.store.pending_jobs(self.session_id, max_attempts=max_attempts):
+                for job in self.store.pending_jobs(self.session_id):
                     if job["job_id"] not in frozen_ids:
                         continue
                     attempts_sent = self.store.next_attempt_number(self.session_id, job["job_id"]) - 1
-                    if attempts_sent == 0:
-                        self.store.record_cancelled(self.session_id, job["job_id"], {
-                            **self._safe_job(job),
-                            "time": utc_now(),
-                            "status": "cancelled",
-                            "attempts_sent": 0,
-                            "stop_requested_at": self.store.session(self.session_id).get("stop_requested_at"),
-                        })
-                    else:
-                        self.store.record_terminal_result(self.session_id, job["job_id"], "error", {
-                            **self._safe_job(job),
-                            "time": utc_now(),
-                            "status": "error",
-                            "attempts_sent": attempts_sent,
-                            "error": {
-                                "stage": "runtime",
-                                "category": "stopped_before_retry",
-                                "retryable": False,
-                                "http_status": None,
-                                "attempt": attempts_sent,
-                                "safe_message": "用户停止了检测，未继续发送下一次重试",
-                            },
-                        })
+                    category = (
+                        "cancelled_before_send" if attempts_sent == 0
+                        else "cancelled_in_flight" if job["job_id"] in active_job_ids
+                        else "cancelled_before_retry"
+                    )
+                    self.store.record_cancelled(
+                        self.session_id,
+                        job["job_id"],
+                        self._cancelled_row(job, attempts_sent, category),
+                    )
+                self.store.cancel_running_attempts(
+                    self.session_id,
+                    active_job_ids,
+                    category="cancelled_in_flight",
+                )
 
     def _execute_job(self, job: dict[str, Any], requester: Callable[[dict[str, Any]], dict[str, Any]] | None) -> dict[str, Any]:
         if self.stop_event.is_set():
-            row = {
-                **self._safe_job(job),
-                "time": utc_now(),
-                "status": "cancelled",
-                "attempts_sent": 0,
-                "stop_requested_at": self.store.session(self.session_id).get("stop_requested_at"),
-            }
+            row = self._cancelled_row(job, 0, "cancelled_before_send")
             self.store.record_cancelled(self.session_id, job["job_id"], row)
             return row
         max_attempts = int(self.config["retries"]) + 1
         first_attempt = self.store.next_attempt_number(self.session_id, job["job_id"])
         for attempt_no in range(first_attempt, max_attempts + 1):
+            if self.stop_event.is_set():
+                row = self._cancelled_row(job, attempt_no - 1, "cancelled_before_retry")
+                self.store.record_cancelled(self.session_id, job["job_id"], row)
+                return row
             attempt_id = self.store.start_attempt(self.session_id, job["job_id"], attempt_no, max_attempts=max_attempts)
             try:
                 result = requester(job) if requester is not None else self._request(job)
+                if self.stop_event.is_set():
+                    raise TransportCancelled()
                 exchange = result.get("exchange") or self._fake_exchange(job, result)
                 if self.retention is not None:
                     self.retention.write(exchange)
@@ -535,12 +597,41 @@ class DetectorSession:
                 )
                 return row
             except Exception as exc:
+                if isinstance(exc, TransportCancelled):
+                    row = self._cancelled_row(job, attempt_no, "cancelled_in_flight")
+                    self.store.finish_attempt(
+                        attempt_id=attempt_id,
+                        status="cancelled",
+                        stage="transport",
+                        category="cancelled_in_flight",
+                        retryable=False,
+                        http_status=None,
+                        safe_message="用户已停止检测，当前请求已取消",
+                        final_result=row,
+                        final_job_status="cancelled",
+                    )
+                    return row
                 if isinstance(exc, TransportError) and self.retention is not None and exc.exchange:
                     try:
                         self.retention.write(exc.exchange)
                     except RetentionWriteError as retention_exc:
                         exc = retention_exc
                 info = _error_info(exc, attempt_no)
+                if self.stop_event.is_set():
+                    row = self._cancelled_row(job, attempt_no, "cancelled_before_retry")
+                    row["preceding_error"] = info
+                    self.store.finish_attempt(
+                        attempt_id=attempt_id,
+                        status="error",
+                        stage=info["stage"],
+                        category=info["category"],
+                        retryable=False,
+                        http_status=info["http_status"],
+                        safe_message=info["safe_message"],
+                        final_result=row,
+                        final_job_status="cancelled",
+                    )
+                    return row
                 will_retry = bool(info["retryable"] and attempt_no < max_attempts and not self.stop_event.is_set())
                 final = None
                 if not will_retry:
@@ -566,9 +657,24 @@ class DetectorSession:
                     if isinstance(exc, RetentionWriteError):
                         self.stop_event.set()
                         self.store.request_stop(self.session_id)
+                        self.transport.cancel_all()
+                    elif isinstance(exc, TransportError) and exc.status in {401, 403}:
+                        self.stop_event.set()
+                        self.store.request_stop(self.session_id)
+                        self.transport.cancel_all()
                     return final or {}
-                time.sleep(min(2.0, 0.25 * (2 ** (attempt_no - 1))))
+                self.stop_event.wait(min(2.0, 0.25 * (2 ** (attempt_no - 1))))
         raise AssertionError("attempt loop exhausted")
+
+    def _cancelled_row(self, job: dict[str, Any], attempts_sent: int, category: str) -> dict[str, Any]:
+        return {
+            **self._safe_job(job),
+            "time": utc_now(),
+            "status": "cancelled",
+            "attempts_sent": int(attempts_sent),
+            "cancellation_category": category,
+            "stop_requested_at": (self.store.session(self.session_id) or {}).get("stop_requested_at"),
+        }
 
     @staticmethod
     def _safe_job(job: dict[str, Any]) -> dict[str, Any]:
@@ -583,7 +689,7 @@ class DetectorSession:
             "sanitized_url": _safe_endpoint(self.base_url) + "/responses",
             "request_format": job["request_format"],
             "context_mode": job["context_mode"],
-            "model": self.model,
+            "model": self.request_model,
             "effort": job["effort"],
             "http_status": (result.get("meta") or {}).get("http_status", 200),
             "request_body_utf8_exact": "",
@@ -604,7 +710,7 @@ class DetectorSession:
         }
         probe_id = str(job["probe_id"])
         if probe_id.startswith("juice_") and probe_id != "juice_coverage":
-            row.update(classify_juice_answer(job["effort"], answer, self.model))
+            row.update(classify_juice_answer(job["effort"], answer, self.claimed_model))
         elif probe_id.startswith("output_"):
             row.update(classify_output_integrity(str(job["expected"]), answer))
         elif probe_id == "juice_coverage":
@@ -629,26 +735,34 @@ class DetectorSession:
                 break
         return list(reversed(selected))
 
-    def _probability_rows(self, rows: list[dict[str, Any]], runtime_spec: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    def _fingerprint_rows(self, rows: list[dict[str, Any]], runtime_spec: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
         selected: list[dict[str, Any]] = []
         states: dict[str, Any] = {}
         for key, needed in runtime_spec["cells"].items():
             probe_id, profile = key.split("|", 1)
             cell_rows = [
                 row for row in rows
-                if row.get("status") == "ok"
-                and row.get("classification") == "category"
-                and row.get("probe_id") == probe_id
+                if row.get("probe_id") == probe_id
                 and f"{row.get('request_format')}+{row.get('context_mode')}" == profile
             ]
             if self.config["mode"] == "continuous":
                 cell_rows = cell_rows[-int(needed):]
-            selected.extend(cell_rows)
+            completed_rows = [
+                row for row in cell_rows
+                if row.get("status") == "ok" and row.get("classification") == "category"
+            ]
+            selected.extend(completed_rows)
+            minimum = math.ceil(int(needed) * COMPLETION_RATIO)
             states[key] = {
-                "required": int(needed),
-                "actual": len(cell_rows),
-                "full": len(cell_rows) >= int(needed),
-                "counts": dict(Counter(str(row.get("category")) for row in cell_rows)),
+                "planned": int(needed),
+                "minimum": minimum,
+                "attempted": len(cell_rows),
+                "completed": len(completed_rows),
+                "completion_ratio": len(completed_rows) / max(1, int(needed)),
+                "complete": len(completed_rows) >= minimum,
+                "final_errors": sum(row.get("status") == "error" for row in cell_rows),
+                "cancelled": sum(row.get("status") == "cancelled" for row in cell_rows),
+                "counts": dict(Counter(str(row.get("category")) for row in completed_rows)),
             }
         return selected, states
 
@@ -675,7 +789,7 @@ class DetectorSession:
                 matching = self._rolling_rows(matching, lambda _row: True, needed)
             juice_rows.extend(matching)
         session = JuiceSession(
-            claimed_model=self.model,
+            claimed_model=self.claimed_model,
             selected_efforts=efforts,
             minimum_valid_by_effort=minimum_valid,
         )
@@ -687,6 +801,7 @@ class DetectorSession:
                     str(row.get("effort")),
                     str(row.get("normalized_value") or ""),
                     job_id=row.get("job_id"),
+                    probe_id=row.get("probe_id"),
                     time=row.get("time"),
                     request_format=row.get("request_format"),
                     context_mode=row.get("context_mode"),
@@ -695,12 +810,95 @@ class DetectorSession:
         summary["window_mode"] = "rolling" if self.config["mode"] == "continuous" else "single_run"
         return summary
 
+    def _persist_deterministic_sticky_events(
+        self,
+        juice_summary: dict[str, Any],
+        output_summary: dict[str, Any],
+        coverage_summary: dict[str, Any],
+    ) -> None:
+        events: list[tuple[str, str, dict[str, Any]]] = []
+        for item in juice_summary.get("sticky_events", []):
+            evidence = dict(item.get("evidence") or {})
+            events.append(("juice_model_mismatch", "Juice 型号指纹与申报不一致", evidence))
+        for row in output_summary.get("failures", []):
+            events.append(("output_rewrite_40", "32/48 输出被改写为40前缀", dict(row)))
+        for row in coverage_summary.get("failures", []):
+            events.append(("coverage_override", "显式 Juice 定义被隐藏覆盖", dict(row)))
+        for event_type, title, evidence in events:
+            identity = {
+                "event_type": event_type,
+                "job_id": evidence.get("job_id"),
+                "probe_id": evidence.get("probe_id"),
+                "effort": evidence.get("effort"),
+                "normalized_value": evidence.get("normalized_value"),
+                "observed": evidence.get("observed"),
+            }
+            self.store.add_sticky_alert(
+                self.session_id,
+                sha256_text(canonical_json(identity)),
+                title,
+                {
+                    "event_type": event_type,
+                    "reason_cn": title,
+                    "probe_id": evidence.get("probe_id"),
+                    "profile": f"{evidence.get('request_format')}+{evidence.get('context_mode')}",
+                    "effort": evidence.get("effort"),
+                    "source_time": evidence.get("time"),
+                    "evidence": evidence,
+                },
+            )
+
+    @staticmethod
+    def _apply_deterministic_sticky_events(
+        sticky: list[dict[str, Any]],
+        juice_summary: dict[str, Any],
+        output_summary: dict[str, Any],
+        coverage_summary: dict[str, Any],
+    ) -> None:
+        juice_alerts = [row for row in sticky if row.get("event_type") == "juice_model_mismatch"]
+        output_alerts = [row for row in sticky if row.get("event_type") == "output_rewrite_40"]
+        coverage_alerts = [row for row in sticky if row.get("event_type") == "coverage_override"]
+        juice_summary["sticky_events"] = [
+            {
+                "reason": row.get("dedupe_key"),
+                "first_triggered_at": row.get("time"),
+                "source_time": row.get("source_time"),
+                "historical": True,
+                "evidence": row.get("evidence"),
+            }
+            for row in juice_alerts
+        ]
+        if juice_alerts:
+            juice_summary.update({
+                "state": "juice_mixed",
+                "juice_mixed": True,
+                "juice_pass": False,
+                "juice_all_unsuccessful": False,
+                "data_insufficient": False,
+                "mixed": max(int(juice_summary.get("mixed", 0)), len(juice_alerts)),
+            })
+            juice_summary["mixed_models_observed"] = sorted({
+                model
+                for row in juice_alerts
+                for model in ((row.get("evidence") or {}).get("mixed_models") or [])
+            })
+        output_summary["sticky_hard_anomaly"] = bool(output_alerts)
+        output_summary["failures"] = [dict(row.get("evidence") or {}) for row in output_alerts]
+        coverage_summary["sticky_hard_anomaly"] = bool(coverage_alerts)
+        coverage_summary["failures"] = [dict(row.get("evidence") or {}) for row in coverage_alerts]
+
     def build_report(self) -> dict[str, Any]:
         rows = self.store.latest_results(self.session_id)
         completed_rows = [row for row in rows if row.get("status") in {"ok", "error", "cancelled"}]
         juice_summary = self._juice_summary(completed_rows)
-        output_rows = [row for row in completed_rows if str(row.get("probe_id", "")).startswith("output_") and row.get("status") == "ok"]
+        all_output_rows = [row for row in completed_rows if str(row.get("probe_id", "")).startswith("output_")]
+        if self.config["mode"] == "continuous":
+            output_window = int(self.config["probes"].get("output_integrity", {}).get("window", 1))
+            all_output_rows = self._rolling_rows(all_output_rows, lambda _row: True, output_window)
+        output_rows = [row for row in all_output_rows if row.get("status") == "ok"]
         output_summary = {
+            "window": len(output_rows) if self.config["mode"] == "single" else int(self.config["probes"].get("output_integrity", {}).get("window", 1)),
+            "attempted_in_window": len(all_output_rows),
             "requests": len(output_rows),
             "exact": sum(row.get("exact") is True for row in output_rows),
             "invalid": sum(row.get("classification") == "unsuccessful" for row in output_rows),
@@ -708,72 +906,93 @@ class DetectorSession:
             "failures": [row for row in output_rows if row.get("hard_anomaly")],
             "invalid_rows": [row for row in output_rows if row.get("classification") == "unsuccessful"],
         }
-        coverage_rows = [row for row in completed_rows if row.get("probe_id") == "juice_coverage" and row.get("status") == "ok"]
+        all_coverage_rows = [row for row in completed_rows if row.get("probe_id") == "juice_coverage"]
+        if self.config["mode"] == "continuous":
+            coverage_window = int(self.config["probes"].get("juice_coverage", {}).get("window", 1))
+            all_coverage_rows = self._rolling_rows(all_coverage_rows, lambda _row: True, coverage_window)
+        coverage_rows = [row for row in all_coverage_rows if row.get("status") == "ok"]
         coverage_summary = {
+            "window": len(coverage_rows) if self.config["mode"] == "single" else int(self.config["probes"].get("juice_coverage", {}).get("window", 1)),
+            "attempted_in_window": len(all_coverage_rows),
             "requests": len(coverage_rows),
             "hard_anomaly": any(row.get("hard_anomaly") for row in coverage_rows),
             "classifications": dict(Counter(str(row.get("classification")) for row in coverage_rows)),
             "failures": [row for row in coverage_rows if row.get("hard_anomaly")],
         }
-        probability_enabled = bool(self.formal_probability_models or self.reference_probability_models)
-        probability: dict[str, Any] = {}
+        self._persist_deterministic_sticky_events(juice_summary, output_summary, coverage_summary)
+        sticky = [
+            row for row in self.store.sticky_alerts(self.session_id)
+            if row.get("event_type") in {"juice_model_mismatch", "output_rewrite_40", "coverage_override"}
+        ]
+        self._apply_deterministic_sticky_events(sticky, juice_summary, output_summary, coverage_summary)
+        fingerprint_enabled = bool(self.formal_fingerprint_models or self.reference_fingerprint_models)
+        fingerprint: dict[str, Any] = {}
         window_states: dict[str, Any] = {}
         formal_results: list[dict[str, Any]] = []
-        for formal_model, formal_spec, component_id in self.formal_probability_models:
-            probability_rows, component_windows = self._probability_rows(completed_rows, formal_spec)
-            result = formal_model.score(probability_rows, runtime_spec=formal_spec, claimed_model=self.model)
+        for formal_model, formal_spec, component_id, decision_policy in self.formal_fingerprint_models:
+            fingerprint_rows, component_windows = self._fingerprint_rows(completed_rows, formal_spec)
+            result = formal_model.score(
+                fingerprint_rows,
+                runtime_spec=formal_spec,
+                claimed_model=self.claimed_model,
+                decision_policy=decision_policy,
+            )
             result["component_id"] = component_id
             result["window_states"] = component_windows
             formal_results.append(result)
             window_states.update(component_windows)
         if formal_results:
             if len(formal_results) != 1:
-                raise AssertionError("vNext formal path must use exactly one pre-calibrated built-in baseline")
-            probability = dict(formal_results[0])
-            probability["combination_policy"] = "single_builtin_precalibrated_baseline"
-            probability["window_states"] = window_states
-        reference_probability_results: list[dict[str, Any]] = []
-        for reference_model, reference_spec, probe_id in self.reference_probability_models:
-            reference_rows, reference_windows = self._probability_rows(completed_rows, reference_spec)
-            result = reference_model.score(reference_rows, runtime_spec=reference_spec, claimed_model=self.model)
+                raise AssertionError("formal path must use exactly one built-in fingerprint baseline")
+            fingerprint = dict(formal_results[0])
+            fingerprint["combination_policy"] = "single_builtin_fingerprint_baseline"
+            fingerprint["window_states"] = window_states
+        reference_fingerprint_results: list[dict[str, Any]] = []
+        for reference_model, reference_spec, probe_id in self.reference_fingerprint_models:
+            reference_rows, reference_windows = self._fingerprint_rows(completed_rows, reference_spec)
+            result = reference_model.score(reference_rows, runtime_spec=reference_spec, claimed_model=self.claimed_model)
             result.update({
                 "probe_id": probe_id,
                 "reference_only": True,
-                "formal_eligible": False,
-                "probability_pass": False,
-                "pure_model_alert": False,
-                "mixture_alert": False,
-                "evidence_insufficient": True,
+                "fingerprint_status": "unclear",
+                "fingerprint_model": None,
+                "fingerprint_official_eligible": False,
                 "window_states": reference_windows,
             })
-            reasons = list(result.get("evidence_insufficient_reasons") or [])
-            if "custom_baseline_reference_only" not in reasons:
-                reasons.append("custom_baseline_reference_only")
-            result["evidence_insufficient_reasons"] = reasons
-            reference_probability_results.append(result)
-        if not probability and reference_probability_results:
-            probability = dict(reference_probability_results[0])
+            reasons = list(result.get("fingerprint_unclear_reasons") or [])
+            if "custom_probe_reference_only" not in reasons:
+                reasons.append("custom_probe_reference_only")
+            result["fingerprint_unclear_reasons"] = reasons
+            reference_fingerprint_results.append(result)
+        if not fingerprint and reference_fingerprint_results:
+            fingerprint = dict(reference_fingerprint_results[0])
+        if not fingerprint:
+            fingerprint = {
+                "schema_version": 3,
+                "scoring_version": self.baseline["scoring_version"],
+                "fingerprint_status": "unclear",
+                "fingerprint_model": None,
+                "fingerprint_match": {},
+                "fingerprint_thresholds": {},
+                "fingerprint_official_eligible": False,
+                "fingerprint_unclear_reasons": ["no_probability_probe_selected"],
+                "cell_details": {},
+                "family_contributions": {},
+                "window_states": {},
+            }
         changes = custom_changes(self.config, self.config.get("base_preset")) if not self.config["official"] else []
         verdict = build_overall_verdict(
             juice_summary=juice_summary,
-            probability_summary=probability,
+            fingerprint_summary=fingerprint,
             output_integrity_summary=output_summary,
             coverage_summary=coverage_summary,
-            probability_enabled=probability_enabled,
+            fingerprint_enabled=fingerprint_enabled,
             preset=self.config["preset"],
             official=bool(self.config["official"]),
             custom_changes=changes,
             session_id=self.session_id,
-            claimed_model=self.model,
+            claimed_model=self.claimed_model,
         )
-        if verdict["overall_verdict"] in HARD_TITLES:
-            dedupe = sha256_text(json.dumps({"title": verdict["overall_verdict"], "failed": verdict["failed_items"]}, sort_keys=True, default=str))
-            self.store.add_sticky_alert(self.session_id, dedupe, verdict["overall_verdict"], {"failed_items": verdict["failed_items"]})
-        sticky = self.store.sticky_alerts(self.session_id)
-        if sticky and verdict["overall_verdict"] not in HARD_TITLES:
-            verdict["current_window_verdict"] = verdict["overall_verdict"]
-            verdict["overall_verdict"] = sticky[0]["title"]
-            verdict["title_cn"] = sticky[0]["title"] + ("（自定义参考）" if not self.config["official"] else "")
         progress = self.store.progress(self.session_id)
         attempt_details = self.store.attempt_details(self.session_id)
         error_details = []
@@ -786,6 +1005,7 @@ class DetectorSession:
                 "profile": f"{manifest.get('request_format')}+{manifest.get('context_mode')}",
                 "stage": attempt.get("stage"),
                 "category": attempt.get("category"),
+                "category_cn": ERROR_CATEGORY_CN.get(str(attempt.get("category")), "未分类的上游或本地错误"),
                 "retryable": bool(attempt.get("retryable")),
                 "http_status": attempt.get("http_status"),
                 "attempt": attempt.get("attempt_no"),
@@ -800,7 +1020,7 @@ class DetectorSession:
                 "successful": sum(row.get("status") == "ok" for row in values),
                 "final_errors": sum(row.get("status") == "error" for row in values),
                 "cancelled": sum(row.get("status") == "cancelled" for row in values),
-                "probability_windows": {key: value for key, value in window_states.items() if key.endswith("|" + profile)},
+                "fingerprint_windows": {key: value for key, value in window_states.items() if key.endswith("|" + profile)},
             }
         retention_manifest = self.retention.finalize() if self.retention is not None else None
         build_hash = hashlib.sha256()
@@ -808,7 +1028,7 @@ class DetectorSession:
             build_hash.update((Path(__file__).with_name(name)).read_bytes())
         session = self.store.session(self.session_id) or {}
         report = {
-            "schema_version": 2,
+            "schema_version": 4,
             "scoring_version": self.baseline["scoring_version"],
             "session_id": self.session_id,
             "mode": self.config["mode"],
@@ -821,16 +1041,21 @@ class DetectorSession:
             "build_hash": build_hash.hexdigest(),
             "started_at": session.get("created_at"),
             "updated_at": utc_now(),
-            "candidate_configuration_without_key": {"base_url": _safe_endpoint(self.base_url), "model": self.model},
+            "claimed_model": self.claimed_model,
+            "request_model": self.request_model,
+            "candidate_configuration_without_key": {
+                "base_url": _safe_endpoint(self.base_url),
+                "claimed_model": self.claimed_model,
+                "request_model": self.request_model,
+            },
             "request_profiles": selected_profiles(self.config),
             **verdict,
             "juice_summary": juice_summary,
             "output_integrity_summary": output_summary,
             "coverage_summary": coverage_summary,
-            "probability_summary": probability,
-            "reference_probability_results": reference_probability_results,
-            "mixture_summary": probability.get("mixture", {}),
-            "window_states": window_states,
+            "fingerprint_summary": fingerprint,
+            "reference_fingerprint_results": reference_fingerprint_results,
+            "fingerprint_window_states": window_states,
             "profile_summary": profiles,
             "sticky_alerts": sticky,
             "network_summary": {
@@ -844,19 +1069,7 @@ class DetectorSession:
                 "in_flight": progress["in_flight"],
             },
             "network_error_details": error_details,
-            "data_completeness": {
-                "juice": {
-                    "state": juice_summary["state"],
-                    "insufficient_efforts": juice_summary["insufficient_valid_efforts"],
-                    "missing_success_efforts": juice_summary["missing_current_success_efforts"],
-                },
-                "probability": {
-                    "enabled": probability_enabled,
-                    "formal_eligible": probability.get("formal_eligible") if probability_enabled else None,
-                    "reasons": probability.get("evidence_insufficient_reasons", []) if probability_enabled else [],
-                },
-                "retention_complete": retention_manifest.get("complete", True) if retention_manifest else True,
-            },
+            "retention_complete": retention_manifest.get("complete", True) if retention_manifest else True,
             "retention_enabled": self.retention is not None,
             "retention_directory_display": str(self.retention.directory) if self.retention is not None else None,
             "retention_manifest": retention_manifest,
