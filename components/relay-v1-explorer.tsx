@@ -8,8 +8,10 @@ import {
   ArrowDown,
   ArrowUp,
   BarChart3,
+  Calculator,
   Check,
   ChevronDown,
+  Copy,
   ExternalLink,
   Flame,
   Gauge,
@@ -111,57 +113,55 @@ function formatDate(value: string): string {
 
 function PriceDistributionRuler({
   stats,
-  selectedModel,
   isImage,
 }: {
   stats: PriceDistributionStats;
-  selectedModel: string;
   isImage: boolean;
 }) {
   if (stats.count < 2 || stats.max <= stats.min) return null;
 
   const span = stats.max - stats.min;
-  const p20Pos = Math.max(12, Math.min(35, ((stats.p20 - stats.min) / span) * 100));
-  const p50Pos = Math.max(p20Pos + 10, Math.min(75, ((stats.p50 - stats.min) / span) * 100));
-  const p70Pos = Math.max(p50Pos + 10, Math.min(90, ((stats.p70 - stats.min) / span) * 100));
+  const p20Pos = Math.max(10, Math.min(30, ((stats.p20 - stats.min) / span) * 100));
+  const p50Pos = Math.max(p20Pos + 10, Math.min(70, ((stats.p50 - stats.min) / span) * 100));
+  const p70Pos = Math.max(p50Pos + 10, Math.min(88, ((stats.p70 - stats.min) / span) * 100));
 
   const formatVal = (v: number) => (isImage ? `¥${v.toFixed(3)}` : `${v.toFixed(4).replace(/\.?0+$/, "")}×`);
 
   return (
-    <div className="mb-8 border-2 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+    <div className="mb-6 border-2 border-black bg-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
       {/* 标头 */}
       <div className="flex flex-wrap items-center justify-between border-b-2 border-black bg-black px-4 py-2 text-white font-mono text-xs">
         <div className="flex items-center gap-2 font-black uppercase tracking-[0.2em]">
           <span className="h-2 w-2 bg-swiss-accent" />
-          <span>Market Price Spectrum // 全网价格分布与梯队刻度标尺</span>
+          <span>Market Price Spectrum // 全网价格分布刻度标尺</span>
         </div>
-        <div className="text-[10px] text-white/60">
-          基于当前 {stats.count} 家报价站动态计算 · 20% / 70% 分位数基线
+        <div className="text-[10px] text-white/60 font-bold">
+          {stats.count} 站报价 · 20% / 70% 动态分位数
         </div>
       </div>
 
       {/* 刻度尺可视化条 */}
-      <div className="p-4 sm:p-6 bg-[#FAF9F5]">
+      <div className="p-3.5 sm:p-5 bg-[#F2F2EE]">
         {/* 顶部标签 */}
-        <div className="mb-2 flex items-center justify-between font-mono text-[10px] font-bold text-black/60">
-          <div className="flex items-center gap-1 text-black">
+        <div className="mb-2 flex items-center justify-between font-mono text-[11px] font-bold text-black">
+          <div className="flex items-center gap-1.5">
             <span className="font-black text-swiss-accent">★ 全网最低</span>
-            <span className="border border-black bg-black px-1.5 py-0.2 text-white font-mono font-black">
+            <span className="border border-black bg-black px-1.5 py-0.5 text-white font-mono font-black text-xs shadow-[1px_1px_0px_0px_#FF3000]">
               {formatVal(stats.min)}
             </span>
           </div>
-          <div className="hidden sm:flex items-center gap-1 text-black/70">
+          <div className="hidden sm:flex items-center gap-1 text-black/80">
             <span>◆ P50 中位数:</span>
             <span className="font-black text-black">{formatVal(stats.p50)}</span>
           </div>
-          <div className="flex items-center gap-1 text-black/60">
+          <div className="flex items-center gap-1 text-black/70">
             <span>▲ 全网最高:</span>
             <span className="font-bold text-black">{formatVal(stats.max)}</span>
           </div>
         </div>
 
         {/* 连续价格轴刻度线 */}
-        <div className="relative h-9 border-2 border-black bg-white flex overflow-hidden shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+        <div className="relative h-8 border-2 border-black bg-white flex overflow-hidden shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
           {/* T1 区间 */}
           <div
             className="relative h-full bg-black text-white flex items-center px-2 font-mono text-[10px] font-black tracking-wider transition-all"
@@ -185,14 +185,14 @@ function PriceDistributionRuler({
               style={{ left: `${((p50Pos - p20Pos) / (p70Pos - p20Pos)) * 100}%` }}
               title={`P50 中位数: ${formatVal(stats.p50)}`}
             >
-              <div className="h-2 w-2 rotate-45 bg-black -mt-6" />
+              <div className="h-2 w-2 rotate-45 bg-black -mt-5" />
             </div>
             <span className="absolute right-0 top-0 bottom-0 w-0.5 bg-black/40" />
           </div>
 
           {/* T3 区间 */}
           <div
-            className="relative h-full bg-[#EAE9E4] text-black/70 flex items-center px-2 font-mono text-[10px] font-bold tracking-wider transition-all"
+            className="relative h-full bg-[#E5E5E0] text-black/70 flex items-center px-2 font-mono text-[10px] font-bold tracking-wider transition-all"
             style={{ width: `${100 - p70Pos}%` }}
             title={`T3 官号高溢档: > ${formatVal(stats.p70)}`}
           >
@@ -201,33 +201,33 @@ function PriceDistributionRuler({
         </div>
 
         {/* 底部梯队区间说明 */}
-        <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 font-mono text-xs pt-1">
+        <div className="mt-2.5 grid grid-cols-1 sm:grid-cols-3 gap-2 font-mono text-xs">
           <div className="border border-black bg-black p-2 text-white">
             <div className="flex items-center justify-between text-[10px] text-white/60 uppercase">
               <span>T1 · 极限性价比 (Top 20%)</span>
               <span className="text-swiss-accent font-black">● 推荐</span>
             </div>
-            <div className="mt-1 font-black text-sm text-white">
+            <div className="mt-0.5 font-black text-sm text-white">
               {formatVal(stats.min)} ~ {formatVal(stats.p20)}
             </div>
           </div>
 
           <div className="border border-black bg-white p-2 text-black">
-            <div className="flex items-center justify-between text-[10px] text-black/50 uppercase">
+            <div className="flex items-center justify-between text-[10px] text-black/60 uppercase">
               <span>T2 · 稳健主力档 (20%~70%)</span>
               <span className="font-bold text-black">主力站群</span>
             </div>
-            <div className="mt-1 font-black text-sm text-black">
+            <div className="mt-0.5 font-black text-sm text-black">
               {formatVal(stats.p20)} ~ {formatVal(stats.p70)}
             </div>
           </div>
 
-          <div className="border border-black/30 bg-[#EAE9E4] p-2 text-black/70">
-            <div className="flex items-center justify-between text-[10px] text-black/40 uppercase">
+          <div className="border border-black/30 bg-[#E5E5E0] p-2 text-black/70">
+            <div className="flex items-center justify-between text-[10px] text-black/50 uppercase">
               <span>T3 · 官号高溢档 (Top 30%)</span>
               <span>高 SLA / 溢价</span>
             </div>
-            <div className="mt-1 font-black text-sm text-black/80">
+            <div className="mt-0.5 font-black text-sm text-black/80">
               &gt; {formatVal(stats.p70)}
             </div>
           </div>
@@ -238,7 +238,7 @@ function PriceDistributionRuler({
 }
 
 // ============================================================================
-// 子组件 02：模型家族横向联动矩阵 (ModelFamilyMatrixBar) - 工业工学控制台风格
+// 子组件 02：模型家族横向联动矩阵 (ModelFamilyMatrixBar) - 移动端横滑/桌面端网格
 // ============================================================================
 
 function ModelFamilyMatrixBar({
@@ -253,9 +253,9 @@ function ModelFamilyMatrixBar({
   if (!family || family.subModels.length <= 1) return null;
 
   return (
-    <div className="mb-8 border-2 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+    <div className="mb-6 border-2 border-black bg-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
       {/* 矩阵标头 */}
-      <div className="flex flex-wrap items-center justify-between border-b-2 border-black bg-black px-4 py-2.5 text-white">
+      <div className="flex flex-wrap items-center justify-between border-b-2 border-black bg-black px-4 py-2 text-white">
         <div className="flex items-center gap-2.5 font-mono text-xs font-black uppercase tracking-[0.2em]">
           <span className="relative flex h-2.5 w-2.5 items-center justify-center">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-swiss-accent opacity-75" />
@@ -270,8 +270,8 @@ function ModelFamilyMatrixBar({
         </div>
       </div>
 
-      {/* 变体卡片网格 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y-2 sm:divide-y-0 sm:divide-x-2 divide-black bg-[#FAFAFA]">
+      {/* 变体卡片：移动端横滑，桌面端 4 列等宽网格 */}
+      <div className="flex sm:grid sm:grid-cols-4 overflow-x-auto sm:overflow-visible snap-x divide-x-2 divide-black bg-[#FAFAFA]">
         {family.subModels.map((variant, idx) => {
           const isActive = variant.modelName.toLowerCase() === selectedModel.toLowerCase();
           const codeName = `SPEC-0${idx + 1}`;
@@ -281,7 +281,7 @@ function ModelFamilyMatrixBar({
               key={variant.modelName}
               type="button"
               onClick={() => onSelectModel(variant.modelName)}
-              className={`group relative flex flex-col justify-between p-4 text-left transition-all duration-150 ${
+              className={`group relative flex min-w-[260px] sm:min-w-0 snap-start flex-col justify-between p-4 text-left transition-all duration-150 ${
                 isActive
                   ? "bg-white ring-4 ring-inset ring-black z-10 shadow-[inset_0_4px_0_0_#FF3000]"
                   : "bg-[#FAFAFA] hover:bg-white hover:shadow-[inset_0_2px_0_0_#000000]"
@@ -303,7 +303,7 @@ function ModelFamilyMatrixBar({
                       ACTIVE
                     </span>
                   ) : (
-                    <span className="font-mono text-[10px] text-black/35 font-bold">
+                    <span className="font-mono text-[10px] text-black/40 font-bold">
                       {codeName} · {variant.siteCount} 站
                     </span>
                   )}
@@ -312,15 +312,15 @@ function ModelFamilyMatrixBar({
                 <div className="mt-2 font-mono text-sm font-black text-black truncate" title={variant.modelName}>
                   {variant.modelName}
                 </div>
-                <div className="mt-0.5 font-mono text-[11px] text-black/55 leading-tight">
+                <div className="mt-0.5 font-mono text-[11px] text-black/60 leading-tight">
                   {variant.tagline}
                 </div>
               </div>
 
               {/* 底部价格与站点 */}
-              <div className="mt-5 border-t border-black/15 pt-3">
+              <div className="mt-4 border-t border-black/15 pt-2.5">
                 <div className="flex items-baseline justify-between">
-                  <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-black/45">
+                  <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-black/60">
                     全网最低折算价
                   </span>
                   <span className="font-mono text-xl font-black text-black tracking-tight">
@@ -334,11 +334,11 @@ function ModelFamilyMatrixBar({
                     )}
                   </span>
                 </div>
-                <div className="mt-1.5 flex items-center justify-between font-mono text-[10px] text-black/60">
-                  <span className="truncate max-w-[130px] font-bold text-black/80" title={variant.lowestPriceSite?.name || ""}>
+                <div className="mt-1 flex items-center justify-between font-mono text-[10px] text-black/70">
+                  <span className="truncate max-w-[130px] font-bold text-black" title={variant.lowestPriceSite?.name || ""}>
                     {variant.lowestPriceSite?.name ? `由 ${variant.lowestPriceSite.name}` : "暂无报价"}
                   </span>
-                  <span className="text-black/50">
+                  <span className="text-black/60">
                     P50 {variant.avgP50 ? `${Math.round(variant.avgP50)}ms` : "--"}
                   </span>
                 </div>
@@ -352,7 +352,7 @@ function ModelFamilyMatrixBar({
 }
 
 // ============================================================================
-// 子组件 03：排位标尺与价格梯队徽章 (RankTierBadge) - 赛道排位风格
+// 子组件 03：排位标尺与价格梯队徽章 (RankTierBadge)
 // ============================================================================
 
 function RankTierBadge({ row }: { row: ComparisonRow }) {
@@ -360,7 +360,7 @@ function RankTierBadge({ row }: { row: ComparisonRow }) {
   const isT3 = row.tierInfo.tier === "T3";
 
   return (
-    <div className="flex flex-col gap-1.5 shrink-0 font-mono">
+    <div className="flex flex-col gap-1 shrink-0 font-mono">
       {/* 绝对名次与梯队徽章 */}
       <div className="flex items-baseline gap-2">
         <span className="text-2xl font-black tracking-tighter text-black">
@@ -371,7 +371,7 @@ function RankTierBadge({ row }: { row: ComparisonRow }) {
             isT1
               ? "border-black bg-black text-white shadow-[1.5px_1.5px_0px_0px_#FF3000]"
               : isT3
-              ? "border-black/30 bg-[#F2F2EE] text-black/65"
+              ? "border-black/30 bg-[#EAE9E4] text-black/70"
               : "border-black bg-white text-black shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)]"
           }`}
           title={row.tierInfo.description}
@@ -382,7 +382,7 @@ function RankTierBadge({ row }: { row: ComparisonRow }) {
       </div>
 
       {/* 相对排位百分位 */}
-      <div className="text-[10px] font-bold text-black/50 tracking-tight">
+      <div className="text-[10px] font-bold text-black/60 tracking-tight">
         {row.percentileText} <span className="text-black/30">/</span> 共 {row.totalSites} 站
       </div>
     </div>
@@ -390,7 +390,7 @@ function RankTierBadge({ row }: { row: ComparisonRow }) {
 }
 
 // ============================================================================
-// 子组件 04：计费公式拆解药丸 (PriceFormulaBreakdownPill) - 高透明度运算链
+// 子组件 04：计费公式拆解药丸 (PriceFormulaBreakdownPill)
 // ============================================================================
 
 function PriceFormulaBreakdownPill({
@@ -417,7 +417,7 @@ function PriceFormulaBreakdownPill({
             </span>
           )}
         </div>
-        <p className="font-mono text-[11px] text-black/60">
+        <p className="font-mono text-[11px] text-black/70">
           {formula.hasGroupDiscount ? `基准 ¥${formula.basePrice} × [${formula.groupName} ${formula.groupRate}x]` : "按次计费"}
         </p>
       </div>
@@ -441,15 +441,15 @@ function PriceFormulaBreakdownPill({
       {/* 公式运算链药丸 */}
       <div className="flex flex-wrap items-center gap-1.5 font-mono text-[11px]">
         {formula.hasGroupDiscount ? (
-          <div className="inline-flex flex-wrap items-center gap-1 border border-black/25 bg-white px-2 py-0.5 text-black/80 shadow-[1px_1px_0px_0px_rgba(0,0,0,0.1)]">
-            <span className="text-black/55">基准 {formula.basePrice}×</span>
+          <div className="inline-flex flex-wrap items-center gap-1 border border-black/30 bg-white px-2 py-0.5 text-black font-bold shadow-[1px_1px_0px_0px_rgba(0,0,0,0.1)]">
+            <span className="text-black/60">基准 {formula.basePrice}×</span>
             <span className="font-black text-black/40">×</span>
             <span className="font-bold text-black">
               [{formula.groupName} {formula.groupRate}×]
             </span>
           </div>
         ) : (
-          <div className="inline-flex items-center gap-1.5 text-black/60 font-mono text-[11px]">
+          <div className="inline-flex items-center gap-1.5 text-black/70 font-mono text-[11px]">
             <span>输入 {formatMultiplier(row.offer.inputRate)}</span>
             <span>·</span>
             <span>输出 {formatMultiplier(row.offer.outputRate)}</span>
@@ -469,7 +469,7 @@ function PriceFormulaBreakdownPill({
       </div>
 
       {(row.offer.cacheRate != null || row.offer.createCacheRate != null) && (
-        <div className="font-mono text-[10px] text-black/45">
+        <div className="font-mono text-[10px] text-black/60">
           CACHE {formatMultiplier(row.offer.cacheRate)} · CREATE {formatMultiplier(row.offer.createCacheRate)}
         </div>
       )}
@@ -486,19 +486,37 @@ function SmartDecisionHighlightTags({
   ttftMs,
   availability7d,
   qcScore,
+  riskLevel,
   siteTags,
 }: {
   isLowestPrice: boolean;
   ttftMs: number | null;
   availability7d: number | null;
   qcScore: number | null;
+  riskLevel: RiskLevel;
   siteTags: SiteFeatureTags;
 }) {
+  const isLowSla = availability7d != null && availability7d < 90;
+  const isHighRisk = riskLevel === "high";
+
   return (
     <div className="flex flex-wrap items-center gap-1.5 font-mono text-[10px]">
       {isLowestPrice && (
         <span className="inline-flex items-center gap-1 border border-black bg-black px-2 py-0.5 font-black text-white shadow-[1px_1px_0px_0px_#FF3000]">
           <span className="text-swiss-accent">★</span> 全网最低价
+        </span>
+      )}
+
+      {/* 防坑熔断与高风险提示 */}
+      {isHighRisk && (
+        <span className="inline-flex items-center gap-1 border-2 border-black bg-amber-400 px-1.5 py-0.5 font-black text-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+          <AlertTriangle className="h-3 w-3 text-black" /> 存在拉闸/限制声明
+        </span>
+      )}
+
+      {isLowSla && (
+        <span className="inline-flex items-center gap-1 border-2 border-black bg-red-100 px-1.5 py-0.5 font-black text-red-900 shadow-[1px_1px_0px_0px_#FF3000]">
+          ⚠️ 7D可用率低于90%
         </span>
       )}
 
@@ -534,12 +552,12 @@ function SmartDecisionHighlightTags({
         </span>
       )}
       {siteTags.hasInvoice && (
-        <span className="border border-black/40 bg-white px-1.5 py-0.5 font-medium text-black/75">
+        <span className="border border-black/40 bg-white px-1.5 py-0.5 font-medium text-black/80">
           可开票
         </span>
       )}
       {siteTags.noVerify && (
-        <span className="border border-black/40 bg-white px-1.5 py-0.5 font-medium text-black/75">
+        <span className="border border-black/40 bg-white px-1.5 py-0.5 font-medium text-black/80">
           免验证
         </span>
       )}
@@ -558,7 +576,7 @@ function AvailabilityCell({ site }: { site: RelayV1Site }) {
         <strong className="text-base font-black text-black">
           {formatPercent(value)}
         </strong>
-        <span className="text-[10px] uppercase tracking-wider text-black/50">
+        <span className="text-[10px] uppercase tracking-wider text-black/60">
           7D 可用率
         </span>
       </div>
@@ -570,7 +588,7 @@ function AvailabilityCell({ site }: { site: RelayV1Site }) {
         />
       </div>
 
-      <div className="flex items-center justify-between text-[10px] text-black/60 pt-0.5">
+      <div className="flex items-center justify-between text-[10px] text-black/70 pt-0.5">
         <span>TTFT {formatMs(ttft)}</span>
         <span>{site.performance ? `${site.performance.consecutiveFailures} 连败` : "未测"}</span>
       </div>
@@ -582,7 +600,7 @@ function ChangeAndRisk({ row }: { row: ComparisonRow }) {
   const change = row.changedGroups[0];
   if (!change) {
     return (
-      <div className="font-mono text-xs text-black/40 flex items-center gap-1">
+      <div className="font-mono text-xs text-black/50 flex items-center gap-1">
         <span className="h-1.5 w-1.5 bg-black/30 inline-block" />
         <span>价格平稳</span>
       </div>
@@ -599,66 +617,114 @@ function ChangeAndRisk({ row }: { row: ComparisonRow }) {
 }
 
 function DetailPanel({ row, selectedModel }: { row: ComparisonRow; selectedModel: string }) {
+  const [copiedType, setCopiedType] = useState<string | null>(null);
+
+  const copyToClipboard = (text: string, type: string) => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      setCopiedType(type);
+      setTimeout(() => setCopiedType(null), 1800);
+    }
+  };
+
+  const domainUrl = row.site.domain
+    ? (/^https?:\/\//i.test(row.site.domain) ? row.site.domain : `https://${row.site.domain}`)
+    : "";
+
   return (
-    <div className="border-t-2 border-black bg-[#FAF9F5] p-5 sm:p-7">
+    <div className="border-t-2 border-black bg-[#F2F2EE] p-4 sm:p-6">
       <div className="grid gap-6 xl:grid-cols-2">
-        {/* 01 计费公式拆解 */}
-        <div className="border-2 border-black bg-white p-5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+        {/* 01 计费公式拆解与一键复制 */}
+        <div className="border-2 border-black bg-white p-4 sm:p-5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
           <div className="flex items-center justify-between border-b-2 border-black pb-2.5">
             <span className="font-mono text-xs font-black uppercase tracking-wider flex items-center gap-2">
               <span className="h-2 w-2 bg-swiss-accent" />
-              01 · 当前生效计费公式拆解
+              01 · 生效计费公式与调用配置
             </span>
             <span className="border border-black bg-black px-2 py-0.5 font-mono text-[10px] font-black text-white">
               {row.formula.groupName} ({row.formula.groupRate}×)
             </span>
           </div>
-          <div className="mt-4 space-y-2.5 font-mono text-xs">
+
+          <div className="mt-3.5 space-y-2 font-mono text-xs">
             <div className="flex justify-between border-b border-black/10 pb-1.5">
-              <span className="text-black/55">基础模型定价 (Base Rate)</span>
+              <span className="text-black/60">基础模型定价 (Base Rate)</span>
               <span className="font-bold text-black">{row.formula.basePrice}×</span>
             </div>
             <div className="flex justify-between border-b border-black/10 pb-1.5">
-              <span className="text-black/55">命中最优分组 (Matched Group)</span>
+              <span className="text-black/60">命中最优分组 (Matched Group)</span>
               <span className="font-black text-swiss-accent">{row.formula.groupName} ({row.formula.groupRate}×)</span>
             </div>
             <div className="flex justify-between border-b border-black/10 pb-1.5">
-              <span className="text-black/55">最终折算到手倍率 (Effective Rate)</span>
+              <span className="text-black/60">最终折算到手倍率 (Effective Rate)</span>
               <span className="font-black text-lg text-black">{row.formula.effectivePrice.toFixed(4).replace(/\.?0+$/, "")}×</span>
             </div>
-            <div className="mt-3 text-[11px] text-black/80 bg-[#FFF9F6] p-3 border-2 border-black shadow-[2px_2px_0px_0px_#FF3000]">
-              👉 <strong>调用指引</strong>：在向 <strong>{row.site.domain || row.site.name}</strong> 发起 <code>{selectedModel}</code> 请求时，请务必在后台将令牌或分组权限指定为 <code>{row.formula.groupName}</code>，以享受 <strong>{row.formula.effectivePrice.toFixed(4).replace(/\.?0+$/, "")}×</strong> 的优惠费率。
+
+            {/* 一键复制快捷动作 */}
+            <div className="mt-3 flex flex-wrap items-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => copyToClipboard(row.formula.groupName, "group")}
+                className="inline-flex items-center gap-1.5 border-2 border-black bg-[#FAFAFA] px-2.5 py-1 text-[11px] font-black text-black hover:bg-black hover:text-white transition-colors"
+              >
+                <Copy className="h-3 w-3" />
+                {copiedType === "group" ? "✓ 已复制分组名" : `复制分组名 [${row.formula.groupName}]`}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => copyToClipboard(selectedModel, "model")}
+                className="inline-flex items-center gap-1.5 border-2 border-black bg-[#FAFAFA] px-2.5 py-1 text-[11px] font-black text-black hover:bg-black hover:text-white transition-colors"
+              >
+                <Copy className="h-3 w-3" />
+                {copiedType === "model" ? "✓ 已复制模型ID" : `复制模型ID [${selectedModel}]`}
+              </button>
+
+              {domainUrl && (
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(`${domainUrl}/v1`, "baseurl")}
+                  className="inline-flex items-center gap-1.5 border-2 border-black bg-[#FAFAFA] px-2.5 py-1 text-[11px] font-black text-black hover:bg-black hover:text-white transition-colors"
+                >
+                  <Copy className="h-3 w-3" />
+                  {copiedType === "baseurl" ? "✓ 已复制 BaseURL" : "复制 BaseURL (/v1)"}
+                </button>
+              )}
+            </div>
+
+            <div className="mt-3 text-[11px] text-black bg-[#FFEFEA] p-3 border-2 border-black shadow-[2px_2px_0px_0px_#FF3000]">
+              👉 <strong>配置指引</strong>：在向 <strong>{row.site.domain || row.site.name}</strong> 请求 <code>{selectedModel}</code> 时，请在后台指定分组为 <code>{row.formula.groupName}</code>，享受 <strong>{row.formula.effectivePrice.toFixed(4).replace(/\.?0+$/, "")}×</strong> 的优惠费率。
             </div>
           </div>
         </div>
 
         {/* 02 网络延迟与探针数据 */}
-        <div className="border-2 border-black bg-white p-5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+        <div className="border-2 border-black bg-white p-4 sm:p-5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
           <div className="flex items-center justify-between border-b-2 border-black pb-2.5">
             <span className="font-mono text-xs font-black uppercase tracking-wider flex items-center gap-2">
               <span className="h-2 w-2 bg-black" />
               02 · 网络延迟与可用率实测档案
             </span>
-            <span className="font-mono text-[10px] text-black/50">
+            <span className="font-mono text-[10px] text-black/60">
               {row.site.performance?.lastProbeAt ? `打点于 ${row.site.performance.lastProbeAt}` : "无实测打点"}
             </span>
           </div>
-          <div className="mt-4 grid grid-cols-3 gap-2.5 text-center font-mono">
+          <div className="mt-3.5 grid grid-cols-3 gap-2.5 text-center font-mono">
             <div className="border-2 border-black p-2.5 bg-[#FAFAFA]">
-              <div className="text-[10px] font-bold text-black/50 uppercase">TTFT 首字延迟</div>
+              <div className="text-[10px] font-bold text-black/60 uppercase">TTFT 首字延迟</div>
               <div className="mt-1 text-lg font-black text-black">{formatMs(row.site.performance?.ttftP50Ms ?? null)}</div>
             </div>
             <div className="border-2 border-black p-2.5 bg-[#FAFAFA]">
-              <div className="text-[10px] font-bold text-black/50 uppercase">P95 峰值延迟</div>
+              <div className="text-[10px] font-bold text-black/60 uppercase">P95 峰值延迟</div>
               <div className="mt-1 text-lg font-black text-black">{formatMs(row.site.performance?.latencyP95Ms ?? null)}</div>
             </div>
             <div className="border-2 border-black p-2.5 bg-[#FAFAFA]">
-              <div className="text-[10px] font-bold text-black/50 uppercase">7日成功率</div>
+              <div className="text-[10px] font-bold text-black/60 uppercase">7日成功率</div>
               <div className="mt-1 text-lg font-black text-emerald-700">{formatPercent(row.site.performance?.successRate ?? null, true)}</div>
             </div>
           </div>
           <div className="mt-4 flex items-center justify-between border-t border-black/15 pt-3">
-            <span className="font-mono text-xs text-black/50">包含 165+ 站底表全量分组与支持特性</span>
+            <span className="font-mono text-xs text-black/60">包含 165+ 站底表全量分组与支持特性</span>
             <Link
               href={`/table/relay_sites_tracker/${encodeURIComponent(row.site.id)}`}
               className="inline-flex items-center gap-1 font-mono text-xs font-black text-black underline hover:text-swiss-accent"
@@ -683,6 +749,7 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
   const [measuredOnly, setMeasuredOnly] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("price");
   const [presetFilter, setPresetFilter] = useState<ScenarioPreset>("all");
+  const [showEstimator, setShowEstimator] = useState(false);
   const [modelSearchQuery, setModelSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -800,7 +867,7 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
       const formula = resolveOfferFormula(offer, site.groups);
       const priceValue = formula.effectivePrice > 0 ? formula.effectivePrice : null;
 
-      // 场景预设过滤
+      // 场景预设过滤（修复 verified 预设分支）
       if (presetFilter === "coding") {
         const isCoding =
           site.groups.some((g) => /claude|kiro|max|code|codex/i.test(g.name + (g.remark || ""))) ||
@@ -810,6 +877,10 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
       } else if (presetFilter === "low_cost") {
         const isLow = (site.minimumRate != null && site.minimumRate <= 0.1) || (priceValue != null && priceValue <= 0.1);
         if (!isLow) continue;
+      } else if (presetFilter === "verified") {
+        const siteTags = extractSiteTags(site);
+        const isVerified = siteTags.hasInvoice || siteTags.noVerify || siteTags.hasRefund;
+        if (!isVerified) continue;
       }
 
       // 搜索过滤
@@ -928,11 +999,11 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
   };
 
   return (
-    <div className="pb-24 bg-[#FCFCFA]">
+    <div className="pb-24 bg-[#FAFAFA]">
       <RelaySubNav />
 
       {/* Header Banner - Swiss Typographic Statement */}
-      <section className="swiss-grid border-b-4 border-black px-4 py-12 sm:px-8 lg:px-12 lg:py-16">
+      <section className="swiss-grid border-b-4 border-black px-4 py-10 sm:px-8 lg:px-12 lg:py-14">
         <div className="grid gap-8 xl:grid-cols-[1.45fr_0.55fr] xl:items-end">
           <div>
             <div className="mb-4 inline-flex items-center gap-2.5 border-2 border-black bg-black px-3 py-1 font-mono text-xs font-black uppercase tracking-[0.22em] text-white shadow-[2px_2px_0px_0px_#FF3000]">
@@ -963,20 +1034,20 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
       </section>
 
       {/* Ticker Bar */}
-      <section className="border-b-4 border-black bg-black px-4 py-3 text-white sm:px-8 lg:px-12">
+      <section className="border-b-4 border-black bg-black px-4 py-2.5 text-white sm:px-8 lg:px-12">
         <div className="flex flex-wrap items-center justify-between gap-3 font-mono text-xs font-bold uppercase tracking-wider">
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>Latest source update · {formatDate(data.latestUpdatedAt)}</span>
           </div>
-          <span className="text-white/65">
+          <span className="text-white/70 text-[11px]">
             167+ 站点全量数据已校准 · 严格按模型实际绑定分组计算
           </span>
         </div>
       </section>
 
       {/* Controls & Filter Section */}
-      <section className="border-b-4 border-black bg-[#F5F4EF] px-4 py-7 sm:px-8 lg:px-12">
+      <section className="border-b-4 border-black bg-[#F2F2EE] px-4 py-6 sm:px-8 lg:px-12">
         <div className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
           {/* 模型选择器 */}
           <div ref={dropdownRef} className="relative">
@@ -991,7 +1062,7 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
               <div className="flex items-center gap-2.5 truncate">
                 <span className="h-3 w-3 bg-swiss-accent shrink-0" />
                 <span className="text-base truncate">{selectedModel}</span>
-                <span className="text-xs text-black/50 shrink-0">
+                <span className="text-xs text-black/50 shrink-0 font-bold">
                   ({data.models.find((m) => m.name === selectedModel)?.siteCount ?? 0} 站报价)
                 </span>
               </div>
@@ -1000,7 +1071,7 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
 
             {/* 热门模型快速标签 */}
             <div className="mt-2.5 flex flex-wrap items-center gap-1.5 font-mono text-xs">
-              <span className="text-[10px] font-black uppercase tracking-wider text-black/45 mr-1 flex items-center gap-1">
+              <span className="text-[10px] font-black uppercase tracking-wider text-black/60 mr-1 flex items-center gap-1">
                 <Flame className="h-3 w-3 text-swiss-accent inline" /> HOT:
               </span>
               {hotModels.map((hm) => (
@@ -1014,7 +1085,7 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
                   className={`border-2 px-2.5 py-1 font-bold transition-all ${
                     selectedModel === hm
                       ? "border-black bg-black text-white shadow-[2px_2px_0px_0px_#FF3000]"
-                      : "border-black/30 bg-white text-black/75 hover:border-black hover:bg-black/5"
+                      : "border-black/30 bg-white text-black/80 hover:border-black hover:bg-black/5"
                   }`}
                 >
                   {hm}
@@ -1025,7 +1096,7 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
             {/* 模型下拉菜单 */}
             {isDropdownOpen && (
               <div className="absolute left-0 top-full z-50 mt-1 max-h-[420px] w-full overflow-hidden border-2 border-black bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-                <div className="border-b-2 border-black bg-[#F5F4EF] p-2.5">
+                <div className="border-b-2 border-black bg-[#F2F2EE] p-2.5">
                   <div className="flex items-center gap-2 border-2 border-black bg-white px-2.5 py-2 font-mono text-xs">
                     <Search className="h-3.5 w-3.5 text-black/40 shrink-0" />
                     <input
@@ -1062,7 +1133,7 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
                             }`}
                           >
                             <span className="truncate">{model.name}</span>
-                            <span className="text-[10px] text-black/45 shrink-0">{model.siteCount} 站</span>
+                            <span className="text-[10px] text-black/50 shrink-0 font-bold">{model.siteCount} 站</span>
                           </button>
                         ))}
                       </div>
@@ -1096,9 +1167,9 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
         </div>
 
         {/* 排序与高级筛选行 */}
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t-2 border-black/20 pt-4">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t-2 border-black/20 pt-4">
           <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
-            <span className="text-[10px] font-black uppercase tracking-widest text-black/45 mr-1">SORT BY:</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-black/60 mr-1">SORT BY:</span>
             {[
               ["price", "价格最低 (Default)"],
               ["speed", "延迟最低 (TTFT)"],
@@ -1130,10 +1201,22 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
             >
               仅看有探针实测
             </button>
+
+            <button
+              type="button"
+              onClick={() => setShowEstimator(!showEstimator)}
+              className={`border-2 px-3 py-1 font-bold transition-colors inline-flex items-center gap-1.5 ${
+                showEstimator ? "border-black bg-black text-white shadow-[2px_2px_0px_0px_#FF3000]" : "border-black/30 bg-white text-black hover:border-black"
+              }`}
+            >
+              <Calculator className="h-3.5 w-3.5" />
+              <span>{showEstimator ? "收起月度算账器" : "月度算账器"}</span>
+            </button>
+
             <button
               type="button"
               onClick={resetFilters}
-              className="ml-auto flex items-center gap-1.5 px-3 py-1 font-mono text-xs font-black uppercase tracking-wider text-black/60 hover:text-swiss-accent hover:underline"
+              className="ml-auto flex items-center gap-1.5 px-3 py-1 font-mono text-xs font-black uppercase tracking-wider text-black/70 hover:text-swiss-accent hover:underline"
             >
               <RotateCcw className="h-3.5 w-3.5" /> 重置筛选
             </button>
@@ -1142,7 +1225,7 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
       </section>
 
       {/* Main Content Area */}
-      <section className="px-4 py-8 sm:px-8 lg:px-12">
+      <section className="px-4 py-6 sm:px-8 lg:px-12">
         {/* 模型家族横向对比矩阵 */}
         {currentFamily && (
           <ModelFamilyMatrixBar
@@ -1155,18 +1238,21 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
         {/* 全网价格分布与分位数刻度标尺 */}
         <PriceDistributionRuler
           stats={stats}
-          selectedModel={selectedModel}
           isImage={selectedModelType === "image"}
         />
 
         {/* 场景预设卡片 */}
         <RelayScenarioTabs activePreset={presetFilter} onSelectPreset={setPresetFilter} />
 
-        {/* 预估计算器 */}
-        <RelayCostEstimator selectedModel={selectedModel} sites={rows} />
+        {/* 按需展开的月度算账器 */}
+        {showEstimator && (
+          <div className="mb-6">
+            <RelayCostEstimator selectedModel={selectedModel} sites={rows} />
+          </div>
+        )}
 
         {/* 决策大盘 Title & Summary Counters */}
-        <div className="mb-6 grid gap-4 border-b-4 border-black pb-6 md:grid-cols-[1fr_auto] md:items-end">
+        <div className="mb-5 grid gap-4 border-b-4 border-black pb-5 md:grid-cols-[1fr_auto] md:items-end">
           <div>
             <div className="font-mono text-xs font-black uppercase tracking-[0.2em] text-swiss-accent flex items-center gap-2">
               <span className="h-2 w-2 bg-swiss-accent" />
@@ -1184,7 +1270,7 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
               ["SPREAD", priceSpread == null ? "--" : `${priceSpread.toFixed(1)}×`],
             ].map(([label, value]) => (
               <div key={label} className="min-w-[100px] border-b-2 sm:border-b-0 border-r-2 border-black px-4 py-2.5 last:border-r-0">
-                <div className="font-mono text-[9px] font-black uppercase tracking-widest text-black/45">{label}</div>
+                <div className="font-mono text-[9px] font-black uppercase tracking-widest text-black/60">{label}</div>
                 <div className="mt-1 font-mono text-base font-black text-black">{value}</div>
               </div>
             ))}
@@ -1203,10 +1289,10 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
         {/* 表格主体 */}
         <div className="border-2 border-black border-t-0 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
           {rows.length === 0 ? (
-            <div className="bg-[#FAF9F5] px-6 py-20 text-center">
+            <div className="bg-[#F2F2EE] px-6 py-20 text-center">
               <Activity className="mx-auto h-10 w-10 text-black/40" />
               <h3 className="mt-4 text-xl font-black">没有符合当前条件的站点</h3>
-              <p className="mt-2 font-mono text-sm text-black/60 max-w-xl mx-auto leading-relaxed">
+              <p className="mt-2 font-mono text-sm text-black/70 max-w-xl mx-auto leading-relaxed">
                 {matchedSiteAcrossModels ? (
                   <span>
                     已收录站点 <strong className="text-swiss-accent font-black">{matchedSiteAcrossModels.name} ({matchedSiteAcrossModels.domain})</strong>，但该站暂未提供当前选中的 [{selectedModel}] 模型报价。<br />
@@ -1216,6 +1302,14 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
                   "降低可用率阈值、关闭“仅看有实测数据”或重置搜索。"
                 )}
               </p>
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="mt-5 inline-flex items-center gap-2 border-2 border-black bg-black px-4 py-2 font-mono text-xs font-black text-white hover:bg-swiss-accent transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span>一键重置筛选条件</span>
+              </button>
             </div>
           ) : (
             rows.map((row, index) => {
@@ -1227,8 +1321,8 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
               return (
                 <details
                   key={row.site.id}
-                  className={`group border-b-2 border-black bg-white last:border-b-0 open:bg-[#FAF9F5] transition-colors ${
-                    isT1 ? "border-l-4 border-l-black" : "border-l-4 border-l-transparent"
+                  className={`group border-b-2 border-black bg-white last:border-b-0 open:bg-[#F2F2EE] transition-colors ${
+                    isT1 ? "border-l-4 border-l-swiss-accent bg-[#FFFDFD]" : "border-l-4 border-l-transparent"
                   }`}
                 >
                   <summary className="grid cursor-pointer list-none gap-4 p-4 transition-colors hover:bg-[#F9F8F3] lg:grid-cols-[130px_minmax(250px,1.4fr)_minmax(250px,1.2fr)_minmax(160px,0.8fr)_minmax(130px,0.6fr)_40px] lg:items-center lg:gap-3 lg:p-4 [&::-webkit-details-marker]:hidden">
@@ -1251,7 +1345,7 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
                             target="_blank"
                             rel="noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="font-mono text-xs text-black/40 hover:text-swiss-accent inline-flex items-center gap-0.5"
+                            className="font-mono text-xs text-black/50 hover:text-swiss-accent inline-flex items-center gap-0.5"
                           >
                             <span>{domainDisplay(row.site.domain)}</span>
                             <ExternalLink className="h-2.5 w-2.5" />
@@ -1264,6 +1358,7 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
                           ttftMs={row.site.performance?.ttftP50Ms ?? null}
                           availability7d={row.site.performance?.availability7d ?? null}
                           qcScore={qc?.score ?? null}
+                          riskLevel={row.riskLevel}
                           siteTags={siteTags}
                         />
                       </div>
@@ -1293,15 +1388,15 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
 
           {/* 未收录该具体模型的站点列表 */}
           {unmatchedSites.length > 0 && (
-            <section className="border-t-2 border-dashed border-black/35 bg-[#FAF9F5] p-5 sm:p-7">
+            <section className="border-t-2 border-dashed border-black/35 bg-[#F2F2EE] p-5 sm:p-7">
               <div className="flex flex-wrap items-baseline justify-between gap-3 border-b-2 border-black/20 pb-3">
                 <div>
                   <div className="font-mono text-xs font-black uppercase tracking-[0.2em] text-swiss-accent">
                     Catalog coverage
                   </div>
-                  <h3 className="mt-1 text-xl font-black">已收录但暂无「{selectedModel}」报价</h3>
+                  <h3 className="mt-1 text-xl font-black text-black">已收录但暂无「{selectedModel}」报价</h3>
                 </div>
-                <span className="font-mono text-sm font-black">{unmatchedSites.length} 站</span>
+                <span className="font-mono text-sm font-black text-black">{unmatchedSites.length} 站</span>
               </div>
               <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {unmatchedSites.map((site) => (
@@ -1312,7 +1407,7 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
                   >
                     <div className="font-black text-black">{site.name}</div>
                     <div className="mt-1 truncate font-mono text-xs text-black/50">{site.domain || "NO DOMAIN"}</div>
-                    <div className="mt-2 font-mono text-[10px] uppercase tracking-wider text-black/45">
+                    <div className="mt-2 font-mono text-[10px] uppercase tracking-wider text-black/60">
                       {site.offers.length > 0 ? `其他模型 ${site.offers.length} 条` : "暂无模型明细"}
                     </div>
                   </Link>
@@ -1323,7 +1418,7 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
         </div>
 
         {/* 底部说明 */}
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 font-mono text-[11px] text-black/45">
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 font-mono text-[11px] text-black/60">
           <span>价格排序：文本模型优先使用 rate_input，缺失时回退 rate_output；图片模型使用 model_price。</span>
           <span>T1/T2/T3 梯队基于当前模型全网有效报价的 20% 与 70% 分位数动态计算。</span>
         </div>
