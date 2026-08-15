@@ -131,10 +131,7 @@ function ModelFamilyMatrixBar({
         </span>
       </div>
 
-      <div
-        className="grid divide-y-2 divide-black md:divide-y-0 md:divide-x-2"
-        style={{ gridTemplateColumns: `repeat(${family.subModels.length}, minmax(0, 1fr))` }}
-      >
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y-2 sm:divide-y-0 sm:divide-x-2 divide-black">
         {family.subModels.map((variant) => {
           const isActive = variant.modelName.toLowerCase() === selectedModel.toLowerCase();
           return (

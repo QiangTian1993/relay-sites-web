@@ -838,7 +838,18 @@ export function aggregateModelFamilies(
       })
       .sort((a, b) => b.siteCount - a.siteCount);
 
-    const validLowest = subModels
+    let filteredSubModels = subModels;
+    if (family.subModelTaglines) {
+      const allowedKeys = new Set(Object.keys(family.subModelTaglines));
+      filteredSubModels = subModels.filter((m) => allowedKeys.has(m.modelName));
+      if (filteredSubModels.length === 0) {
+        filteredSubModels = subModels.slice(0, 4);
+      }
+    } else {
+      filteredSubModels = subModels.slice(0, 4);
+    }
+
+    const validLowest = filteredSubModels
       .map((m) => m.lowestPrice)
       .filter((p): p is number => p != null && p > 0);
     const overallLowestPrice = validLowest.length > 0 ? Math.min(...validLowest) : null;
@@ -851,7 +862,7 @@ export function aggregateModelFamilies(
       benchmarkModel: family.benchmarkModel,
       totalSitesCovered: siteIdSet.size,
       overallLowestPrice,
-      subModels,
+      subModels: filteredSubModels,
     };
   });
 }
