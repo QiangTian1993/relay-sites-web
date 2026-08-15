@@ -291,30 +291,50 @@ export function RelaySiteDetail({ record, performance, groups, modelOffers, qcRe
               </Link>
             </div>
 
-            {modelCheck ? (
-              <p className="text-swiss-fg/80 leading-relaxed text-xs whitespace-pre-line mb-3">
-                {modelCheck}
-              </p>
-            ) : (
+            {qcRecord ? (
               <div className="space-y-2 font-mono text-xs">
                 <div className="flex items-center justify-between border-b border-black/10 pb-1.5">
                   <span className="text-black/60">质检状态:</span>
-                  <span className="font-bold border border-emerald-800 bg-emerald-100 text-emerald-950 px-2 py-0.5">
-                    ✅ 98分 · 验证合格 (Sol指纹)
+                  <span className={`font-bold border px-2 py-0.5 ${
+                    qcRecord.score >= 90 ? "border-emerald-800 bg-emerald-100 text-emerald-950" :
+                    qcRecord.score >= 75 ? "border-blue-800 bg-blue-100 text-blue-950" :
+                    "border-amber-800 bg-amber-100 text-amber-950"
+                  }`}>
+                    {qcRecord.score >= 90 ? "✅" : "⚠️"} {qcRecord.score}分 · {qcRecord.score >= 90 ? "验证通过" : "存在降级风险"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between border-b border-black/10 pb-1.5">
                   <span className="text-black/60">Juice 思考段:</span>
-                  <span className="font-bold text-black">通过 (high=40)</span>
+                  <span className="font-bold text-black">{qcRecord.juiceVerdict || "已完成检测"}</span>
                 </div>
                 <div className="flex items-center justify-between border-b border-black/10 pb-1.5">
                   <span className="text-black/60">行为分布:</span>
-                  <span className="font-bold text-black">Sol 96.4% | Terra 2.1%</span>
+                  <span className="font-bold text-black">
+                    Sol {qcRecord.probabilities?.sol ?? "--"}% | Terra {qcRecord.probabilities?.terra ?? "--"}%
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-black/60">篡改/覆盖:</span>
-                  <span className="font-bold text-emerald-800">无改写 / Prompt正常</span>
+                  <span className={`font-bold ${qcRecord.tamperDetected ? "text-red-700" : "text-emerald-800"}`}>
+                    {qcRecord.tamperDetected ? "⚠️ 检测到篡改" : "无改写 / Prompt正常"}
+                  </span>
                 </div>
+              </div>
+            ) : modelCheck ? (
+              <p className="text-swiss-fg/80 leading-relaxed text-xs whitespace-pre-line mb-3">
+                {modelCheck}
+              </p>
+            ) : (
+              <div className="space-y-2 font-mono text-xs text-black/60 py-2">
+                <div className="flex items-center justify-between border-b border-black/10 pb-1.5">
+                  <span>质检状态:</span>
+                  <span className="font-bold text-black/50 border border-black/20 bg-black/5 px-2 py-0.5">
+                    未测试
+                  </span>
+                </div>
+                <p className="text-[11px] leading-relaxed text-black/50 pt-1">
+                  该站点尚未在质检中心记录测试数据。点击右上角即可发起模型真伪与混用检测。
+                </p>
               </div>
             )}
           </div>
