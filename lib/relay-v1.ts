@@ -486,12 +486,94 @@ export interface PriceDistributionStats {
   spreadRatio: number;
 }
 
+export interface OfficialModelBenchmark {
+  standardBaseInput: number;
+  officialUsdPer1M: number;
+  description: string;
+}
+
+export const OFFICIAL_MODEL_BENCHMARKS: Record<string, OfficialModelBenchmark> = {
+  // GPT-5.6
+  "gpt-5.6-sol": { standardBaseInput: 2.5, officialUsdPer1M: 2.5, description: "官方基准 $2.5 / 1M" },
+  "gpt-5.6-terra": { standardBaseInput: 1.0, officialUsdPer1M: 1.0, description: "官方基准 $1.0 / 1M" },
+  "gpt-5.6-luna": { standardBaseInput: 0.15, officialUsdPer1M: 0.15, description: "官方基准 $0.15 / 1M" },
+  "gpt-5.6": { standardBaseInput: 2.0, officialUsdPer1M: 2.0, description: "官方基准 $2.0 / 1M" },
+
+  // GPT-5.4 / 5.5
+  "gpt-5.4": { standardBaseInput: 2.0, officialUsdPer1M: 2.0, description: "官方基准 $2.0 / 1M" },
+  "gpt-5.4-mini": { standardBaseInput: 0.15, officialUsdPer1M: 0.15, description: "官方基准 $0.15 / 1M" },
+  "gpt-5.5": { standardBaseInput: 2.5, officialUsdPer1M: 2.5, description: "官方基准 $2.5 / 1M" },
+
+  // GPT-4o / 4o-mini
+  "gpt-4o": { standardBaseInput: 2.5, officialUsdPer1M: 2.5, description: "官方基准 $2.5 / 1M" },
+  "gpt-4o-mini": { standardBaseInput: 0.15, officialUsdPer1M: 0.15, description: "官方基准 $0.15 / 1M" },
+  "gpt-4o-2024-11-20": { standardBaseInput: 2.5, officialUsdPer1M: 2.5, description: "官方基准 $2.5 / 1M" },
+  "chatgpt-4o-latest": { standardBaseInput: 2.5, officialUsdPer1M: 2.5, description: "官方基准 $2.5 / 1M" },
+
+  // o1 / o3
+  "o1": { standardBaseInput: 15.0, officialUsdPer1M: 15.0, description: "官方基准 $15.0 / 1M" },
+  "o1-mini": { standardBaseInput: 1.1, officialUsdPer1M: 1.1, description: "官方基准 $1.1 / 1M" },
+  "o3-mini": { standardBaseInput: 1.1, officialUsdPer1M: 1.1, description: "官方基准 $1.1 / 1M" },
+
+  // Claude 3.7 / 3.5
+  "claude-3-7-sonnet": { standardBaseInput: 3.0, officialUsdPer1M: 3.0, description: "官方基准 $3.0 / 1M" },
+  "claude-3-7-sonnet-20250219": { standardBaseInput: 3.0, officialUsdPer1M: 3.0, description: "官方基准 $3.0 / 1M" },
+  "claude-3-5-sonnet": { standardBaseInput: 3.0, officialUsdPer1M: 3.0, description: "官方基准 $3.0 / 1M" },
+  "claude-3-5-sonnet-20241022": { standardBaseInput: 3.0, officialUsdPer1M: 3.0, description: "官方基准 $3.0 / 1M" },
+  "claude-3-5-haiku": { standardBaseInput: 0.8, officialUsdPer1M: 0.8, description: "官方基准 $0.8 / 1M" },
+  "claude-3-5-haiku-20241022": { standardBaseInput: 0.8, officialUsdPer1M: 0.8, description: "官方基准 $0.8 / 1M" },
+  "claude-3-opus": { standardBaseInput: 15.0, officialUsdPer1M: 15.0, description: "官方基准 $15.0 / 1M" },
+
+  // DeepSeek
+  "deepseek-r1": { standardBaseInput: 0.55, officialUsdPer1M: 0.55, description: "官方基准 $0.55 / 1M" },
+  "deepseek-v3": { standardBaseInput: 0.14, officialUsdPer1M: 0.14, description: "官方基准 $0.14 / 1M" },
+  "deepseek-reasoner": { standardBaseInput: 0.55, officialUsdPer1M: 0.55, description: "官方基准 $0.55 / 1M" },
+  "deepseek-chat": { standardBaseInput: 0.14, officialUsdPer1M: 0.14, description: "官方基准 $0.14 / 1M" },
+
+  // Google Gemini
+  "gemini-2.0-flash": { standardBaseInput: 0.10, officialUsdPer1M: 0.10, description: "官方基准 $0.10 / 1M" },
+  "gemini-2.0-flash-thinking-exp": { standardBaseInput: 0.10, officialUsdPer1M: 0.10, description: "官方基准 $0.10 / 1M" },
+  "gemini-2.0-pro": { standardBaseInput: 1.0, officialUsdPer1M: 1.0, description: "官方基准 $1.0 / 1M" },
+  "gemini-1.5-pro": { standardBaseInput: 1.25, officialUsdPer1M: 1.25, description: "官方基准 $1.25 / 1M" },
+  "gemini-1.5-flash": { standardBaseInput: 0.075, officialUsdPer1M: 0.075, description: "官方基准 $0.075 / 1M" },
+};
+
+export function getOfficialModelBenchmark(modelName: string): OfficialModelBenchmark {
+  const norm = modelName.toLowerCase().trim();
+  if (OFFICIAL_MODEL_BENCHMARKS[norm]) {
+    return OFFICIAL_MODEL_BENCHMARKS[norm];
+  }
+
+  if (/^gpt-5\.6-sol/i.test(norm)) return { standardBaseInput: 2.5, officialUsdPer1M: 2.5, description: "官方基准 $2.5 / 1M" };
+  if (/^gpt-5\.6-terra/i.test(norm)) return { standardBaseInput: 1.0, officialUsdPer1M: 1.0, description: "官方基准 $1.0 / 1M" };
+  if (/^gpt-5\.6-luna/i.test(norm)) return { standardBaseInput: 0.15, officialUsdPer1M: 0.15, description: "官方基准 $0.15 / 1M" };
+  if (/^gpt-5\.6/i.test(norm)) return { standardBaseInput: 2.0, officialUsdPer1M: 2.0, description: "官方基准 $2.0 / 1M" };
+  if (/^gpt-5\.4/i.test(norm)) return { standardBaseInput: 2.0, officialUsdPer1M: 2.0, description: "官方基准 $2.0 / 1M" };
+  if (/^claude-3-7/i.test(norm)) return { standardBaseInput: 3.0, officialUsdPer1M: 3.0, description: "官方基准 $3.0 / 1M" };
+  if (/^claude-3-5-sonnet/i.test(norm)) return { standardBaseInput: 3.0, officialUsdPer1M: 3.0, description: "官方基准 $3.0 / 1M" };
+  if (/^claude-3-5-haiku/i.test(norm)) return { standardBaseInput: 0.8, officialUsdPer1M: 0.8, description: "官方基准 $0.8 / 1M" };
+  if (/^deepseek.*(r1|reasoner)/i.test(norm)) return { standardBaseInput: 0.55, officialUsdPer1M: 0.55, description: "官方基准 $0.55 / 1M" };
+  if (/^deepseek.*(v3|chat)/i.test(norm)) return { standardBaseInput: 0.14, officialUsdPer1M: 0.14, description: "官方基准 $0.14 / 1M" };
+  if (/^gemini-2\.0-flash/i.test(norm)) return { standardBaseInput: 0.10, officialUsdPer1M: 0.10, description: "官方基准 $0.10 / 1M" };
+  if (/^gemini-2\.0-pro/i.test(norm)) return { standardBaseInput: 1.0, officialUsdPer1M: 1.0, description: "官方基准 $1.0 / 1M" };
+  if (/^o1/i.test(norm)) return { standardBaseInput: 15.0, officialUsdPer1M: 15.0, description: "官方基准 $15.0 / 1M" };
+  if (/^o3/i.test(norm)) return { standardBaseInput: 1.1, officialUsdPer1M: 1.1, description: "官方基准 $1.1 / 1M" };
+
+  return { standardBaseInput: 1.0, officialUsdPer1M: 1.0, description: "通用 1.0× 基准" };
+}
+
 export interface PriceFormulaBreakdown {
   basePrice: number;
   basePriceType: "input_rate" | "output_rate" | "per_call";
   groupName: string;
   groupRate: number;
+  rawEffectivePrice: number;
+  normalizedMultiplier: number;
   effectivePrice: number;
+  estimatedRmbPer1MTokens: number | null;
+  pricingArchetype: "standard_group" | "flat_rate" | "points_scaled" | "custom_hybrid";
+  archetypeLabel: string;
+  officialBenchmarkBase: number;
   formulaText: string;
   hasGroupDiscount: boolean;
   isDerivedSource: boolean;
@@ -612,13 +694,14 @@ export const PRESET_MODEL_FAMILIES: ModelFamilyConfig[] = [
 ];
 
 /**
- * 解析 Offer 的计费公式与最优命中分组
+ * 解析 Offer 的计费公式与最优命中分组 (集成官方基准归一化)
  */
 export function resolveOfferFormula(
   offer: RelayV1Offer,
   siteGroups: RelayV1Group[],
 ): PriceFormulaBreakdown {
   const isImage = offer.modelType === "image";
+  const benchmark = getOfficialModelBenchmark(offer.modelName);
   const basePrice = isImage
     ? (offer.perCallPrice ?? 0)
     : (offer.inputRate ?? offer.outputRate ?? 0);
@@ -630,13 +713,26 @@ export function resolveOfferFormula(
     : "output_rate";
 
   if (siteGroups.length === 0 || basePrice <= 0) {
+    const rawEffectivePrice = basePrice;
+    const normalizedMultiplier = isImage
+      ? rawEffectivePrice
+      : (benchmark.standardBaseInput > 0 ? rawEffectivePrice / benchmark.standardBaseInput : rawEffectivePrice);
+
+    const estimatedRmb = isImage ? null : Number((normalizedMultiplier * benchmark.officialUsdPer1M * 7.2).toFixed(2));
     const formattedBase = isImage ? `¥${basePrice}` : `${basePrice}×`;
+
     return {
       basePrice,
       basePriceType,
       groupName: "标准基准",
       groupRate: 1.0,
-      effectivePrice: basePrice,
+      rawEffectivePrice,
+      normalizedMultiplier,
+      effectivePrice: normalizedMultiplier,
+      estimatedRmbPer1MTokens: estimatedRmb,
+      pricingArchetype: isImage ? "flat_rate" : (Math.abs(basePrice - benchmark.standardBaseInput) < 1e-4 ? "standard_group" : "flat_rate"),
+      archetypeLabel: isImage ? "按次计费" : "一口价基准",
+      officialBenchmarkBase: benchmark.standardBaseInput,
       formulaText: `${formattedBase}`,
       hasGroupDiscount: false,
       isDerivedSource: Boolean(offer.priceSource),
@@ -671,25 +767,64 @@ export function resolveOfferFormula(
 
   const groupRate = Number.isFinite(minRate) ? minRate : 1.0;
   const groupName = optimalGroup ? optimalGroup.name : "默认";
-  const effectivePrice = basePrice * groupRate;
-  const hasGroupDiscount = Math.abs(groupRate - 1.0) > 1e-5;
+  const rawEffectivePrice = basePrice * groupRate;
 
+  // 核心：官方基准归一化
+  const normalizedMultiplier = isImage
+    ? rawEffectivePrice
+    : (benchmark.standardBaseInput > 0 ? (rawEffectivePrice / benchmark.standardBaseInput) : rawEffectivePrice);
+
+  const effectivePrice = normalizedMultiplier;
+  const estimatedRmbPer1MTokens = isImage
+    ? null
+    : Number((normalizedMultiplier * benchmark.officialUsdPer1M * 7.2).toFixed(2));
+
+  let pricingArchetype: PriceFormulaBreakdown["pricingArchetype"] = "standard_group";
+  let archetypeLabel = "标准官方倍率 + 分组折扣";
+
+  if (isImage) {
+    pricingArchetype = "flat_rate";
+    archetypeLabel = "按次计费";
+  } else if (Math.abs(basePrice - benchmark.standardBaseInput) < 1e-4) {
+    pricingArchetype = "standard_group";
+    archetypeLabel = "标准官方倍率 + 分组折扣";
+  } else if (basePrice < benchmark.standardBaseInput && groupRate >= 0.99) {
+    pricingArchetype = "flat_rate";
+    archetypeLabel = "一口价直降 (折扣已内嵌)";
+  } else if (basePrice >= benchmark.standardBaseInput * 10) {
+    pricingArchetype = "points_scaled";
+    archetypeLabel = "积分放大制 (已消除汇率差)";
+  } else {
+    pricingArchetype = "custom_hybrid";
+    archetypeLabel = "自定义基准 + 分组";
+  }
+
+  const hasGroupDiscount = Math.abs(groupRate - 1.0) > 1e-5;
   const baseText = isImage ? `¥${basePrice}` : `${basePrice}×`;
   const rateText = `${groupRate}×`;
-  const effectiveText = isImage
-    ? `¥${new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 6 }).format(effectivePrice)}`
-    : `${new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 6 }).format(effectivePrice)}×`;
+  const normText = `${new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 4 }).format(normalizedMultiplier)}×`;
 
-  const formulaText = hasGroupDiscount
-    ? `基准 ${baseText} × [${groupName} ${rateText}] = ${effectiveText}`
-    : `基准 ${baseText}`;
+  let formulaText = `基准 ${baseText}`;
+  if (pricingArchetype === "flat_rate") {
+    formulaText = `一口价 ${baseText} (等效官方 ${normText})`;
+  } else if (pricingArchetype === "points_scaled") {
+    formulaText = `积分制 ${baseText} × [${groupName} ${rateText}] (等效官方 ${normText})`;
+  } else if (hasGroupDiscount) {
+    formulaText = `基准 ${baseText} × [${groupName} ${rateText}] = 等效官方 ${normText}`;
+  }
 
   return {
     basePrice,
     basePriceType,
     groupName,
     groupRate,
+    rawEffectivePrice,
+    normalizedMultiplier,
     effectivePrice,
+    estimatedRmbPer1MTokens,
+    pricingArchetype,
+    archetypeLabel,
+    officialBenchmarkBase: benchmark.standardBaseInput,
     formulaText,
     hasGroupDiscount,
     isDerivedSource: Boolean(offer.priceSource),

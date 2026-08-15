@@ -426,11 +426,16 @@ function PriceFormulaBreakdownPill({
 
   return (
     <div className="flex flex-col gap-1">
-      {/* 最终到手价 */}
+      {/* 最终归一化到手价与折合人民币 */}
       <div className="flex flex-wrap items-baseline gap-2">
         <strong className="font-mono text-2xl font-black tracking-tight text-black">
           {formatMultiplier(formula.effectivePrice)}
         </strong>
+        {formula.estimatedRmbPer1MTokens != null && (
+          <span className="font-mono text-[11px] font-bold text-black/60">
+            (约 ¥{formula.estimatedRmbPer1MTokens.toFixed(2)}/1M)
+          </span>
+        )}
         {isBest && (
           <span className="border-2 border-black bg-swiss-accent px-1.5 py-0.5 font-mono text-[9px] font-black uppercase tracking-widest text-white shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)]">
             LOWEST
@@ -438,15 +443,27 @@ function PriceFormulaBreakdownPill({
         )}
       </div>
 
-      {/* 公式运算链药丸 */}
+      {/* 公式运算链药丸：区分 一口价直降 / 标准分组 / 积分制 */}
       <div className="flex flex-wrap items-center gap-1.5 font-mono text-[11px]">
-        {formula.hasGroupDiscount ? (
+        {formula.pricingArchetype === "flat_rate" ? (
+          <div className="inline-flex flex-wrap items-center gap-1 border border-black/30 bg-[#FAFAFA] px-2 py-0.5 text-black font-bold shadow-[1px_1px_0px_0px_rgba(0,0,0,0.1)]">
+            <span className="text-black/60">一口价 {formula.basePrice}×</span>
+            <span className="text-black/40">→</span>
+            <span className="text-emerald-800 font-bold">等效官方 {formula.effectivePrice.toFixed(4).replace(/\.?0+$/, "")}× 折扣</span>
+          </div>
+        ) : formula.pricingArchetype === "points_scaled" ? (
+          <div className="inline-flex flex-wrap items-center gap-1 border border-black/30 bg-white px-2 py-0.5 text-black font-bold shadow-[1px_1px_0px_0px_rgba(0,0,0,0.1)]">
+            <span className="text-black/60">积分制 {formula.basePrice}×</span>
+            <span className="font-black text-black/40">×</span>
+            <span className="font-bold text-black">[{formula.groupName} {formula.groupRate}×]</span>
+            <span className="text-black/40">→</span>
+            <span className="text-black font-black">等效 {formula.effectivePrice.toFixed(4).replace(/\.?0+$/, "")}×</span>
+          </div>
+        ) : formula.hasGroupDiscount ? (
           <div className="inline-flex flex-wrap items-center gap-1 border border-black/30 bg-white px-2 py-0.5 text-black font-bold shadow-[1px_1px_0px_0px_rgba(0,0,0,0.1)]">
             <span className="text-black/60">基准 {formula.basePrice}×</span>
             <span className="font-black text-black/40">×</span>
-            <span className="font-bold text-black">
-              [{formula.groupName} {formula.groupRate}×]
-            </span>
+            <span className="font-bold text-black">[{formula.groupName} {formula.groupRate}×]</span>
           </div>
         ) : (
           <div className="inline-flex items-center gap-1.5 text-black/70 font-mono text-[11px]">
@@ -457,7 +474,7 @@ function PriceFormulaBreakdownPill({
         )}
 
         {/* 关键分组后台切换指引 */}
-        {isNonDefaultGroup && (
+        {isNonDefaultGroup && formula.pricingArchetype !== "flat_rate" && (
           <span
             className="inline-flex items-center gap-1 border-2 border-black bg-[#FFEFEA] px-1.5 py-0.5 font-mono text-[10px] font-black text-black shadow-[1px_1px_0px_0px_#FF3000]"
             title="请在站点控制台切换至该分组以享受此倍率"
@@ -648,7 +665,7 @@ function DetailPanel({ row, selectedModel }: { row: ComparisonRow; selectedModel
 
           <div className="mt-3.5 space-y-2 font-mono text-xs">
             <div className="flex justify-between border-b border-black/10 pb-1.5">
-              <span className="text-black/60">基础模型定价 (Base Rate)</span>
+              <span className="text-black/60">站点标定基准 (Site Base Rate)</span>
               <span className="font-bold text-black">{row.formula.basePrice}×</span>
             </div>
             <div className="flex justify-between border-b border-black/10 pb-1.5">
@@ -656,9 +673,23 @@ function DetailPanel({ row, selectedModel }: { row: ComparisonRow; selectedModel
               <span className="font-black text-swiss-accent">{row.formula.groupName} ({row.formula.groupRate}×)</span>
             </div>
             <div className="flex justify-between border-b border-black/10 pb-1.5">
-              <span className="text-black/60">最终折算到手倍率 (Effective Rate)</span>
+              <span className="text-black/60">官方标准输入基准 (Official Base)</span>
+              <span className="font-bold text-black">{row.formula.officialBenchmarkBase}×</span>
+            </div>
+            <div className="flex justify-between border-b border-black/10 pb-1.5">
+              <span className="text-black/60">计费模式定位 (Archetype)</span>
+              <span className="font-bold text-black">{row.formula.archetypeLabel}</span>
+            </div>
+            <div className="flex justify-between border-b border-black/10 pb-1.5">
+              <span className="text-black/60">归一化真实到手折扣 (Normalized Ratio)</span>
               <span className="font-black text-lg text-black">{row.formula.effectivePrice.toFixed(4).replace(/\.?0+$/, "")}×</span>
             </div>
+            {row.formula.estimatedRmbPer1MTokens != null && (
+              <div className="flex justify-between border-b border-black/10 pb-1.5">
+                <span className="text-black/60">折合人民币估算单价 (CNY Estimate)</span>
+                <span className="font-black text-base text-emerald-800">¥{row.formula.estimatedRmbPer1MTokens.toFixed(2)} / 1M Tokens</span>
+              </div>
+            )}
 
             {/* 一键复制快捷动作 */}
             <div className="mt-3 flex flex-wrap items-center gap-2 pt-2">
