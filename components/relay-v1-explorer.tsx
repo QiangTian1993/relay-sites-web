@@ -106,7 +106,139 @@ function formatDate(value: string): string {
 }
 
 // ============================================================================
-// 子组件：模型家族横向联动矩阵 (ModelFamilyMatrixBar) - 精密控制台风格
+// 子组件 01：全网价格分布与分位数刻度标尺 (PriceDistributionRuler)
+// ============================================================================
+
+function PriceDistributionRuler({
+  stats,
+  selectedModel,
+  isImage,
+}: {
+  stats: PriceDistributionStats;
+  selectedModel: string;
+  isImage: boolean;
+}) {
+  if (stats.count < 2 || stats.max <= stats.min) return null;
+
+  const span = stats.max - stats.min;
+  const p20Pos = Math.max(12, Math.min(35, ((stats.p20 - stats.min) / span) * 100));
+  const p50Pos = Math.max(p20Pos + 10, Math.min(75, ((stats.p50 - stats.min) / span) * 100));
+  const p70Pos = Math.max(p50Pos + 10, Math.min(90, ((stats.p70 - stats.min) / span) * 100));
+
+  const formatVal = (v: number) => (isImage ? `¥${v.toFixed(3)}` : `${v.toFixed(4).replace(/\.?0+$/, "")}×`);
+
+  return (
+    <div className="mb-8 border-2 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+      {/* 标头 */}
+      <div className="flex flex-wrap items-center justify-between border-b-2 border-black bg-black px-4 py-2 text-white font-mono text-xs">
+        <div className="flex items-center gap-2 font-black uppercase tracking-[0.2em]">
+          <span className="h-2 w-2 bg-swiss-accent" />
+          <span>Market Price Spectrum // 全网价格分布与梯队刻度标尺</span>
+        </div>
+        <div className="text-[10px] text-white/60">
+          基于当前 {stats.count} 家报价站动态计算 · 20% / 70% 分位数基线
+        </div>
+      </div>
+
+      {/* 刻度尺可视化条 */}
+      <div className="p-4 sm:p-6 bg-[#FAF9F5]">
+        {/* 顶部标签 */}
+        <div className="mb-2 flex items-center justify-between font-mono text-[10px] font-bold text-black/60">
+          <div className="flex items-center gap-1 text-black">
+            <span className="font-black text-swiss-accent">★ 全网最低</span>
+            <span className="border border-black bg-black px-1.5 py-0.2 text-white font-mono font-black">
+              {formatVal(stats.min)}
+            </span>
+          </div>
+          <div className="hidden sm:flex items-center gap-1 text-black/70">
+            <span>◆ P50 中位数:</span>
+            <span className="font-black text-black">{formatVal(stats.p50)}</span>
+          </div>
+          <div className="flex items-center gap-1 text-black/60">
+            <span>▲ 全网最高:</span>
+            <span className="font-bold text-black">{formatVal(stats.max)}</span>
+          </div>
+        </div>
+
+        {/* 连续价格轴刻度线 */}
+        <div className="relative h-9 border-2 border-black bg-white flex overflow-hidden shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+          {/* T1 区间 */}
+          <div
+            className="relative h-full bg-black text-white flex items-center px-2 font-mono text-[10px] font-black tracking-wider transition-all"
+            style={{ width: `${p20Pos}%` }}
+            title={`T1 极限低价档: ≤ ${formatVal(stats.p20)}`}
+          >
+            <span className="truncate">T1 极限低价</span>
+            <span className="absolute right-0 top-0 bottom-0 w-0.5 bg-swiss-accent" />
+          </div>
+
+          {/* T2 区间 */}
+          <div
+            className="relative h-full bg-[#FFFFFF] text-black flex items-center px-2 font-mono text-[10px] font-bold tracking-wider swiss-grid transition-all"
+            style={{ width: `${p70Pos - p20Pos}%` }}
+            title={`T2 稳健主流档: ${formatVal(stats.p20)} ~ ${formatVal(stats.p70)}`}
+          >
+            <span className="truncate">T2 稳健主流区间</span>
+            {/* P50 中位数打点 */}
+            <div
+              className="absolute top-0 bottom-0 w-0.5 bg-black flex items-center justify-center"
+              style={{ left: `${((p50Pos - p20Pos) / (p70Pos - p20Pos)) * 100}%` }}
+              title={`P50 中位数: ${formatVal(stats.p50)}`}
+            >
+              <div className="h-2 w-2 rotate-45 bg-black -mt-6" />
+            </div>
+            <span className="absolute right-0 top-0 bottom-0 w-0.5 bg-black/40" />
+          </div>
+
+          {/* T3 区间 */}
+          <div
+            className="relative h-full bg-[#EAE9E4] text-black/70 flex items-center px-2 font-mono text-[10px] font-bold tracking-wider transition-all"
+            style={{ width: `${100 - p70Pos}%` }}
+            title={`T3 官号高溢档: > ${formatVal(stats.p70)}`}
+          >
+            <span className="truncate">T3 官号/高溢</span>
+          </div>
+        </div>
+
+        {/* 底部梯队区间说明 */}
+        <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 font-mono text-xs pt-1">
+          <div className="border border-black bg-black p-2 text-white">
+            <div className="flex items-center justify-between text-[10px] text-white/60 uppercase">
+              <span>T1 · 极限性价比 (Top 20%)</span>
+              <span className="text-swiss-accent font-black">● 推荐</span>
+            </div>
+            <div className="mt-1 font-black text-sm text-white">
+              {formatVal(stats.min)} ~ {formatVal(stats.p20)}
+            </div>
+          </div>
+
+          <div className="border border-black bg-white p-2 text-black">
+            <div className="flex items-center justify-between text-[10px] text-black/50 uppercase">
+              <span>T2 · 稳健主力档 (20%~70%)</span>
+              <span className="font-bold text-black">主力站群</span>
+            </div>
+            <div className="mt-1 font-black text-sm text-black">
+              {formatVal(stats.p20)} ~ {formatVal(stats.p70)}
+            </div>
+          </div>
+
+          <div className="border border-black/30 bg-[#EAE9E4] p-2 text-black/70">
+            <div className="flex items-center justify-between text-[10px] text-black/40 uppercase">
+              <span>T3 · 官号高溢档 (Top 30%)</span>
+              <span>高 SLA / 溢价</span>
+            </div>
+            <div className="mt-1 font-black text-sm text-black/80">
+              &gt; {formatVal(stats.p70)}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// 子组件 02：模型家族横向联动矩阵 (ModelFamilyMatrixBar) - 工业工学控制台风格
 // ============================================================================
 
 function ModelFamilyMatrixBar({
@@ -131,17 +263,19 @@ function ModelFamilyMatrixBar({
           </span>
           <span>{family.familyName}</span>
           <span className="text-white/40 font-normal">/</span>
-          <span className="text-white/70 text-[10px] tracking-normal font-sans font-bold">全网变体横向对比矩阵</span>
+          <span className="text-white/70 text-[10px] tracking-normal font-sans font-bold">核心变体横向对比矩阵</span>
         </div>
         <div className="font-mono text-[10px] font-bold text-white/60">
-          全系收录 <strong className="text-white font-black">{family.totalSitesCovered}</strong> 站 · 点击直接切换变体
+          全系收录 <strong className="text-white font-black">{family.totalSitesCovered}</strong> 站 · 点击下方卡片秒切
         </div>
       </div>
 
       {/* 变体卡片网格 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y-2 sm:divide-y-0 sm:divide-x-2 divide-black bg-[#FAFAFA]">
-        {family.subModels.map((variant) => {
+        {family.subModels.map((variant, idx) => {
           const isActive = variant.modelName.toLowerCase() === selectedModel.toLowerCase();
+          const codeName = `SPEC-0${idx + 1}`;
+
           return (
             <button
               key={variant.modelName}
@@ -169,8 +303,8 @@ function ModelFamilyMatrixBar({
                       ACTIVE
                     </span>
                   ) : (
-                    <span className="font-mono text-[10px] text-black/35 group-hover:text-black">
-                      {variant.siteCount} 站
+                    <span className="font-mono text-[10px] text-black/35 font-bold">
+                      {codeName} · {variant.siteCount} 站
                     </span>
                   )}
                 </div>
@@ -218,7 +352,7 @@ function ModelFamilyMatrixBar({
 }
 
 // ============================================================================
-// 子组件：排位标尺与价格梯队徽章 (RankTierBadge) - 赛道积分榜风格
+// 子组件 03：排位标尺与价格梯队徽章 (RankTierBadge) - 赛道排位风格
 // ============================================================================
 
 function RankTierBadge({ row }: { row: ComparisonRow }) {
@@ -256,7 +390,7 @@ function RankTierBadge({ row }: { row: ComparisonRow }) {
 }
 
 // ============================================================================
-// 子组件：计费公式拆解药丸 (PriceFormulaBreakdownPill) - 高透明度运算链
+// 子组件 04：计费公式拆解药丸 (PriceFormulaBreakdownPill) - 高透明度运算链
 // ============================================================================
 
 function PriceFormulaBreakdownPill({
@@ -344,7 +478,7 @@ function PriceFormulaBreakdownPill({
 }
 
 // ============================================================================
-// 子组件：智能选型决策微标签 (SmartDecisionHighlightTags)
+// 子组件 05：智能选型决策微标签 (SmartDecisionHighlightTags)
 // ============================================================================
 
 function SmartDecisionHighlightTags({
@@ -1018,6 +1152,13 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
           />
         )}
 
+        {/* 全网价格分布与分位数刻度标尺 */}
+        <PriceDistributionRuler
+          stats={stats}
+          selectedModel={selectedModel}
+          isImage={selectedModelType === "image"}
+        />
+
         {/* 场景预设卡片 */}
         <RelayScenarioTabs activePreset={presetFilter} onSelectPreset={setPresetFilter} />
 
@@ -1081,9 +1222,15 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
               const siteTags = extractSiteTags(row.site);
               const isLowest = lowestPrice != null && row.priceValue === lowestPrice;
               const qc = qcBySiteId.get(row.site.id) || (row.site.domain ? qcBySiteId.get(row.site.domain.toLowerCase()) : null);
+              const isT1 = row.tierInfo.tier === "T1";
 
               return (
-                <details key={row.site.id} className="group border-b-2 border-black bg-white last:border-b-0 open:bg-[#FAF9F5]">
+                <details
+                  key={row.site.id}
+                  className={`group border-b-2 border-black bg-white last:border-b-0 open:bg-[#FAF9F5] transition-colors ${
+                    isT1 ? "border-l-4 border-l-black" : "border-l-4 border-l-transparent"
+                  }`}
+                >
                   <summary className="grid cursor-pointer list-none gap-4 p-4 transition-colors hover:bg-[#F9F8F3] lg:grid-cols-[130px_minmax(250px,1.4fr)_minmax(250px,1.2fr)_minmax(160px,0.8fr)_minmax(130px,0.6fr)_40px] lg:items-center lg:gap-3 lg:p-4 [&::-webkit-details-marker]:hidden">
                     {/* 1. 排位标尺与价格梯队 */}
                     <RankTierBadge row={row} />
