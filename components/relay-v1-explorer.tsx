@@ -402,40 +402,44 @@ function PriceFormulaBreakdownPill({
 }) {
   const formula = row.formula;
   const isImage = row.offer.modelType === "image";
-  const isNonDefaultGroup = formula.hasGroupDiscount && formula.groupName.toLowerCase() !== "default" && formula.groupName !== "标准基准";
+  const isNonDefaultGroup =
+    formula.hasGroupDiscount &&
+    formula.groupName.toLowerCase() !== "default" &&
+    formula.groupName !== "标准基准" &&
+    formula.pricingArchetype !== "flat_rate";
+
+  const discountZhe = formula.effectivePrice != null
+    ? (formula.effectivePrice * 10).toFixed(1).replace(/\.0$/, "") + "折"
+    : "";
 
   if (isImage) {
     return (
       <div className="space-y-1">
         <div className="flex flex-wrap items-baseline gap-2">
           <strong className="font-mono text-2xl font-black tracking-tight text-black">
-            {formula.effectivePrice == null ? "--" : `¥${new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 6 }).format(formula.effectivePrice)}`}
+            {formula.effectivePrice == null ? "--" : `¥${new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 4 }).format(formula.effectivePrice)}`}
           </strong>
+          <span className="font-mono text-xs font-bold text-black/60">/ 次</span>
           {isBest && (
             <span className="border-2 border-black bg-swiss-accent px-1.5 py-0.5 font-mono text-[9px] font-black uppercase tracking-widest text-white shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
               LOWEST
             </span>
           )}
         </div>
-        <p className="font-mono text-[11px] text-black/70">
-          {formula.hasGroupDiscount ? `基准 ¥${formula.basePrice} × [${formula.groupName} ${formula.groupRate}x]` : "按次计费"}
-        </p>
       </div>
     );
   }
 
   return (
     <div className="flex flex-col gap-1">
-      {/* 最终归一化到手价与折合人民币 */}
+      {/* 1. 主折扣与绝对价格（大字，第一视觉焦点） */}
       <div className="flex flex-wrap items-baseline gap-2">
         <strong className="font-mono text-2xl font-black tracking-tight text-black">
           {formatMultiplier(formula.effectivePrice)}
         </strong>
-        {formula.estimatedRmbPer1MTokens != null && (
-          <span className="font-mono text-[11px] font-bold text-black/60">
-            (约 ¥{formula.estimatedRmbPer1MTokens.toFixed(2)}/1M)
-          </span>
-        )}
+        <span className="font-mono text-xs font-black text-emerald-800 bg-emerald-50 border border-emerald-300 px-1.5 py-0.5 shadow-[1px_1px_0px_0px_rgba(0,0,0,0.1)]">
+          {discountZhe}
+        </span>
         {isBest && (
           <span className="border-2 border-black bg-swiss-accent px-1.5 py-0.5 font-mono text-[9px] font-black uppercase tracking-widest text-white shadow-[1.5px_1.5px_0px_0px_rgba(0,0,0,1)]">
             LOWEST
@@ -443,53 +447,29 @@ function PriceFormulaBreakdownPill({
         )}
       </div>
 
-      {/* 公式运算链药丸：区分 一口价直降 / 标准分组 / 积分制 */}
-      <div className="flex flex-wrap items-center gap-1.5 font-mono text-[11px]">
-        {formula.pricingArchetype === "flat_rate" ? (
-          <div className="inline-flex flex-wrap items-center gap-1 border border-black/30 bg-[#FAFAFA] px-2 py-0.5 text-black font-bold shadow-[1px_1px_0px_0px_rgba(0,0,0,0.1)]">
-            <span className="text-black/60">一口价 {formula.basePrice}×</span>
-            <span className="text-black/40">→</span>
-            <span className="text-emerald-800 font-bold">等效官方 {formula.effectivePrice.toFixed(4).replace(/\.?0+$/, "")}× 折扣</span>
-          </div>
-        ) : formula.pricingArchetype === "points_scaled" ? (
-          <div className="inline-flex flex-wrap items-center gap-1 border border-black/30 bg-white px-2 py-0.5 text-black font-bold shadow-[1px_1px_0px_0px_rgba(0,0,0,0.1)]">
-            <span className="text-black/60">积分制 {formula.basePrice}×</span>
-            <span className="font-black text-black/40">×</span>
-            <span className="font-bold text-black">[{formula.groupName} {formula.groupRate}×]</span>
-            <span className="text-black/40">→</span>
-            <span className="text-black font-black">等效 {formula.effectivePrice.toFixed(4).replace(/\.?0+$/, "")}×</span>
-          </div>
-        ) : formula.hasGroupDiscount ? (
-          <div className="inline-flex flex-wrap items-center gap-1 border border-black/30 bg-white px-2 py-0.5 text-black font-bold shadow-[1px_1px_0px_0px_rgba(0,0,0,0.1)]">
-            <span className="text-black/60">基准 {formula.basePrice}×</span>
-            <span className="font-black text-black/40">×</span>
-            <span className="font-bold text-black">[{formula.groupName} {formula.groupRate}×]</span>
-          </div>
-        ) : (
-          <div className="inline-flex items-center gap-1.5 text-black/70 font-mono text-[11px]">
-            <span>输入 {formatMultiplier(row.offer.inputRate)}</span>
-            <span>·</span>
-            <span>输出 {formatMultiplier(row.offer.outputRate)}</span>
-          </div>
+      {/* 2. 人民币成本估算 + 极简操作指引 */}
+      <div className="flex flex-wrap items-center gap-2 font-mono text-[11px]">
+        {formula.estimatedRmbPer1MTokens != null && (
+          <span className="font-bold text-black/70">
+            约 ¥{formula.estimatedRmbPer1MTokens.toFixed(2)} / 1M Tokens
+          </span>
         )}
 
-        {/* 关键分组后台切换指引 */}
-        {isNonDefaultGroup && formula.pricingArchetype !== "flat_rate" && (
+        {/* 仅在需要切换特定分组时提示，其余默认可用 */}
+        {isNonDefaultGroup ? (
           <span
-            className="inline-flex items-center gap-1 border-2 border-black bg-[#FFEFEA] px-1.5 py-0.5 font-mono text-[10px] font-black text-black shadow-[1px_1px_0px_0px_#FF3000]"
+            className="inline-flex items-center gap-1 border-2 border-black bg-[#FFEFEA] px-1.5 py-0.2 text-[10px] font-black text-black shadow-[1px_1px_0px_0px_#FF3000]"
             title="请在站点控制台切换至该分组以享受此倍率"
           >
             <span className="text-swiss-accent font-black">☞</span>
-            <span>切分组: <strong className="underline text-black">{formula.groupName}</strong></span>
+            <span>选分组: <strong className="underline text-black">{formula.groupName}</strong></span>
+          </span>
+        ) : (
+          <span className="text-[10px] text-black/40 font-bold">
+            · 默认可用
           </span>
         )}
       </div>
-
-      {(row.offer.cacheRate != null || row.offer.createCacheRate != null) && (
-        <div className="font-mono text-[10px] text-black/60">
-          CACHE {formatMultiplier(row.offer.cacheRate)} · CREATE {formatMultiplier(row.offer.createCacheRate)}
-        </div>
-      )}
     </div>
   );
 }
@@ -1310,7 +1290,7 @@ export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) 
 
         {/* 表头（桌面端） */}
         <div className="hidden grid-cols-[130px_minmax(250px,1.4fr)_minmax(250px,1.2fr)_minmax(160px,0.8fr)_minmax(130px,0.6fr)_40px] border-2 border-black bg-black font-mono text-[11px] font-black uppercase tracking-[0.16em] text-white lg:grid">
-          {["Rank & Tier", "Station & Features", "Effective Price & Formula", "Availability & Latency", "Signal", ""].map((label) => (
+          {["Rank & Tier // 梯队排位", "Station & Features // 站点与特性", "Discount & Price // 真实折扣与单价", "SLA & Speed // 可用率与延迟", "Signal // 变价", ""].map((label) => (
             <div key={label || "expand"} className="border-r border-white/20 px-3.5 py-3 last:border-r-0">
               {label}
             </div>
