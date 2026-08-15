@@ -12,15 +12,34 @@ import {
   ChevronDown,
   ExternalLink,
   Gauge,
+  Layers,
   RotateCcw,
   Search,
   ShieldAlert,
   ShieldCheck,
   SlidersHorizontal,
+  Sparkles,
   Zap,
 } from "lucide-react";
-import type { RelayV1Data, RelayV1Group, RelayV1Offer, RelayV1Site, RiskLevel } from "@/lib/relay-v1";
-import { extractSiteTags } from "@/lib/relay-v1";
+import type {
+  ModelFamilyGroup,
+  PriceDistributionStats,
+  PriceFormulaBreakdown,
+  PriceTierInfo,
+  RelayV1Data,
+  RelayV1Group,
+  RelayV1Offer,
+  RelayV1Site,
+  RiskLevel,
+  SiteFeatureTags,
+} from "@/lib/relay-v1";
+import {
+  aggregateModelFamilies,
+  assignPriceTier,
+  computePriceDistributionStats,
+  extractSiteTags,
+  resolveOfferFormula,
+} from "@/lib/relay-v1";
 import type { QCRecord } from "@/lib/qc-store";
 import { RelaySubNav } from "./relay-sub-nav";
 import { RelayCostEstimator } from "./relay-cost-estimator";
@@ -37,37 +56,16 @@ interface RelayV1ExplorerProps {
 interface ComparisonRow {
   site: RelayV1Site;
   offer: RelayV1Offer;
+  formula: PriceFormulaBreakdown;
   priceValue: number | null;
+  rank: number;
+  totalSites: number;
+  percentileText: string;
+  tierInfo: PriceTierInfo;
   relevantGroups: RelayV1Group[];
   riskLevel: RiskLevel;
   riskRemarks: RelayV1Group[];
   changedGroups: RelayV1Group[];
-}
-
-function offerPrice(offer: RelayV1Offer, groups: RelayV1Group[]): number | null {
-  const basePrice = offer.modelType === "image" ? offer.perCallPrice : (offer.inputRate ?? offer.outputRate);
-  if (basePrice == null) return null;
-  if (groups.length === 0) return basePrice;
-
-  // 1. 如果模型明确指定了启用的分组列表，仅在指定的分组中取最低倍率
-  if (offer.enabledGroups.length > 0) {
-    const applicableGroups = groups.filter((g) => offer.enabledGroups.includes(g.name));
-    if (applicableGroups.length > 0) {
-      const rates = applicableGroups.map((g) => g.rateMin).filter((r): r is number => r != null && r > 0);
-      if (rates.length > 0) {
-        return basePrice * Math.min(...rates);
-      }
-    }
-  }
-
-  // 2. 如果未指定分组，优先查找 default 默认分组
-  const defaultGroup = groups.find((g) => g.name.toLowerCase() === "default");
-  if (defaultGroup && defaultGroup.rateMin != null && defaultGroup.rateMin > 0) {
-    return basePrice * defaultGroup.rateMin;
-  }
-
-  // 3. 否则使用基础倍率
-  return basePrice;
 }
 
 function compareNullable(a: number | null, b: number | null, direction: "asc" | "desc"): number {
@@ -106,65 +104,276 @@ function formatDate(value: string): string {
   }).format(date);
 }
 
-function groupMatchesModel(group: RelayV1Group, modelName: string): boolean {
-  const normalized = modelName.toLocaleLowerCase();
-  return group.relatedModels.some((item) => item.toLocaleLowerCase().startsWith(normalized));
+// ============================================================================
+// 子组件：模型家族横向联动矩阵 (ModelFamilyMatrixBar)
+// ============================================================================
+
+function ModelFamilyMatrixBar({
+  family,
+  selectedModel,
+  onSelectModel,
+}: {
+  family: ModelFamilyGroup;
+  selectedModel: string;
+  onSelectModel: (name: string) => void;
+}) {
+  if (!family || family.subModels.length <= 1) return null;
+
+  return (
+    <div className="mb-6 border-2 border-black bg-white">
+      <div className="flex flex-wrap items-center justify-between border-b-2 border-black bg-black px-4 py-2 text-white">
+        <div className="flex items-center gap-2 font-mono text-[11px] font-black uppercase tracking-[0.2em]">
+          <span className="h-2 w-2 bg-swiss-accent" />
+          {family.familyName} · 家族横向对比矩阵
+        </div>
+        <span className="font-mono text-[10px] text-white/60">
+          收录 {family.totalSitesCovered} 站 · 点击下方卡片直接切换变体
+        </span>
+      </div>
+
+      <div
+        className="grid divide-y-2 divide-black md:divide-y-0 md:divide-x-2"
+        style={{ gridTemplateColumns: `repeat(${family.subModels.length}, minmax(0, 1fr))` }}
+      >
+        {family.subModels.map((variant) => {
+          const isActive = variant.modelName.toLowerCase() === selectedModel.toLowerCase();
+          return (
+            <button
+              key={variant.modelName}
+              type="button"
+              onClick={() => onSelectModel(variant.modelName)}
+              className={`group relative flex flex-col justify-between p-4 text-left transition-all ${
+                isActive
+                  ? "bg-[#fff0ec] ring-2 ring-inset ring-swiss-accent"
+                  : "bg-white hover:bg-[#f8f8f5]"
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className={`h-2 w-2 ${
+                        isActive ? "bg-swiss-accent" : "bg-black/30 group-hover:bg-black"
+                      }`}
+                    />
+                    <span className="font-mono text-xs font-black uppercase tracking-wider text-black">
+                      {variant.shortLabel}
+                    </span>
+                  </div>
+                  {isActive && (
+                    <span className="border border-swiss-accent bg-swiss-accent px-1.5 py-0.5 font-mono text-[9px] font-black uppercase tracking-widest text-white">
+                      ACTIVE
+                    </span>
+                  )}
+                </div>
+                <div className="mt-1 font-mono text-sm font-bold text-black/85 truncate" title={variant.modelName}>
+                  {variant.modelName}
+                </div>
+                <div className="mt-0.5 font-mono text-[10px] text-black/45">{variant.tagline}</div>
+              </div>
+
+              <div className="mt-4 border-t border-black/15 pt-2.5">
+                <div className="flex items-baseline justify-between">
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-black/50">全网最低</span>
+                  <span className="font-mono text-lg font-black text-black">
+                    {variant.lowestPrice != null ? `${variant.lowestPrice.toFixed(4).replace(/\.?0+$/, "")}×` : "--"}
+                  </span>
+                </div>
+                <div className="mt-1 flex items-center justify-between font-mono text-[10px] text-black/55">
+                  <span className="truncate max-w-[110px]" title={variant.lowestPriceSite?.name || ""}>
+                    {variant.lowestPriceSite?.name ? `由 ${variant.lowestPriceSite.name}` : "暂无报价"}
+                  </span>
+                  <span>{variant.siteCount} 站 · P50 {variant.avgP50 ? `${Math.round(variant.avgP50)}ms` : "--"}</span>
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
-function riskWeight(level: RiskLevel): number {
-  return level === "high" ? 2 : level === "medium" ? 1 : 0;
+// ============================================================================
+// 子组件：排位标尺与价格梯队徽章 (RankTierBadge)
+// ============================================================================
+
+function RankTierBadge({ row }: { row: ComparisonRow }) {
+  const isT1 = row.tierInfo.tier === "T1";
+  const isT3 = row.tierInfo.tier === "T3";
+
+  return (
+    <div className="flex flex-col gap-1 shrink-0 font-mono">
+      <div className="flex items-center gap-1.5">
+        <span
+          className={`inline-flex items-center gap-1 border px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider ${
+            isT1
+              ? "border-black bg-black text-white"
+              : isT3
+              ? "border-black/30 bg-[#f4f4f0] text-black/60"
+              : "border-black bg-white text-black"
+          }`}
+          title={row.tierInfo.description}
+        >
+          <span className={isT1 ? "text-swiss-accent" : ""}>■</span>
+          {row.tierInfo.tier} {row.tierInfo.label}
+        </span>
+      </div>
+
+      <div className="text-[10px] font-bold text-black/50 tracking-tight">
+        #{String(row.rank).padStart(2, "0")}{" "}
+        <span className="text-black/30">/</span> {row.totalSites}站 · {row.percentileText}
+      </div>
+    </div>
+  );
 }
 
-function getRiskLevel(groups: RelayV1Group[]): RiskLevel {
-  return groups.reduce<RiskLevel>((current, group) => (
-    riskWeight(group.riskLevel) > riskWeight(current) ? group.riskLevel : current
-  ), "low");
-}
+// ============================================================================
+// 子组件：计费公式拆解药丸 (PriceFormulaBreakdownPill)
+// ============================================================================
 
-function PriceCell({ offer, siteGroups, isBest }: { offer: RelayV1Offer; siteGroups: RelayV1Group[]; isBest: boolean }) {
-  const effectivePrice = offerPrice(offer, siteGroups);
-  const basePrice = offer.modelType === "image" ? offer.perCallPrice : (offer.inputRate ?? offer.outputRate);
-  const hasGroupMultiplier = effectivePrice != null && basePrice != null && Math.abs(effectivePrice - basePrice) > 1e-6;
-  const derivedSource = offer.priceSource === "family_group"
-    ? "通用模型基准 × 分组倍率"
-    : offer.priceSource === "related_group"
-      ? "分组模型基准 × 分组倍率"
-      : null;
+function PriceFormulaBreakdownPill({
+  row,
+  isBest,
+}: {
+  row: ComparisonRow;
+  isBest: boolean;
+}) {
+  const formula = row.formula;
+  const isImage = row.offer.modelType === "image";
+  const isNonDefaultGroup = formula.hasGroupDiscount && formula.groupName.toLowerCase() !== "default" && formula.groupName !== "标准基准";
 
-
-  if (offer.modelType === "image") {
+  if (isImage) {
     return (
       <div>
         <div className="flex flex-wrap items-center gap-2">
-          <strong className="font-mono text-2xl font-black">{effectivePrice == null ? "--" : `¥${new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 6 }).format(effectivePrice)}`}</strong>
-          {isBest && <span className="bg-swiss-accent px-2 py-1 font-mono text-[10px] font-black uppercase tracking-widest text-white">LOWEST</span>}
+          <strong className="font-mono text-2xl font-black">
+            {formula.effectivePrice == null ? "--" : `¥${new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 6 }).format(formula.effectivePrice)}`}
+          </strong>
+          {isBest && <span className="bg-swiss-accent px-2 py-0.5 font-mono text-[10px] font-black uppercase tracking-widest text-white">LOWEST</span>}
         </div>
-        <p className="mt-1 font-mono text-xs text-black/55">
-          {hasGroupMultiplier ? `基础 ¥${basePrice} × 分组最低` : "按次价格"}
+        <p className="mt-1 font-mono text-[11px] text-black/55">
+          {formula.hasGroupDiscount ? `基准 ¥${formula.basePrice} × [${formula.groupName} ${formula.groupRate}x]` : "按次计费"}
         </p>
       </div>
     );
   }
 
   return (
-    <div>
+    <div className="flex flex-col gap-1">
       <div className="flex flex-wrap items-center gap-2">
-        <strong className="font-mono text-2xl font-black">{formatMultiplier(effectivePrice)}</strong>
-        {isBest && <span className="bg-swiss-accent px-2 py-1 font-mono text-[10px] font-black uppercase tracking-widest text-white">LOWEST</span>}
-      </div>
-      <p className="mt-1 font-mono text-xs text-black/55">
-        {derivedSource ? (
-          <span className="text-amber-700 font-bold">{derivedSource}</span>
-        ) : hasGroupMultiplier ? (
-          <span className="text-swiss-accent font-bold">基础 {formatMultiplier(offer.inputRate)} × 分组最低</span>
-        ) : (
-          <>IN {formatMultiplier(offer.inputRate)} · OUT {formatMultiplier(offer.outputRate)}</>
+        <strong className="font-mono text-2xl font-black tracking-tight">
+          {formatMultiplier(formula.effectivePrice)}
+        </strong>
+        {isBest && (
+          <span className="border border-swiss-accent bg-swiss-accent px-1.5 py-0.5 font-mono text-[9px] font-black uppercase tracking-widest text-white">
+            LOWEST
+          </span>
         )}
-      </p>
-      {(offer.cacheRate != null || offer.createCacheRate != null) && (
-        <p className="mt-1 font-mono text-[11px] text-black/40">
-          CACHE {formatMultiplier(offer.cacheRate)} · CREATE {formatMultiplier(offer.createCacheRate)}
-        </p>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-1.5 font-mono text-[11px]">
+        {formula.hasGroupDiscount ? (
+          <div className="inline-flex flex-wrap items-center gap-1 border border-black/20 bg-white px-2 py-0.5 text-black/75">
+            <span className="text-black/50">基准 {formula.basePrice}×</span>
+            <span className="font-black text-black/40">×</span>
+            <span className="font-bold text-black">
+              [{formula.groupName} {formula.groupRate}×]
+            </span>
+          </div>
+        ) : (
+          <div className="inline-flex items-center gap-1 text-black/50 font-mono text-[10px]">
+            <span>IN {formatMultiplier(row.offer.inputRate)}</span>
+            <span>·</span>
+            <span>OUT {formatMultiplier(row.offer.outputRate)}</span>
+          </div>
+        )}
+
+        {isNonDefaultGroup && (
+          <span
+            className="inline-flex items-center gap-1 border border-swiss-accent bg-[#fff0ec] px-1.5 py-0.5 font-mono text-[10px] font-black text-swiss-accent"
+            title="请在站点控制台切换至该分组以享受此倍率"
+          >
+            <span>☞ 切</span>
+            <span className="underline">{formula.groupName}</span>
+          </span>
+        )}
+      </div>
+
+      {(row.offer.cacheRate != null || row.offer.createCacheRate != null) && (
+        <div className="font-mono text-[10px] text-black/40">
+          CACHE {formatMultiplier(row.offer.cacheRate)} · CREATE {formatMultiplier(row.offer.createCacheRate)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
+// 子组件：选型决策亮点微标签 (SmartDecisionHighlightTags)
+// ============================================================================
+
+function SmartDecisionHighlightTags({
+  isLowestPrice,
+  ttftMs,
+  availability7d,
+  qcScore,
+  siteTags,
+}: {
+  isLowestPrice: boolean;
+  ttftMs: number | null;
+  availability7d: number | null;
+  qcScore: number | null;
+  siteTags: SiteFeatureTags;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 font-mono text-[10px]">
+      {isLowestPrice && (
+        <span className="inline-flex items-center gap-1 bg-black px-1.5 py-0.5 font-black text-white">
+          <span className="text-swiss-accent">★</span> 全网最低价
+        </span>
+      )}
+
+      {ttftMs != null && ttftMs < 900 && (
+        <span className="inline-flex items-center gap-1 border border-swiss-accent bg-[#fff0ec] px-1.5 py-0.5 font-bold text-swiss-accent">
+          ⚡ 极速 {Math.round(ttftMs)}ms
+        </span>
+      )}
+
+      {availability7d != null && availability7d >= 99.0 && (
+        <span className="inline-flex items-center gap-1 border border-black bg-white px-1.5 py-0.5 font-bold text-black">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
+          {availability7d.toFixed(1)}% 稳线
+        </span>
+      )}
+
+      {qcScore != null && (
+        <span
+          className={`inline-flex items-center gap-1 border px-1.5 py-0.5 font-black ${
+            qcScore >= 90
+              ? "border-emerald-600 bg-emerald-50 text-emerald-800"
+              : "border-black/30 bg-black/5 text-black/70"
+          }`}
+        >
+          <ShieldCheck className="h-3 w-3 text-emerald-600" />
+          质检 {qcScore >= 95 ? "S级" : qcScore >= 85 ? "A级" : ""}{qcScore}分
+        </span>
+      )}
+
+      {siteTags.isPurePro && (
+        <span className="border border-black/30 bg-[#F4F4F0] px-1.5 py-0.5 font-bold text-black/80">
+          💎 纯血Pro
+        </span>
+      )}
+      {siteTags.hasInvoice && (
+        <span className="border border-black/30 bg-white px-1.5 py-0.5 font-medium text-black/70">
+          可开票
+        </span>
+      )}
+      {siteTags.noVerify && (
+        <span className="border border-black/30 bg-white px-1.5 py-0.5 font-medium text-black/70">
+          免验证
+        </span>
       )}
     </div>
   );
@@ -206,214 +415,302 @@ function ChangeAndRisk({ row }: { row: ComparisonRow }) {
 }
 
 function DetailPanel({ row, selectedModel }: { row: ComparisonRow; selectedModel: string }) {
-  const { site } = row;
-  const applicableGroups = row.offer.enabledGroups.length > 0 ? site.groups.filter(g => row.offer.enabledGroups.includes(g.name)) : site.groups;
-  const orderedGroups = [...applicableGroups].sort((a, b) => (a.rateMin ?? Infinity) - (b.rateMin ?? Infinity));
   return (
-    <div className="grid border-t-2 border-black bg-[#f4f4f0] xl:grid-cols-[0.78fr_1.22fr]">
-      <section className="border-b-2 border-black p-5 xl:border-b-0 xl:border-r-2">
-        <div className="mb-4 flex items-center gap-2 font-mono text-xs font-black uppercase tracking-[0.18em] text-black/60">
-          <Gauge className="h-4 w-4" /> Performance Snapshot <span className="text-[10px] font-normal text-black/40">(第三方实测，仅供参考)</span>
-        </div>
-        {site.performance ? (
-          <div className="grid grid-cols-2 border-l-2 border-t-2 border-black/40">
-            {[
-              ["TTFT P50", formatMs(site.performance.ttftP50Ms)],
-              ["LATENCY P95", formatMs(site.performance.latencyP95Ms)],
-              ["TOKENS / S", site.performance.tpsAvg == null ? "--" : site.performance.tpsAvg.toFixed(1)],
-              ["LAST PROBE", formatDate(site.performance.lastProbeAt)],
-            ].map(([label, value]) => (
-              <div key={label} className="border-b-2 border-r-2 border-black/40 bg-white p-3">
-                <div className="font-mono text-[10px] font-bold uppercase tracking-widest text-black/45">{label}</div>
-                <div className="mt-2 font-mono text-base font-bold text-black/70">{value}</div>
-              </div>
-            ))}
+    <div className="border-t-2 border-black bg-white p-4 sm:p-6">
+      <div className="grid gap-6 xl:grid-cols-2">
+        <div className="border-2 border-black p-4">
+          <div className="flex items-center justify-between border-b-2 border-black pb-2">
+            <span className="font-mono text-xs font-black uppercase tracking-wider">01 · 当前生效计费公式</span>
+            <span className="font-mono text-xs text-swiss-accent font-bold">
+              {row.formula.groupName} ({row.formula.groupRate}×)
+            </span>
           </div>
-        ) : (
-          <div className="border-2 border-dashed border-black/25 bg-white p-6 font-mono text-sm text-black/45">该站点暂无第三方实测数据。</div>
-        )}
-      </section>
+          <div className="mt-3 space-y-2 font-mono text-xs">
+            <div className="flex justify-between border-b border-black/10 pb-1">
+              <span className="text-black/50">基础模型定价</span>
+              <span className="font-bold">{row.formula.basePrice}×</span>
+            </div>
+            <div className="flex justify-between border-b border-black/10 pb-1">
+              <span className="text-black/50">命中最优分组</span>
+              <span className="font-bold text-swiss-accent">{row.formula.groupName} ({row.formula.groupRate}×)</span>
+            </div>
+            <div className="flex justify-between border-b border-black/10 pb-1">
+              <span className="text-black/50">最终折算到手倍率</span>
+              <span className="font-black text-base">{row.formula.effectivePrice.toFixed(4).replace(/\.?0+$/, "")}×</span>
+            </div>
+            <div className="pt-2 text-[11px] text-black/60 bg-[#f8f8f5] p-2 border border-black/15">
+              💡 <strong>调用指引</strong>：在向该站点（{row.site.domain || row.site.name}）请求 <code>{selectedModel}</code> 时，请在 API Key 分组权限或后台令牌中指定分组为 <code>{row.formula.groupName}</code>。
+            </div>
+          </div>
+        </div>
 
-      <section className="p-5">
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2 font-mono text-xs font-black uppercase tracking-[0.18em]">
-            <BarChart3 className="h-4 w-4" /> Groups & Multipliers
+        <div className="border-2 border-black p-4">
+          <div className="flex items-center justify-between border-b-2 border-black pb-2">
+            <span className="font-mono text-xs font-black uppercase tracking-wider">02 · 网络延迟与可用率探针</span>
+            <span className="font-mono text-[10px] text-black/40">
+              {row.site.performance?.lastProbeAt ? `实测于 ${row.site.performance.lastProbeAt}` : "无实测打点"}
+            </span>
           </div>
-          <span className="font-mono text-xs text-black/45">{applicableGroups.length} GROUPS</span>
+          <div className="mt-3 grid grid-cols-3 gap-2 text-center font-mono">
+            <div className="border border-black/20 p-2">
+              <div className="text-[10px] text-black/40">TTFT 首字延迟</div>
+              <div className="mt-1 text-base font-black">{formatMs(row.site.performance?.ttftP50Ms ?? null)}</div>
+            </div>
+            <div className="border border-black/20 p-2">
+              <div className="text-[10px] text-black/40">P95 峰值延迟</div>
+              <div className="mt-1 text-base font-black">{formatMs(row.site.performance?.latencyP95Ms ?? null)}</div>
+            </div>
+            <div className="border border-black/20 p-2">
+              <div className="text-[10px] text-black/40">7日成功率</div>
+              <div className="mt-1 text-base font-black">{formatPercent(row.site.performance?.successRate ?? null, true)}</div>
+            </div>
+          </div>
+          <div className="mt-3 flex justify-end">
+            <Link
+              href={`/table/relay_sites_tracker/${encodeURIComponent(row.site.id)}`}
+              className="inline-flex items-center gap-1 font-mono text-xs font-black text-black underline hover:text-swiss-accent"
+            >
+              查看该站点 165+ 全量分组与参数详情 →
+            </Link>
+          </div>
         </div>
-        <div className="max-h-[360px] overflow-y-auto border-l-2 border-t-2 border-black bg-white">
-          {orderedGroups.length === 0 ? (
-            <div className="border-b-2 border-r-2 border-black p-6 font-mono text-sm text-black/45">暂无分组数据</div>
-          ) : orderedGroups.map((group) => {
-            const related = groupMatchesModel(group, selectedModel);
-            return (
-              <div key={group.id} className={`grid border-b-2 border-r-2 border-black md:grid-cols-[1fr_150px] ${related ? "bg-[#fff0ec]" : "bg-white"}`}>
-                <div className="p-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <strong className="text-sm">{group.name}</strong>
-                    {related && <span className="border border-swiss-accent px-1.5 py-0.5 font-mono text-[9px] font-black text-swiss-accent">MODEL LINKED</span>}
-                    {group.changeDirection && (
-                      <span className="inline-flex items-center gap-1 font-mono text-[10px] font-black text-swiss-accent">
-                        {group.changeDirection === "up" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
-                        {group.changeDirection === "up" ? "+" : ""}{formatMultiplier(group.changeDelta)}
-                      </span>
-                    )}
-                  </div>
-                  {group.remark && <p className="mt-1 text-xs leading-5 text-black/55">{group.remark}</p>}
-                </div>
-                <div className="border-t-2 border-black p-3 md:border-l-2 md:border-t-0">
-                  <div className="font-mono text-base font-black">{group.rateValues || formatMultiplier(group.rateMin)}</div>
-                  <div className="mt-1 font-mono text-[10px] text-black/45">{formatMultiplier(group.rateMin)} — {formatMultiplier(group.rateMax)}</div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
+      </div>
     </div>
   );
 }
 
-export function RelayV1Explorer({ data, qcRecords }: RelayV1ExplorerProps) {
-  const [selectedModel, setSelectedModel] = useState(data.defaultModel);
+// ============================================================================
+// 主组件：RelayV1Explorer
+// ============================================================================
+
+export function RelayV1Explorer({ data, qcRecords = [] }: RelayV1ExplorerProps) {
+  const [selectedModel, setSelectedModel] = useState<string>(data.defaultModel);
   const [siteQuery, setSiteQuery] = useState("");
-  const [minimumAvailability, setMinimumAvailability] = useState(0);
+  const [minimumAvailability, setMinimumAvailability] = useState<number>(0);
   const [measuredOnly, setMeasuredOnly] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("price");
   const [presetFilter, setPresetFilter] = useState<ScenarioPreset>("all");
+  const [modelSearchQuery, setModelSearchQuery] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // 质检记录索引映射
-  const qcBySiteId = useMemo(() => {
-    const map = new Map<string, QCRecord>();
-    for (const r of qcRecords || []) {
-      if (r.siteId) map.set(r.siteId, r);
-      if (r.domain) map.set(r.domain.toLowerCase(), r);
-    }
-    return map;
-  }, [qcRecords]);
-
-  // 全局快捷键 / 聚焦搜索框
+  // 快捷键聚焦搜索
   useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (
-        e.key === "/" &&
-        document.activeElement !== searchInputRef.current &&
-        !(document.activeElement instanceof HTMLInputElement || document.activeElement instanceof HTMLTextAreaElement)
-      ) {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "/" && document.activeElement !== searchInputRef.current) {
         e.preventDefault();
         searchInputRef.current?.focus();
       }
     };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // 按厂商对模型进行智能分组
-  const categorizedModels = useMemo(() => {
-    const groups: { [cat: string]: typeof data.models } = {
-      "OpenAI / Codex": [],
-      "Anthropic / Claude": [],
-      "Google Gemini": [],
-      "DeepSeek / 国产大模型": [],
-      "图像生图 / Image": [],
-      "其他模型 / Other": [],
-    };
-    for (const m of data.models) {
-      const n = m.name.toLowerCase();
-      if (n.startsWith("gpt") || n.startsWith("o1") || n.startsWith("o3") || n.startsWith("text-embedding") || n.startsWith("chatgpt")) {
-        groups["OpenAI / Codex"].push(m);
-      } else if (n.startsWith("claude")) {
-        groups["Anthropic / Claude"].push(m);
-      } else if (n.startsWith("gemini")) {
-        groups["Google Gemini"].push(m);
-      } else if (n.startsWith("deepseek") || n.startsWith("qwen") || n.startsWith("doubao") || n.startsWith("kimi") || n.startsWith("glm")) {
-        groups["DeepSeek / 国产大模型"].push(m);
-      } else if (m.type === "image" || n.includes("dall") || n.includes("midjourney") || n.includes("flux")) {
-        groups["图像生图 / Image"].push(m);
-      } else {
-        groups["其他模型 / Other"].push(m);
-      }
+  // 质检记录映射
+  const qcBySiteId = useMemo(() => {
+    const map = new Map<string, QCRecord>();
+    for (const record of qcRecords) {
+      if (record.siteId) map.set(record.siteId, record);
+      if (record.domain) map.set(record.domain.toLowerCase(), record);
     }
-    return groups;
+    return map;
+  }, [qcRecords]);
+
+  // 模型家族聚合
+  const modelFamilies = useMemo(() => {
+    return aggregateModelFamilies(data.sites);
+  }, [data.sites]);
+
+  const currentFamily = useMemo(() => {
+    return modelFamilies.find((f) => f.subModels.some((m) => m.modelName.toLowerCase() === selectedModel.toLowerCase())) || null;
+  }, [modelFamilies, selectedModel]);
+
+  // 模型分组与搜索
+  const hotModels = useMemo(() => {
+    return [
+      "gpt-5.6-sol",
+      "gpt-5.6-terra",
+      "gpt-5.4",
+      "claude-3-5-sonnet-20241022",
+      "deepseek-r1",
+      "gemini-2.0-flash",
+    ].filter((name) => data.models.some((m) => m.name === name));
   }, [data.models]);
 
-  const rows = useMemo<ComparisonRow[]>(() => {
-    const normalizedModel = selectedModel.toLocaleLowerCase();
-    const query = siteQuery.trim().toLocaleLowerCase().replace(/^https?:\/\//, "").replace(/\/$/, "");
-    const result: ComparisonRow[] = [];
+  const groupedModels = useMemo(() => {
+    const query = modelSearchQuery.trim().toLowerCase();
+    const filtered = data.models.filter((m) => !query || m.name.toLowerCase().includes(query));
+
+    const groups: { vendor: string; models: typeof data.models }[] = [
+      { vendor: "OpenAI / ChatGPT", models: [] },
+      { vendor: "Anthropic / Claude", models: [] },
+      { vendor: "DeepSeek / 深度求索", models: [] },
+      { vendor: "Google / Gemini", models: [] },
+      { vendor: "Other Models", models: [] },
+    ];
+
+    for (const model of filtered) {
+      const name = model.name.toLowerCase();
+      if (/^(gpt|o[1-4]|codex|chatgpt|text-davinci)/i.test(name)) {
+        groups[0].models.push(model);
+      } else if (/^claude/i.test(name)) {
+        groups[1].models.push(model);
+      } else if (/^deepseek/i.test(name)) {
+        groups[2].models.push(model);
+      } else if (/^gemini/i.test(name)) {
+        groups[3].models.push(model);
+      } else {
+        groups[4].models.push(model);
+      }
+    }
+
+    return groups.filter((g) => g.models.length > 0);
+  }, [data.models, modelSearchQuery]);
+
+  // 关闭下拉菜单点击外部
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // 核心对比计算流水线
+  const { rows, unmatchedSites, stats, lowestPrice, priceSpread } = useMemo(() => {
+    const normalizedModel = selectedModel.toLowerCase();
+    const query = siteQuery.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/$/, "");
+
+    const matchedList: Array<{
+      site: RelayV1Site;
+      offer: RelayV1Offer;
+      formula: PriceFormulaBreakdown;
+      priceValue: number | null;
+      relevantGroups: RelayV1Group[];
+      riskLevel: RiskLevel;
+      riskRemarks: RelayV1Group[];
+      changedGroups: RelayV1Group[];
+    }> = [];
+
+    const unmatched: RelayV1Site[] = [];
 
     for (const site of data.sites) {
-      const offers = site.offers
-        .filter((offer) => offer.modelName.toLocaleLowerCase() === normalizedModel)
-        .sort((a, b) => compareNullable(offerPrice(a, site.groups), offerPrice(b, site.groups), "asc"));
-      const offer = offers[0];
-      if (!offer) continue;
+      const offer = site.offers.find((o) => o.modelName.toLowerCase() === normalizedModel);
+      if (!offer) {
+        unmatched.push(site);
+        continue;
+      }
 
-      // 场景化预设过滤
+      const formula = resolveOfferFormula(offer, site.groups);
+      const priceValue = formula.effectivePrice > 0 ? formula.effectivePrice : null;
+
+      // 场景预设过滤
       if (presetFilter === "coding") {
-        const isCodingSite =
+        const isCoding =
           site.groups.some((g) => /claude|kiro|max|code|codex/i.test(g.name + (g.remark || ""))) ||
           /claude|cursor|codex/i.test(site.note) ||
           site.providers.some((p) => /claude/i.test(p));
-        if (!isCodingSite) continue;
-      }
-      if (presetFilter === "low_cost") {
-        const priceVal = offerPrice(offer, site.groups);
-        const isLowRate = (site.minimumRate != null && site.minimumRate <= 0.1) || (priceVal != null && priceVal <= 0.1);
-        if (!isLowRate) continue;
-      }
-      if (presetFilter === "verified") {
-        const tags = extractSiteTags(site);
-        if (!tags.hasInvoice && !tags.hasRefund && !tags.isPurePro && !tags.noVerify) continue;
+        if (!isCoding) continue;
+      } else if (presetFilter === "low_cost") {
+        const isLow = (site.minimumRate != null && site.minimumRate <= 0.1) || (priceValue != null && priceValue <= 0.1);
+        if (!isLow) continue;
       }
 
-      const searchTarget = `${site.id} ${site.name} ${site.domain} ${site.providers.join(" ")}`.toLocaleLowerCase();
+      // 搜索过滤
+      const searchTarget = `${site.id} ${site.name} ${site.domain} ${site.providers.join(" ")}`.toLowerCase();
       if (query && !searchTarget.includes(query)) continue;
+
+      // 可用率与实测过滤
       const availability = site.performance?.availability7d ?? null;
       if (measuredOnly && !site.performance) continue;
       if (minimumAvailability > 0 && (availability == null || availability < minimumAvailability)) continue;
 
-      const relevantGroups = site.groups.filter((group) => groupMatchesModel(group, selectedModel));
+      const relevantGroups = site.groups.filter((g) =>
+        g.relatedModels.some((m) => m.toLowerCase().startsWith(normalizedModel)),
+      );
       const riskScope = relevantGroups.length > 0 ? relevantGroups : site.groups;
-      const riskRemarks = riskScope.filter((group) => group.riskLevel !== "low" && group.remark);
-      const riskLevel = getRiskLevel(riskScope);
+      const riskRemarks = riskScope.filter((g) => g.riskLevel !== "low" && g.remark);
+      const riskLevel = riskScope.reduce<RiskLevel>(
+        (acc, cur) => (cur.riskLevel === "high" ? "high" : cur.riskLevel === "medium" && acc !== "high" ? "medium" : acc),
+        "low",
+      );
 
-      result.push({
+      matchedList.push({
         site,
         offer,
-        priceValue: offerPrice(offer, site.groups),
+        formula,
+        priceValue,
         relevantGroups,
         riskLevel,
         riskRemarks,
-        changedGroups: site.groups.filter((group) => group.changeDirection),
+        changedGroups: site.groups.filter((g) => g.changeDirection),
       });
     }
 
-    return result.sort((a, b) => {
-      if (sortKey === "availability") return compareNullable(a.site.performance?.availability7d ?? null, b.site.performance?.availability7d ?? null, "desc");
-      if (sortKey === "speed") return compareNullable(a.site.performance?.ttftP50Ms ?? null, b.site.performance?.ttftP50Ms ?? null, "asc");
-      if (sortKey === "name") return a.site.name.localeCompare(b.site.name, "zh-CN");
+    // 价格分布统计与梯队生成
+    const validPrices = matchedList
+      .map((item) => item.priceValue)
+      .filter((p): p is number => p != null && p > 0)
+      .sort((a, b) => a - b);
+
+    const stats = computePriceDistributionStats(validPrices);
+
+    // 密集排名与百分位
+    const sortedByPrice = [...matchedList].sort((a, b) => compareNullable(a.priceValue, b.priceValue, "asc"));
+    const totalCount = sortedByPrice.length;
+
+    let currentRank = 1;
+    const enrichedRows: ComparisonRow[] = sortedByPrice.map((item, index) => {
+      if (index > 0 && item.priceValue != null && sortedByPrice[index - 1].priceValue != null) {
+        if (item.priceValue > (sortedByPrice[index - 1].priceValue as number)) {
+          currentRank = index + 1;
+        }
+      }
+
+      const pVal = totalCount > 0 ? (currentRank / totalCount) * 100 : 100;
+      const ceilP = Math.max(1, Math.ceil(pVal));
+      const percentileText = currentRank === 1 ? "Top 1 (全网最低)" : `Top ${ceilP}%`;
+      const tierInfo = assignPriceTier(item.priceValue ?? 0, stats);
+
+      return {
+        ...item,
+        rank: currentRank,
+        totalSites: totalCount,
+        percentileText,
+        tierInfo,
+      };
+    });
+
+    // 最终列表排序
+    enrichedRows.sort((a, b) => {
+      if (sortKey === "availability") {
+        return compareNullable(a.site.performance?.availability7d ?? null, b.site.performance?.availability7d ?? null, "desc");
+      }
+      if (sortKey === "speed") {
+        return compareNullable(a.site.performance?.ttftP50Ms ?? null, b.site.performance?.ttftP50Ms ?? null, "asc");
+      }
+      if (sortKey === "name") {
+        return a.site.name.localeCompare(b.site.name, "zh-CN");
+      }
       return compareNullable(a.priceValue, b.priceValue, "asc");
     });
-  }, [data.sites, measuredOnly, minimumAvailability, presetFilter, selectedModel, siteQuery, sortKey]);
-  const unmatchedSites = useMemo(() => {
-    const query = siteQuery.trim().toLocaleLowerCase().replace(/^https?:\/\//, "").replace(/\/$/, "");
-    return data.sites
-      .filter((site) => !site.offers.some((offer) => offer.modelName.toLocaleLowerCase() === selectedModel.toLocaleLowerCase()))
-      .filter((site) => {
-        if (!query) return true;
-        const searchTarget = `${site.id} ${site.name} ${site.domain} ${site.providers.join(" ")}`.toLocaleLowerCase();
-        return searchTarget.includes(query);
-      })
-      .sort((a, b) => a.name.localeCompare(b.name, "zh-CN"));
-  }, [data.sites, selectedModel, siteQuery]);
 
+    const lowest = stats.min > 0 ? stats.min : null;
+    const highest = stats.max > 0 ? stats.max : null;
+    const spread = lowest != null && highest != null && lowest > 0 ? highest / lowest : null;
 
-  const finitePrices = rows.map((row) => row.priceValue).filter((value): value is number => value != null);
-  const lowestPrice = finitePrices.length ? Math.min(...finitePrices) : null;
-  const highestPrice = finitePrices.length ? Math.max(...finitePrices) : null;
-  const priceSpread = lowestPrice != null && highestPrice != null && lowestPrice > 0 ? highestPrice / lowestPrice : null;
+    return {
+      rows: enrichedRows,
+      unmatchedSites: unmatched,
+      stats,
+      lowestPrice: lowest,
+      priceSpread: spread,
+    };
+  }, [data.sites, selectedModel, siteQuery, presetFilter, measuredOnly, minimumAvailability, sortKey]);
+
   const measuredCount = rows.filter((row) => row.site.performance).length;
   const selectedModelType = data.models.find((model) => model.name === selectedModel)?.type ?? "unknown";
   const lowestPriceLabel = selectedModelType === "image"
@@ -421,10 +718,10 @@ export function RelayV1Explorer({ data, qcRecords }: RelayV1ExplorerProps) {
     : formatMultiplier(lowestPrice);
 
   const matchedSiteAcrossModels = useMemo(() => {
-    const query = siteQuery.trim().toLocaleLowerCase().replace(/^https?:\/\//, "").replace(/\/$/, "");
+    const query = siteQuery.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/$/, "");
     if (!query || rows.length > 0) return null;
     return data.sites.find((site) => {
-      const searchTarget = `${site.id} ${site.name} ${site.domain} ${site.providers.join(" ")}`.toLocaleLowerCase();
+      const searchTarget = `${site.id} ${site.name} ${site.domain} ${site.providers.join(" ")}`.toLowerCase();
       return searchTarget.includes(query);
     });
   }, [data.sites, rows.length, siteQuery]);
@@ -440,6 +737,8 @@ export function RelayV1Explorer({ data, qcRecords }: RelayV1ExplorerProps) {
   return (
     <div className="pb-20">
       <RelaySubNav />
+
+      {/* Header Banner */}
       <section className="swiss-grid border-b-4 border-black px-4 py-10 sm:px-8 lg:px-12 lg:py-14">
         <div className="grid gap-8 xl:grid-cols-[1.45fr_0.55fr] xl:items-end">
           <div>
@@ -450,7 +749,7 @@ export function RelayV1Explorer({ data, qcRecords }: RelayV1ExplorerProps) {
               同模型，<br /><span className="text-swiss-accent">横向比价。</span>
             </h1>
             <p className="mt-7 max-w-2xl border-l-4 border-black pl-4 text-base font-bold leading-7 sm:text-lg">
-              把模型倍率、站点分组、7 天可用率和性能快照放进同一张决策表。只展示数据里真实存在的字段，不生成综合评分。
+              全网 167+ 中转站实时模型费率、最优分组命中、7 天可用率与网络延迟探针大盘。
             </p>
           </div>
           <div className="grid grid-cols-2 border-l-2 border-t-2 border-black bg-white">
@@ -469,177 +768,215 @@ export function RelayV1Explorer({ data, qcRecords }: RelayV1ExplorerProps) {
         </div>
       </section>
 
+      {/* Ticker Bar */}
       <section className="border-b-4 border-black bg-black px-4 py-3 text-white sm:px-8 lg:px-12">
         <div className="flex flex-wrap items-center justify-between gap-3 font-mono text-xs font-bold uppercase tracking-wider">
           <span>Latest source update · {formatDate(data.latestUpdatedAt)}</span>
-          <span className="text-[#ff8b70]">{data.totals.changedGroups} price changes</span>
+          <span className="text-white/65">
+            167+ 站点全量数据已校准 · 严格按模型实际绑定分组计算
+          </span>
         </div>
       </section>
 
-      <section className="border-b-4 border-black bg-[#f4f4f0] p-4 sm:p-8 lg:p-12">
-        <div className="mb-4 flex items-center justify-between gap-2 font-mono text-xs font-black uppercase tracking-[0.2em]">
-          <div className="flex items-center gap-2">
-            <SlidersHorizontal className="h-4 w-4" /> Filters / Model & Group Match
-          </div>
-          <span className="text-[10px] text-black/40 font-normal hidden sm:inline">按 [/] 键可快速聚焦搜索</span>
-        </div>
-        <div className="grid border-l-2 border-t-2 border-black bg-white lg:grid-cols-12">
-          <label className="border-b-2 border-r-2 border-black p-4 lg:col-span-5">
-            <span className="mb-2 block font-mono text-[10px] font-black uppercase tracking-widest text-black/45">01 / 模型选择（按厂商分组）</span>
-            <select
-              value={selectedModel}
-              onChange={(event) => setSelectedModel(event.target.value)}
-              className="h-12 w-full border-2 border-black bg-white px-3 font-mono text-sm font-black outline-none focus:border-swiss-accent cursor-pointer"
+      {/* Controls & Filter Section */}
+      <section className="border-b-4 border-black bg-[#f4f4f0] px-4 py-6 sm:px-8 lg:px-12">
+        <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+          {/* 模型选择器 */}
+          <div ref={dropdownRef} className="relative">
+            <label className="mb-2 block font-mono text-xs font-black uppercase tracking-[0.16em]">
+              01 / Select Target Model · 选择目标比价模型
+            </label>
+            <button
+              type="button"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="flex min-h-12 w-full items-center justify-between border-2 border-black bg-white px-4 py-2 text-left font-mono text-sm font-black transition-colors hover:bg-white"
             >
-              {Object.entries(categorizedModels).map(([category, models]) =>
-                models.length > 0 ? (
-                  <optgroup key={category} label={`── ${category} (${models.length} 站) ──`}>
-                    {models.map((model) => (
-                      <option key={model.name} value={model.name}>
-                        {model.name} · {model.siteCount} 站
-                      </option>
-                    ))}
-                  </optgroup>
-                ) : null
-              )}
-            </select>
-            <div className="mt-2.5 flex flex-wrap gap-1.5 items-center">
-              <span className="font-mono text-[10px] font-bold text-black/40">热门快捷:</span>
-              {[
-                "gpt-5.6-sol",
-                "claude-3-7-sonnet",
-                "claude-3-5-sonnet",
-                "deepseek-r1",
-                "deepseek-v3",
-                "gpt-4o",
-                "gemini-2.0-flash",
-              ].map((m) => (
+              <div className="flex items-center gap-2 truncate">
+                <span className="h-2.5 w-2.5 bg-swiss-accent shrink-0" />
+                <span className="text-base truncate">{selectedModel}</span>
+                <span className="text-xs text-black/50 shrink-0">
+                  ({data.models.find((m) => m.name === selectedModel)?.siteCount ?? 0} 站报价)
+                </span>
+              </div>
+              <ChevronDown className={`h-4 w-4 shrink-0 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {/* 热门模型快速标签 */}
+            <div className="mt-2 flex flex-wrap items-center gap-1.5 font-mono text-xs">
+              <span className="text-[10px] font-black uppercase tracking-wider text-black/45 mr-1">HOT:</span>
+              {hotModels.map((hm) => (
                 <button
-                  key={m}
+                  key={hm}
                   type="button"
-                  onClick={() => setSelectedModel(m)}
-                  className={`border px-2 py-0.5 font-mono text-[10px] font-bold transition-colors ${
-                    selectedModel === m
+                  onClick={() => {
+                    setSelectedModel(hm);
+                    setIsDropdownOpen(false);
+                  }}
+                  className={`border px-2 py-0.5 font-bold transition-colors ${
+                    selectedModel === hm
                       ? "border-black bg-black text-white"
-                      : "border-black/30 bg-black/5 hover:bg-black/10 text-black/75"
+                      : "border-black/30 bg-white text-black/75 hover:border-black hover:bg-black/5"
                   }`}
                 >
-                  {m}
+                  {hm}
                 </button>
               ))}
             </div>
-          </label>
-          <label className="border-b-2 border-r-2 border-black p-4 lg:col-span-3">
-            <span className="mb-2 flex items-center justify-between font-mono text-[10px] font-black uppercase tracking-widest text-black/45">
-              <span>02 / 站点搜索</span>
-              <kbd className="rounded border border-black/30 bg-black/5 px-1 text-[9px] text-black/50">/</kbd>
-            </span>
-            <span className="flex h-12 items-center border-2 border-black focus-within:border-swiss-accent bg-white">
-              <Search className="ml-3 h-4 w-4 shrink-0 text-black/40" />
+
+            {/* 模型下拉菜单 */}
+            {isDropdownOpen && (
+              <div className="absolute left-0 top-full z-50 mt-1 max-h-[420px] w-full overflow-hidden border-2 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                <div className="border-b-2 border-black bg-[#f4f4f0] p-2">
+                  <div className="flex items-center gap-2 border border-black bg-white px-2 py-1.5 font-mono text-xs">
+                    <Search className="h-3.5 w-3.5 text-black/40 shrink-0" />
+                    <input
+                      type="text"
+                      placeholder="快速过滤模型名 (如 sol / sonnet / r1)..."
+                      value={modelSearchQuery}
+                      onChange={(e) => setModelSearchQuery(e.target.value)}
+                      className="w-full bg-transparent outline-none placeholder:text-black/30"
+                      autoFocus
+                    />
+                    {modelSearchQuery && (
+                      <button type="button" onClick={() => setModelSearchQuery("")} className="text-black/40 hover:text-black">✕</button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="max-h-[340px] overflow-y-auto p-1 font-mono text-xs">
+                  {groupedModels.map((group) => (
+                    <div key={group.vendor} className="mb-2">
+                      <div className="sticky top-0 bg-black px-2 py-1 font-black uppercase tracking-wider text-white text-[10px]">
+                        {group.vendor} ({group.models.length})
+                      </div>
+                      <div className="divide-y divide-black/10">
+                        {group.models.map((model) => (
+                          <button
+                            key={model.name}
+                            type="button"
+                            onClick={() => {
+                              setSelectedModel(model.name);
+                              setIsDropdownOpen(false);
+                            }}
+                            className={`flex w-full items-center justify-between px-3 py-2 text-left hover:bg-[#fff0ec] ${
+                              model.name === selectedModel ? "bg-[#fff0ec] font-black text-swiss-accent" : "text-black"
+                            }`}
+                          >
+                            <span className="truncate">{model.name}</span>
+                            <span className="text-[10px] text-black/40 shrink-0">{model.siteCount} 站</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 搜索与快捷过滤 */}
+          <div>
+            <label className="mb-2 block font-mono text-xs font-black uppercase tracking-[0.16em]">
+              02 / Filter Sites · 检索站点 (按 <kbd className="border border-black bg-white px-1 py-0.5 text-[10px]"> / </kbd> 聚焦)
+            </label>
+            <div className="flex min-h-12 items-center border-2 border-black bg-white px-3 font-mono text-sm">
+              <Search className="mr-2 h-4 w-4 text-black/40 shrink-0" />
               <input
                 ref={searchInputRef}
+                type="text"
+                placeholder="搜索站点名称、域名或关键词..."
                 value={siteQuery}
-                onChange={(event) => setSiteQuery(event.target.value)}
-                placeholder="名称 / 域名 / Provider"
-                className="min-w-0 flex-1 bg-transparent px-3 font-mono text-sm font-bold outline-none"
+                onChange={(e) => setSiteQuery(e.target.value)}
+                className="w-full bg-transparent outline-none placeholder:text-black/35 font-bold"
               />
               {siteQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSiteQuery("")}
-                  className="mr-3 font-mono text-xs font-bold text-black/40 hover:text-black"
-                >
-                  ✕
-                </button>
+                <button type="button" onClick={() => setSiteQuery("")} className="font-mono text-xs text-black/40 hover:text-black px-1">✕</button>
               )}
-            </span>
-          </label>
-          <label className="border-b-2 border-r-2 border-black p-4 lg:col-span-2">
-            <span className="mb-2 block font-mono text-[10px] font-black uppercase tracking-widest text-black/45">03 / 7D 可用率</span>
-            <select value={minimumAvailability} onChange={(event) => setMinimumAvailability(Number(event.target.value))} className="h-12 w-full border-2 border-black bg-white px-3 font-mono text-sm font-black outline-none focus:border-swiss-accent cursor-pointer">
-              <option value={0}>不限</option>
-              <option value={80}>≥ 80%</option>
-              <option value={90}>≥ 90%</option>
-              <option value={95}>≥ 95%</option>
-              <option value={99}>≥ 99%</option>
-            </select>
-          </label>
-          <label className="border-b-2 border-r-2 border-black p-4 lg:col-span-2">
-            <span className="mb-2 block font-mono text-[10px] font-black uppercase tracking-widest text-black/45">04 / 排序规则</span>
-            <select value={sortKey} onChange={(event) => setSortKey(event.target.value as SortKey)} className="h-12 w-full border-2 border-black bg-white px-3 font-mono text-sm font-black outline-none focus:border-swiss-accent cursor-pointer">
-              <option value="price">价格从低到高</option>
-              <option value="availability">可用率从高到低</option>
-              <option value="speed">TTFT 从快到慢</option>
-              <option value="name">站点名称</option>
-            </select>
-          </label>
-          <div className="flex flex-wrap items-stretch border-b-2 border-r-2 border-black lg:col-span-12">
-            <button type="button" onClick={() => setMeasuredOnly((value) => !value)} className={`min-h-12 border-r-2 border-black px-4 font-mono text-xs font-black uppercase tracking-wider transition-colors ${measuredOnly ? "bg-black text-white" : "bg-white hover:bg-[#f4f4f0]"}`}>
-              {measuredOnly ? "✓ " : ""}仅看有实测数据
-            </button>
-            <button type="button" onClick={resetFilters} className="ml-auto flex min-h-12 items-center gap-2 px-4 font-mono text-xs font-black uppercase tracking-wider transition-colors hover:bg-black hover:text-white">
-              <RotateCcw className="h-4 w-4" /> 重置筛选
-            </button>
+            </div>
           </div>
         </div>
 
-        {/* 活跃筛选标签汇总 */}
-        {(siteQuery || minimumAvailability > 0 || measuredOnly || presetFilter !== "all") && (
-          <div className="mt-3 flex flex-wrap items-center gap-2 border-2 border-black bg-white p-3 font-mono text-xs">
-            <span className="text-[10px] font-black uppercase tracking-widest text-black/45">已应用过滤:</span>
-            {siteQuery && (
-              <span className="inline-flex items-center gap-1.5 border border-black bg-[#f4f4f0] px-2 py-0.5 font-bold">
-                搜索: {siteQuery}
-                <button type="button" onClick={() => setSiteQuery("")} className="hover:text-swiss-accent">✕</button>
-              </span>
-            )}
-            {minimumAvailability > 0 && (
-              <span className="inline-flex items-center gap-1.5 border border-black bg-[#f4f4f0] px-2 py-0.5 font-bold">
-                可用率 ≥ {minimumAvailability}%
-                <button type="button" onClick={() => setMinimumAvailability(0)} className="hover:text-swiss-accent">✕</button>
-              </span>
-            )}
-            {measuredOnly && (
-              <span className="inline-flex items-center gap-1.5 border border-black bg-[#f4f4f0] px-2 py-0.5 font-bold">
-                仅有实测
-                <button type="button" onClick={() => setMeasuredOnly(false)} className="hover:text-swiss-accent">✕</button>
-              </span>
-            )}
-            {presetFilter !== "all" && (
-              <span className="inline-flex items-center gap-1.5 border border-black bg-[#f4f4f0] px-2 py-0.5 font-bold">
-                场景: {presetFilter === "coding" ? "代码补全" : presetFilter === "low_cost" ? "极低成本" : "官方纯血/可开票"}
-                <button type="button" onClick={() => setPresetFilter("all")} className="hover:text-swiss-accent">✕</button>
-              </span>
-            )}
+        {/* 排序与高级筛选行 */}
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t-2 border-black/20 pt-4">
+          <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
+            <span className="text-[10px] font-black uppercase tracking-widest text-black/45 mr-1">SORT:</span>
+            {[
+              ["price", "价格最低 (Default)"],
+              ["speed", "延迟最低 (TTFT)"],
+              ["availability", "7日可用率最高"],
+              ["name", "站点名称 A-Z"],
+            ].map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setSortKey(key as SortKey)}
+                className={`border-2 px-2.5 py-1 font-bold transition-all ${
+                  sortKey === key
+                    ? "border-black bg-black text-white shadow-[2px_2px_0px_0px_rgba(255,48,0,1)]"
+                    : "border-black/30 bg-white text-black hover:border-black"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
+            <button
+              type="button"
+              onClick={() => setMeasuredOnly(!measuredOnly)}
+              className={`border-2 px-2.5 py-1 font-bold transition-colors ${
+                measuredOnly ? "border-black bg-black text-white" : "border-black/30 bg-white text-black hover:border-black"
+              }`}
+            >
+              仅看有探针实测
+            </button>
             <button
               type="button"
               onClick={resetFilters}
-              className="ml-auto text-[11px] font-black text-swiss-accent underline hover:opacity-80"
+              className="ml-auto flex items-center gap-1.5 px-3 py-1 font-mono text-xs font-black uppercase tracking-wider text-black/60 hover:text-swiss-accent hover:underline"
             >
-              清除全部
+              <RotateCcw className="h-3.5 w-3.5" /> 重置筛选
             </button>
           </div>
-        )}
+        </div>
       </section>
 
+      {/* Main Content Area */}
       <section className="px-4 py-8 sm:px-8 lg:px-12">
+        {/* 模型家族横向对比矩阵 */}
+        {currentFamily && (
+          <ModelFamilyMatrixBar
+            family={currentFamily}
+            selectedModel={selectedModel}
+            onSelectModel={(name) => setSelectedModel(name)}
+          />
+        )}
+
+        {/* 场景预设卡片 */}
         <RelayScenarioTabs activePreset={presetFilter} onSelectPreset={setPresetFilter} />
-        
+
+        {/* 预估计算器 */}
         <RelayCostEstimator selectedModel={selectedModel} sites={rows} />
 
+        {/* 决策大盘 Title & Summary Counters */}
         <div className="mb-5 grid gap-4 border-b-4 border-black pb-5 md:grid-cols-[1fr_auto] md:items-end">
           <div>
-            <div className="font-mono text-xs font-black uppercase tracking-[0.2em] text-swiss-accent">Cross-site comparison</div>
-            <h2 className="mt-2 break-all text-3xl font-black tracking-[-0.04em] sm:text-5xl">{selectedModel}</h2>
+            <div className="font-mono text-xs font-black uppercase tracking-[0.2em] text-swiss-accent">
+              Cross-site comparison observatory
+            </div>
+            <h2 className="mt-2 break-all text-3xl font-black tracking-[-0.04em] sm:text-5xl">
+              {selectedModel}
+            </h2>
           </div>
-          <div className="flex flex-wrap border-l-2 border-t-2 border-black">
+          <div className="flex flex-wrap border-l-2 border-t-2 border-black bg-white">
             {[
               ["MATCHED", `${rows.length} 站`],
               ["MEASURED", `${measuredCount} 站`],
               ["LOWEST", lowestPriceLabel],
               ["SPREAD", priceSpread == null ? "--" : `${priceSpread.toFixed(1)}×`],
             ].map(([label, value]) => (
-              <div key={label} className="min-w-[100px] border-b-2 border-r-2 border-black px-3 py-2">
+              <div key={label} className="min-w-[100px] border-b-2 border-r-2 border-black px-3.5 py-2">
                 <div className="font-mono text-[9px] font-black uppercase tracking-widest text-black/40">{label}</div>
                 <div className="mt-1 font-mono text-sm font-black">{value}</div>
               </div>
@@ -647,10 +984,16 @@ export function RelayV1Explorer({ data, qcRecords }: RelayV1ExplorerProps) {
           </div>
         </div>
 
-        <div className="hidden grid-cols-[56px_minmax(220px,1.25fr)_minmax(205px,0.9fr)_minmax(180px,0.8fr)_minmax(145px,0.65fr)_48px] border-x-2 border-t-2 border-black bg-black font-mono text-[10px] font-black uppercase tracking-[0.16em] text-white lg:grid">
-          {['#', 'Station', 'Model price', 'Availability', 'Signal', ''].map((label) => <div key={label || 'expand'} className="border-r border-white/25 px-3 py-3 last:border-r-0">{label}</div>)}
+        {/* 表头（仅在桌面端显示） */}
+        <div className="hidden grid-cols-[140px_minmax(240px,1.4fr)_minmax(240px,1.2fr)_minmax(160px,0.8fr)_minmax(130px,0.6fr)_40px] border-x-2 border-t-2 border-black bg-black font-mono text-[10px] font-black uppercase tracking-[0.16em] text-white lg:grid">
+          {["Rank & Tier", "Station & Features", "Effective Price & Formula", "Availability & Latency", "Signal", ""].map((label) => (
+            <div key={label || "expand"} className="border-r border-white/25 px-3 py-3 last:border-r-0">
+              {label}
+            </div>
+          ))}
         </div>
 
+        {/* 表格主体 */}
         <div className="border-x-2 border-t-2 border-black lg:border-t-0">
           {rows.length === 0 ? (
             <div className="border-b-2 border-black bg-[#f4f4f0] px-6 py-20 text-center">
@@ -667,96 +1010,109 @@ export function RelayV1Explorer({ data, qcRecords }: RelayV1ExplorerProps) {
                 )}
               </p>
             </div>
-          ) : rows.map((row, index) => {
-            const siteTags = extractSiteTags(row.site);
-            return (
-            <details key={row.site.id} className="group border-b-2 border-black bg-white open:bg-[#f4f4f0]">
-              <summary className="grid cursor-pointer list-none gap-4 p-4 transition-colors hover:bg-[#f4f4f0] lg:grid-cols-[40px_minmax(220px,1.25fr)_minmax(205px,0.9fr)_minmax(180px,0.8fr)_minmax(145px,0.65fr)_32px] lg:items-center lg:gap-3 lg:p-3 [&::-webkit-details-marker]:hidden">
-                <div className="font-mono text-sm font-black text-black/40">{String(index + 1).padStart(2, "0")}</div>
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Link href={`/table/relay_sites_tracker/${encodeURIComponent(row.site.id)}`} onClick={(event) => event.stopPropagation()} className="truncate text-lg font-black hover:text-swiss-accent">{row.site.name}</Link>
-                    {index === 0 && sortKey === "price" && <span className="border-2 border-black bg-black px-2 py-0.5 font-mono text-[9px] font-black text-white">#1 PRICE</span>}
-                    {(() => {
-                      const qc = qcBySiteId.get(row.site.id) || (row.site.domain ? qcBySiteId.get(row.site.domain.toLowerCase()) : null);
-                      if (qc && qc.score != null) {
-                        return (
-                          <Link
-                            href={`/detector?siteId=${encodeURIComponent(row.site.id)}&model=${encodeURIComponent(selectedModel)}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="inline-flex items-center gap-1 border border-emerald-600 bg-emerald-50 px-1.5 py-0.5 font-mono text-[9px] font-black text-emerald-700 hover:bg-emerald-100"
-                            title={`该站质检综合得分: ${qc.score}分 (多轮加权)`}
-                          >
-                            <ShieldCheck className="h-3 w-3 text-emerald-600" />
-                            质检 {qc.score}分
-                          </Link>
-                        );
-                      }
-                      return (
+          ) : (
+            rows.map((row, index) => {
+              const siteTags = extractSiteTags(row.site);
+              const isLowest = lowestPrice != null && row.priceValue === lowestPrice;
+              const qc = qcBySiteId.get(row.site.id) || (row.site.domain ? qcBySiteId.get(row.site.domain.toLowerCase()) : null);
+
+              return (
+                <details key={row.site.id} className="group border-b-2 border-black bg-white open:bg-[#f4f4f0]">
+                  <summary className="grid cursor-pointer list-none gap-4 p-4 transition-colors hover:bg-[#f8f8f5] lg:grid-cols-[140px_minmax(240px,1.4fr)_minmax(240px,1.2fr)_minmax(160px,0.8fr)_minmax(130px,0.6fr)_40px] lg:items-center lg:gap-3 lg:p-3.5 [&::-webkit-details-marker]:hidden">
+                    {/* 1. 排位标尺与价格梯队 */}
+                    <RankTierBadge row={row} />
+
+                    {/* 2. 站点名称与决策亮点微标签 */}
+                    <div className="min-w-0 pr-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <Link
-                          href={`/detector?siteId=${encodeURIComponent(row.site.id)}&model=${encodeURIComponent(selectedModel)}`}
+                          href={`/table/relay_sites_tracker/${encodeURIComponent(row.site.id)}`}
                           onClick={(e) => e.stopPropagation()}
-                          className="inline-flex items-center gap-1 border border-black/20 bg-black/5 px-1.5 py-0.5 font-mono text-[9px] font-bold text-black/60 hover:bg-black hover:text-white"
-                          title="前往质检中心检测该站点模型真伪"
+                          className="truncate text-lg font-black hover:text-swiss-accent"
                         >
-                          <Zap className="h-3 w-3 text-swiss-accent" />
-                          质检
+                          {row.site.name}
                         </Link>
-                      );
-                    })()}
-                    {siteTags.tagList.map(tag => (
-                      <span key={tag} className="border border-black/30 bg-[#eef] px-1.5 py-0.5 font-mono text-[9px] font-bold text-black/75">
-                        {tag}
-                      </span>
-                    ))}
+                        {row.site.domain && (
+                          <a
+                            href={domainHref(row.site.domain)}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="font-mono text-xs text-black/40 hover:text-swiss-accent inline-flex items-center gap-0.5"
+                          >
+                            <span>{domainDisplay(row.site.domain)}</span>
+                            <ExternalLink className="h-2.5 w-2.5" />
+                          </a>
+                        )}
+                      </div>
+                      <div className="mt-1.5">
+                        <SmartDecisionHighlightTags
+                          isLowestPrice={isLowest}
+                          ttftMs={row.site.performance?.ttftP50Ms ?? null}
+                          availability7d={row.site.performance?.availability7d ?? null}
+                          qcScore={qc?.score ?? null}
+                          siteTags={siteTags}
+                        />
+                      </div>
+                    </div>
+
+                    {/* 3. 计费公式拆解药丸 */}
+                    <PriceFormulaBreakdownPill row={row} isBest={isLowest} />
+
+                    {/* 4. 7D 可用率与性能快照 */}
+                    <AvailabilityCell site={row.site} />
+
+                    {/* 5. 变价与风险信号 */}
+                    <ChangeAndRisk row={row} />
+
+                    {/* 6. 展开指示箭头 */}
+                    <div className="flex justify-end">
+                      <ChevronDown className="h-5 w-5 text-black/40 transition-transform group-open:rotate-180 group-hover:text-black" />
+                    </div>
+                  </summary>
+
+                  {/* 展开面板 */}
+                  <DetailPanel row={row} selectedModel={selectedModel} />
+                </details>
+              );
+            })
+          )}
+
+          {/* 未收录该具体模型的站点列表 */}
+          {unmatchedSites.length > 0 && (
+            <section className="mt-8 border-2 border-dashed border-black/35 bg-[#f4f4f0] p-4 sm:p-6">
+              <div className="flex flex-wrap items-baseline justify-between gap-3 border-b-2 border-black/20 pb-3">
+                <div>
+                  <div className="font-mono text-xs font-black uppercase tracking-[0.2em] text-swiss-accent">
+                    Catalog coverage
                   </div>
-                  <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 font-mono text-[11px] text-black/45">
-                    {row.site.domain ? (
-                      <a href={domainHref(row.site.domain)} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1 hover:text-swiss-accent">
-                        <span>{domainDisplay(row.site.domain)}</span>
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    ) : (
-                      <span>NO DOMAIN</span>
-                    )}
-                  </div>
+                  <h3 className="mt-1 text-xl font-black">已收录但暂无「{selectedModel}」报价</h3>
                 </div>
-                <PriceCell offer={row.offer} siteGroups={row.site.groups} isBest={lowestPrice != null && row.priceValue === lowestPrice} />
-                <AvailabilityCell site={row.site} />
-                <ChangeAndRisk row={row} />
-                <ChevronDown className="h-5 w-5 transition-transform group-open:rotate-180" />
-              </summary>
-              <DetailPanel row={row} selectedModel={selectedModel} />
-            </details>
-          );
-          })}
-        {unmatchedSites.length > 0 && (
-          <section className="mt-8 border-2 border-dashed border-black/35 bg-[#f4f4f0] p-4 sm:p-6">
-            <div className="flex flex-wrap items-baseline justify-between gap-3 border-b-2 border-black/20 pb-3">
-              <div>
-                <div className="font-mono text-xs font-black uppercase tracking-[0.2em] text-swiss-accent">Catalog coverage</div>
-                <h3 className="mt-1 text-xl font-black">已收录但暂无「{selectedModel}」报价</h3>
+                <span className="font-mono text-sm font-black">{unmatchedSites.length} 站</span>
               </div>
-              <span className="font-mono text-sm font-black">{unmatchedSites.length} 站</span>
-            </div>
-            <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {unmatchedSites.map((site) => (
-                <Link key={site.id} href={`/table/relay_sites_tracker/${encodeURIComponent(site.id)}`} className="border border-black/25 bg-white p-3 transition-colors hover:border-black hover:bg-white">
-                  <div className="font-black">{site.name}</div>
-                  <div className="mt-1 truncate font-mono text-xs text-black/50">{site.domain || "NO DOMAIN"}</div>
-                  <div className="mt-2 font-mono text-[10px] uppercase tracking-wider text-black/45">
-                    {site.offers.length > 0 ? `其他模型 ${site.offers.length} 条` : "暂无模型明细"}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
+              <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {unmatchedSites.map((site) => (
+                  <Link
+                    key={site.id}
+                    href={`/table/relay_sites_tracker/${encodeURIComponent(site.id)}`}
+                    className="border border-black/25 bg-white p-3 transition-colors hover:border-black hover:bg-white"
+                  >
+                    <div className="font-black">{site.name}</div>
+                    <div className="mt-1 truncate font-mono text-xs text-black/50">{site.domain || "NO DOMAIN"}</div>
+                    <div className="mt-2 font-mono text-[10px] uppercase tracking-wider text-black/45">
+                      {site.offers.length > 0 ? `其他模型 ${site.offers.length} 条` : "暂无模型明细"}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
 
+        {/* 底部说明 */}
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 font-mono text-[11px] text-black/45">
           <span>价格排序：文本模型优先使用 rate_input，缺失时回退 rate_output；图片模型使用 model_price。</span>
-          <span>可用率缺失不会被推断为 0。</span>
+          <span>T1/T2/T3 梯队基于当前模型全网有效报价的 20% 与 70% 分位数动态计算。</span>
         </div>
       </section>
     </div>
