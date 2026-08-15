@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { loadTable, loadAllTables } from "@/lib/data-loader";
 import { getVisibleTable, VISIBLE_TABLES } from "@/lib/tables";
 import { buildModelOfferSummaries } from "@/lib/relay-product";
+import { getQCBySiteId } from "@/lib/qc-store";
 import { DataDetail } from "@/components/data-detail";
 import { RelaySiteDetail } from "@/components/relay-site-detail";
 import { ToolsDetail } from "@/components/tools-detail";
@@ -73,13 +74,15 @@ export default async function RecordDetailPage({ params }: Params) {
   if (!record) notFound();
 
   if (table.id === "relay_sites_tracker") {
-    const [performanceData, groupData, modelData] = await Promise.all([
+    const siteId = String(record["站点ID"] ?? "");
+    const domainHost = String(record["域名"] ?? "").replace(/^https?:\/\//i, "").replace(/\/.*$/, "").toLowerCase();
+
+    const [performanceData, groupData, modelData, qcRecord] = await Promise.all([
       loadTable("relay_site_perf"),
       loadTable("relay_site_groups"),
       loadTable("model_rates"),
+      getQCBySiteId(siteId || record.__id),
     ]);
-    const siteId = String(record["站点ID"] ?? "");
-    const domainHost = String(record["域名"] ?? "").replace(/^https?:\/\//i, "").replace(/\/.*$/, "").toLowerCase();
 
     const performance = performanceData?.records.find((item) => {
       const relId = Array.isArray(item.site) && item.site[0] ? (item.site[0] as { id?: string }).id : typeof item.site === "object" && item.site !== null ? (item.site as { id?: string }).id : null;
@@ -95,6 +98,7 @@ export default async function RecordDetailPage({ params }: Params) {
         performance={performance}
         groups={groups}
         modelOffers={buildModelOfferSummaries(siteModelRecords)}
+        qcRecord={qcRecord}
       />
     );
   }

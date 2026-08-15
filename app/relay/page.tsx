@@ -1,6 +1,7 @@
 import { RelayV1Explorer } from "@/components/relay-v1-explorer";
 import { loadTable } from "@/lib/data-loader";
 import { buildRelayV1Data } from "@/lib/relay-v1";
+import { getAllQCRecords } from "@/lib/qc-store";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -12,11 +13,12 @@ export const metadata: Metadata = {
 export const dynamic = "force-static";
 
 export default async function RelayPage() {
-  const [sites, groups, performance, modelRates] = await Promise.all([
+  const [sites, groups, performance, modelRates, qcRecords] = await Promise.all([
     loadTable("relay_sites_tracker"),
     loadTable("relay_site_groups"),
     loadTable("relay_site_perf"),
     loadTable("model_rates"),
+    getAllQCRecords(),
   ]);
 
   const data = buildRelayV1Data(
@@ -26,5 +28,5 @@ export default async function RelayPage() {
     performance?.records ?? [],
   );
 
-  return <RelayV1Explorer data={data} />;
+  return <RelayV1Explorer data={data} qcRecords={qcRecords} />;
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
   AlertTriangle,
@@ -15,10 +15,13 @@ import {
   RotateCcw,
   Search,
   ShieldAlert,
+  ShieldCheck,
   SlidersHorizontal,
+  Zap,
 } from "lucide-react";
 import type { RelayV1Data, RelayV1Group, RelayV1Offer, RelayV1Site, RiskLevel } from "@/lib/relay-v1";
 import { extractSiteTags } from "@/lib/relay-v1";
+import type { QCRecord } from "@/lib/qc-store";
 import { RelaySubNav } from "./relay-sub-nav";
 import { RelayCostEstimator } from "./relay-cost-estimator";
 import { RelayScenarioTabs, ScenarioPreset } from "./relay-scenario-tabs";
@@ -28,6 +31,7 @@ type RiskFilter = "all" | "safe" | "warning";
 
 interface RelayV1ExplorerProps {
   data: RelayV1Data;
+  qcRecords?: QCRecord[];
 }
 
 interface ComparisonRow {
@@ -261,13 +265,69 @@ function DetailPanel({ row, selectedModel }: { row: ComparisonRow; selectedModel
   );
 }
 
-export function RelayV1Explorer({ data }: RelayV1ExplorerProps) {
+export function RelayV1Explorer({ data, qcRecords }: RelayV1ExplorerProps) {
   const [selectedModel, setSelectedModel] = useState(data.defaultModel);
   const [siteQuery, setSiteQuery] = useState("");
   const [minimumAvailability, setMinimumAvailability] = useState(0);
   const [measuredOnly, setMeasuredOnly] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("price");
   const [presetFilter, setPresetFilter] = useState<ScenarioPreset>("all");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // 质检记录索引映射
+  const qcBySiteId = useMemo(() => {
+    const map = new Map<string, QCRecord>();
+    for (const r of qcRecords || []) {
+      if (r.siteId) map.set(r.siteId, r);
+      if (r.domain) map.set(r.domain.toLowerCase(), r);
+    }
+    return map;
+  }, [qcRecords]);
+
+  // 全局快捷键 / 聚焦搜索框
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.key === "/" &&
+        document.activeElement !== searchInputRef.current &&
+        !(document.activeElement instanceof HTMLInputElement || document.activeElement instanceof HTMLTextAreaElement)
+      ) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  // 按厂商对模型进行智能分组
+  const categorizedModels = useMemo(() => {
+    const groups: { [cat: string]: typeof data.models } = {
+      "OpenAI / Codex": [],
+      "Anthropic / Claude": [],
+      "Google Gemini": [],
+      "DeepSeek / 国产大模型": [],
+      "图像生图 / Image": [],
+      "其他模型 / Other": [],
+    };
+    for (const m of data.models) {
+      const n = m.name.toLowerCase();
+      if (n.startsWith("gpt") || n.startsWith("o1") || n.startsWith("o3") || n.startsWith("text-embedding") || n.startsWith("chatgpt")) {
+        groups["OpenAI / Codex"].push(m);
+      } else if (n.startsWith("claude")) {
+        groups["Anthropic / Claude"].push(m);
+      } else if (n.startsWith("gemini")) {
+        groups["Google Gemini"].push(m);
+      } else if (n.startsWith("deepseek") || n.startsWith("qwen") || n.startsWith("doubao") || n.startsWith("kimi") || n.startsWith("glm")) {
+        groups["DeepSeek / 国产大模型"].push(m);
+      } else if (m.type === "image" || n.includes("dall") || n.includes("midjourney") || n.includes("flux")) {
+        groups["图像生图 / Image"].push(m);
+      } else {
+        groups["其他模型 / Other"].push(m);
+      }
+    }
+    return groups;
+  }, [data.models]);
 
   const rows = useMemo<ComparisonRow[]>(() => {
     const normalizedModel = selectedModel.toLocaleLowerCase();
@@ -408,23 +468,52 @@ export function RelayV1Explorer({ data }: RelayV1ExplorerProps) {
       </section>
 
       <section className="border-b-4 border-black bg-[#f4f4f0] p-4 sm:p-8 lg:p-12">
-        <div className="mb-4 flex items-center gap-2 font-mono text-xs font-black uppercase tracking-[0.2em]">
-          <SlidersHorizontal className="h-4 w-4" /> Filters / Model & Group Match
+        <div className="mb-4 flex items-center justify-between gap-2 font-mono text-xs font-black uppercase tracking-[0.2em]">
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal className="h-4 w-4" /> Filters / Model & Group Match
+          </div>
+          <span className="text-[10px] text-black/40 font-normal hidden sm:inline">按 [/] 键可快速聚焦搜索</span>
         </div>
         <div className="grid border-l-2 border-t-2 border-black bg-white lg:grid-cols-12">
           <label className="border-b-2 border-r-2 border-black p-4 lg:col-span-5">
-            <span className="mb-2 block font-mono text-[10px] font-black uppercase tracking-widest text-black/45">01 / 模型</span>
-            <select value={selectedModel} onChange={(event) => setSelectedModel(event.target.value)} className="h-12 w-full border-2 border-black bg-white px-3 font-mono text-sm font-black outline-none focus:border-swiss-accent">
-              {data.models.map((model) => <option key={model.name} value={model.name}>{model.name} · {model.siteCount} 站</option>)}
+            <span className="mb-2 block font-mono text-[10px] font-black uppercase tracking-widest text-black/45">01 / 模型选择（按厂商分组）</span>
+            <select
+              value={selectedModel}
+              onChange={(event) => setSelectedModel(event.target.value)}
+              className="h-12 w-full border-2 border-black bg-white px-3 font-mono text-sm font-black outline-none focus:border-swiss-accent cursor-pointer"
+            >
+              {Object.entries(categorizedModels).map(([category, models]) =>
+                models.length > 0 ? (
+                  <optgroup key={category} label={`── ${category} (${models.length} 站) ──`}>
+                    {models.map((model) => (
+                      <option key={model.name} value={model.name}>
+                        {model.name} · {model.siteCount} 站
+                      </option>
+                    ))}
+                  </optgroup>
+                ) : null
+              )}
             </select>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              <span className="font-mono text-[10px] text-black/40 self-center">热门快捷:</span>
-              {["gpt-5.6-sol", "claude-3-7-sonnet", "gpt-4o", "gemini-2.0-flash"].map(m => (
+            <div className="mt-2.5 flex flex-wrap gap-1.5 items-center">
+              <span className="font-mono text-[10px] font-bold text-black/40">热门快捷:</span>
+              {[
+                "gpt-5.6-sol",
+                "claude-3-7-sonnet",
+                "claude-3-5-sonnet",
+                "deepseek-r1",
+                "deepseek-v3",
+                "gpt-4o",
+                "gemini-2.0-flash",
+              ].map((m) => (
                 <button
                   key={m}
                   type="button"
                   onClick={() => setSelectedModel(m)}
-                  className={`border px-2 py-0.5 font-mono text-[10px] font-bold transition-colors ${selectedModel === m ? "border-black bg-black text-white" : "border-black/30 bg-black/5 hover:bg-black/10 text-black/75"}`}
+                  className={`border px-2 py-0.5 font-mono text-[10px] font-bold transition-colors ${
+                    selectedModel === m
+                      ? "border-black bg-black text-white"
+                      : "border-black/30 bg-black/5 hover:bg-black/10 text-black/75"
+                  }`}
                 >
                   {m}
                 </button>
@@ -432,15 +521,33 @@ export function RelayV1Explorer({ data }: RelayV1ExplorerProps) {
             </div>
           </label>
           <label className="border-b-2 border-r-2 border-black p-4 lg:col-span-3">
-            <span className="mb-2 block font-mono text-[10px] font-black uppercase tracking-widest text-black/45">02 / 站点搜索</span>
-            <span className="flex h-12 items-center border-2 border-black focus-within:border-swiss-accent">
-              <Search className="ml-3 h-4 w-4 shrink-0" />
-              <input value={siteQuery} onChange={(event) => setSiteQuery(event.target.value)} placeholder="名称 / 域名 / Provider" className="min-w-0 flex-1 bg-transparent px-3 font-mono text-sm font-bold outline-none" />
+            <span className="mb-2 flex items-center justify-between font-mono text-[10px] font-black uppercase tracking-widest text-black/45">
+              <span>02 / 站点搜索</span>
+              <kbd className="rounded border border-black/30 bg-black/5 px-1 text-[9px] text-black/50">/</kbd>
+            </span>
+            <span className="flex h-12 items-center border-2 border-black focus-within:border-swiss-accent bg-white">
+              <Search className="ml-3 h-4 w-4 shrink-0 text-black/40" />
+              <input
+                ref={searchInputRef}
+                value={siteQuery}
+                onChange={(event) => setSiteQuery(event.target.value)}
+                placeholder="名称 / 域名 / Provider"
+                className="min-w-0 flex-1 bg-transparent px-3 font-mono text-sm font-bold outline-none"
+              />
+              {siteQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSiteQuery("")}
+                  className="mr-3 font-mono text-xs font-bold text-black/40 hover:text-black"
+                >
+                  ✕
+                </button>
+              )}
             </span>
           </label>
           <label className="border-b-2 border-r-2 border-black p-4 lg:col-span-2">
             <span className="mb-2 block font-mono text-[10px] font-black uppercase tracking-widest text-black/45">03 / 7D 可用率</span>
-            <select value={minimumAvailability} onChange={(event) => setMinimumAvailability(Number(event.target.value))} className="h-12 w-full border-2 border-black bg-white px-3 font-mono text-sm font-black outline-none focus:border-swiss-accent">
+            <select value={minimumAvailability} onChange={(event) => setMinimumAvailability(Number(event.target.value))} className="h-12 w-full border-2 border-black bg-white px-3 font-mono text-sm font-black outline-none focus:border-swiss-accent cursor-pointer">
               <option value={0}>不限</option>
               <option value={80}>≥ 80%</option>
               <option value={90}>≥ 90%</option>
@@ -449,8 +556,8 @@ export function RelayV1Explorer({ data }: RelayV1ExplorerProps) {
             </select>
           </label>
           <label className="border-b-2 border-r-2 border-black p-4 lg:col-span-2">
-            <span className="mb-2 block font-mono text-[10px] font-black uppercase tracking-widest text-black/45">04 / 排序</span>
-            <select value={sortKey} onChange={(event) => setSortKey(event.target.value as SortKey)} className="h-12 w-full border-2 border-black bg-white px-3 font-mono text-sm font-black outline-none focus:border-swiss-accent">
+            <span className="mb-2 block font-mono text-[10px] font-black uppercase tracking-widest text-black/45">04 / 排序规则</span>
+            <select value={sortKey} onChange={(event) => setSortKey(event.target.value as SortKey)} className="h-12 w-full border-2 border-black bg-white px-3 font-mono text-sm font-black outline-none focus:border-swiss-accent cursor-pointer">
               <option value="price">价格从低到高</option>
               <option value="availability">可用率从高到低</option>
               <option value="speed">TTFT 从快到慢</option>
@@ -458,14 +565,52 @@ export function RelayV1Explorer({ data }: RelayV1ExplorerProps) {
             </select>
           </label>
           <div className="flex flex-wrap items-stretch border-b-2 border-r-2 border-black lg:col-span-12">
-            <button type="button" onClick={() => setMeasuredOnly((value) => !value)} className={`min-h-12 border-r-2 border-black px-4 font-mono text-xs font-black uppercase tracking-wider ${measuredOnly ? "bg-black text-white" : "bg-white hover:bg-[#f4f4f0]"}`}>
+            <button type="button" onClick={() => setMeasuredOnly((value) => !value)} className={`min-h-12 border-r-2 border-black px-4 font-mono text-xs font-black uppercase tracking-wider transition-colors ${measuredOnly ? "bg-black text-white" : "bg-white hover:bg-[#f4f4f0]"}`}>
               {measuredOnly ? "✓ " : ""}仅看有实测数据
             </button>
-            <button type="button" onClick={resetFilters} className="ml-auto flex min-h-12 items-center gap-2 px-4 font-mono text-xs font-black uppercase tracking-wider hover:bg-black hover:text-white">
-              <RotateCcw className="h-4 w-4" /> 重置
+            <button type="button" onClick={resetFilters} className="ml-auto flex min-h-12 items-center gap-2 px-4 font-mono text-xs font-black uppercase tracking-wider transition-colors hover:bg-black hover:text-white">
+              <RotateCcw className="h-4 w-4" /> 重置筛选
             </button>
           </div>
         </div>
+
+        {/* 活跃筛选标签汇总 */}
+        {(siteQuery || minimumAvailability > 0 || measuredOnly || presetFilter !== "all") && (
+          <div className="mt-3 flex flex-wrap items-center gap-2 border-2 border-black bg-white p-3 font-mono text-xs">
+            <span className="text-[10px] font-black uppercase tracking-widest text-black/45">已应用过滤:</span>
+            {siteQuery && (
+              <span className="inline-flex items-center gap-1.5 border border-black bg-[#f4f4f0] px-2 py-0.5 font-bold">
+                搜索: {siteQuery}
+                <button type="button" onClick={() => setSiteQuery("")} className="hover:text-swiss-accent">✕</button>
+              </span>
+            )}
+            {minimumAvailability > 0 && (
+              <span className="inline-flex items-center gap-1.5 border border-black bg-[#f4f4f0] px-2 py-0.5 font-bold">
+                可用率 ≥ {minimumAvailability}%
+                <button type="button" onClick={() => setMinimumAvailability(0)} className="hover:text-swiss-accent">✕</button>
+              </span>
+            )}
+            {measuredOnly && (
+              <span className="inline-flex items-center gap-1.5 border border-black bg-[#f4f4f0] px-2 py-0.5 font-bold">
+                仅有实测
+                <button type="button" onClick={() => setMeasuredOnly(false)} className="hover:text-swiss-accent">✕</button>
+              </span>
+            )}
+            {presetFilter !== "all" && (
+              <span className="inline-flex items-center gap-1.5 border border-black bg-[#f4f4f0] px-2 py-0.5 font-bold">
+                场景: {presetFilter === "coding" ? "代码补全" : presetFilter === "low_cost" ? "极低成本" : "官方纯血/可开票"}
+                <button type="button" onClick={() => setPresetFilter("all")} className="hover:text-swiss-accent">✕</button>
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="ml-auto text-[11px] font-black text-swiss-accent underline hover:opacity-80"
+            >
+              清除全部
+            </button>
+          </div>
+        )}
       </section>
 
       <section className="px-4 py-8 sm:px-8 lg:px-12">
@@ -523,6 +668,33 @@ export function RelayV1Explorer({ data }: RelayV1ExplorerProps) {
                   <div className="flex flex-wrap items-center gap-2">
                     <Link href={`/table/relay_sites_tracker/${encodeURIComponent(row.site.id)}`} onClick={(event) => event.stopPropagation()} className="truncate text-lg font-black hover:text-swiss-accent">{row.site.name}</Link>
                     {index === 0 && sortKey === "price" && <span className="border-2 border-black bg-black px-2 py-0.5 font-mono text-[9px] font-black text-white">#1 PRICE</span>}
+                    {(() => {
+                      const qc = qcBySiteId.get(row.site.id) || (row.site.domain ? qcBySiteId.get(row.site.domain.toLowerCase()) : null);
+                      if (qc && qc.score != null) {
+                        return (
+                          <Link
+                            href={`/detector?siteId=${encodeURIComponent(row.site.id)}&model=${encodeURIComponent(selectedModel)}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-1 border border-emerald-600 bg-emerald-50 px-1.5 py-0.5 font-mono text-[9px] font-black text-emerald-700 hover:bg-emerald-100"
+                            title={`该站质检综合得分: ${qc.score}分 (多轮加权)`}
+                          >
+                            <ShieldCheck className="h-3 w-3 text-emerald-600" />
+                            质检 {qc.score}分
+                          </Link>
+                        );
+                      }
+                      return (
+                        <Link
+                          href={`/detector?siteId=${encodeURIComponent(row.site.id)}&model=${encodeURIComponent(selectedModel)}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center gap-1 border border-black/20 bg-black/5 px-1.5 py-0.5 font-mono text-[9px] font-bold text-black/60 hover:bg-black hover:text-white"
+                          title="前往质检中心检测该站点模型真伪"
+                        >
+                          <Zap className="h-3 w-3 text-swiss-accent" />
+                          质检
+                        </Link>
+                      );
+                    })()}
                     {siteTags.tagList.map(tag => (
                       <span key={tag} className="border border-black/30 bg-[#eef] px-1.5 py-0.5 font-mono text-[9px] font-bold text-black/75">
                         {tag}

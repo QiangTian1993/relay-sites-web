@@ -7,6 +7,7 @@ import { formatRate } from "@/lib/matrix";
 import { modelOfferLabel, parseAccessSignals, type ModelOfferSummary } from "@/lib/relay-product";
 import { toNumber, truncate } from "@/lib/record-utils";
 import { computeModelCoverage } from "@/lib/model-coverage";
+import type { QCRecord } from "@/lib/qc-store";
 import { ChangeBadge, RiskBadge, detectChangeDirection, detectRisk } from "./badges";
 import {
   IconArrowLeft,
@@ -23,14 +24,23 @@ interface Props {
   performance: KeyedRecord | null;
   groups: KeyedRecord[];
   modelOffers: ModelOfferSummary[];
+  qcRecord?: QCRecord | null;
 }
 
 const MODEL_PAGE_SIZE = 50;
 
-export function RelaySiteDetail({ record, performance, groups, modelOffers }: Props) {
+export function RelaySiteDetail({ record, performance, groups, modelOffers, qcRecord }: Props) {
   const [modelSearch, setModelSearch] = useState("");
   const [modelPage, setModelPage] = useState(0);
   const [showAllGroups, setShowAllGroups] = useState(false);
+  const [copiedDomain, setCopiedDomain] = useState(false);
+
+  function copyText(text: string) {
+    if (!text) return;
+    navigator.clipboard?.writeText(text);
+    setCopiedDomain(true);
+    setTimeout(() => setCopiedDomain(false), 2000);
+  }
 
   const name = String(record["名称"] ?? "未命名站点");
   const domain = String(record["域名"] ?? "");
@@ -109,9 +119,18 @@ export function RelaySiteDetail({ record, performance, groups, modelOffers }: Pr
               </div>
               <h1 className="mt-2 break-words text-4xl font-black leading-none sm:text-6xl">{name}</h1>
               {domain && (
-                <a href={domainHref(domain)} target="_blank" rel="noreferrer" className="mt-3 inline-flex max-w-full items-center gap-1.5 font-mono text-sm text-swiss-fg/60 hover:text-swiss-accent">
-                  <span className="truncate">{domainDisplay(domain)}</span><IconExtLink className="h-4 w-4 shrink-0" />
-                </a>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <a href={domainHref(domain)} target="_blank" rel="noreferrer" className="inline-flex max-w-full items-center gap-1.5 font-mono text-sm text-swiss-fg/60 hover:text-swiss-accent">
+                    <span className="truncate">{domainDisplay(domain)}</span><IconExtLink className="h-4 w-4 shrink-0" />
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => copyText(domainDisplay(domain))}
+                    className="inline-flex items-center gap-1 border border-black/20 bg-white px-2 py-0.5 font-mono text-xs font-bold text-black/70 hover:bg-black hover:text-white transition-colors"
+                  >
+                    {copiedDomain ? "✓ 已复制" : "复制域名"}
+                  </button>
+                </div>
               )}
               <div className="mt-4 flex flex-wrap gap-2">
                 <AccessTags access={access} />
@@ -471,7 +490,86 @@ export function RelaySiteDetail({ record, performance, groups, modelOffers }: Pr
         ) : <EmptyState text="暂无分组和限制明细" />}
       </DetailSection>
 
-      <DetailSection number="05" title="一键客户端接入与环境配置">
+      {/* 05 真实性与防混用质检档案 */}
+      <DetailSection number="05" title="模型真实性与防混用质检实测档案">
+        {qcRecord ? (
+          <div className="border-2 border-black bg-white p-6">
+            <div className="flex flex-wrap items-center justify-between border-b-2 border-black pb-4 mb-5 gap-3">
+              <div className="flex items-center gap-3">
+                <div className="border-2 border-black bg-black px-3 py-1 text-white font-mono font-black text-xl">
+                  {qcRecord.score} 分
+                </div>
+                <div>
+                  <div className="font-mono text-xs font-black uppercase text-swiss-accent">
+                    多轮加权评级: {qcRecord.score >= 90 ? "S 级 · 极高保真" : qcRecord.score >= 75 ? "A 级 · 良好达标" : qcRecord.score >= 60 ? "B 级 · 存在混用风险" : "F 级 · 严重降级/掺水"}
+                  </div>
+                  <div className="text-sm font-bold text-black mt-0.5">
+                    {qcRecord.verdictText || "综合质检测试结论"}
+                  </div>
+                </div>
+              </div>
+              <Link
+                href={`/detector?siteId=${encodeURIComponent(String(record["站点ID"] || record.__id))}&model=gpt-5.6-sol`}
+                className="inline-flex items-center gap-2 border-2 border-black bg-black px-4 py-2 font-mono text-xs font-black text-white hover:bg-swiss-accent hover:border-swiss-accent transition-colors"
+              >
+                ⚡ 发起在线复测
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 font-mono text-xs mb-4">
+              <div className="border border-black/20 p-3 bg-[#fafaf8]">
+                <div className="text-black/45 text-[10px] font-bold uppercase">单次最新得分</div>
+                <div className="text-lg font-black text-black mt-1">{qcRecord.currentScore ?? qcRecord.score} 分</div>
+              </div>
+              <div className="border border-black/20 p-3 bg-[#fafaf8]">
+                <div className="text-black/45 text-[10px] font-bold uppercase">累计测试轮次</div>
+                <div className="text-lg font-black text-black mt-1">{qcRecord.historicalRounds || 1} 轮</div>
+              </div>
+              <div className="border border-black/20 p-3 bg-[#fafaf8]">
+                <div className="text-black/45 text-[10px] font-bold uppercase">历史通过率</div>
+                <div className="text-lg font-black text-black mt-1">{qcRecord.passRate != null ? `${qcRecord.passRate}%` : "--"}</div>
+              </div>
+              <div className="border border-black/20 p-3 bg-[#fafaf8]">
+                <div className="text-black/45 text-[10px] font-bold uppercase">历史波动区间</div>
+                <div className="text-lg font-black text-black mt-1">
+                  {qcRecord.scoreMin != null && qcRecord.scoreMax != null ? `${qcRecord.scoreMin} ~ ${qcRecord.scoreMax} 分` : "--"}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4 font-mono text-xs">
+              <div className="border border-black/20 p-3">
+                <span className="font-bold text-black block mb-1">行为指纹概率分布:</span>
+                <span className="text-black/70">
+                  Sol: {qcRecord.probabilities?.sol != null ? `${(qcRecord.probabilities.sol * 100).toFixed(1)}%` : "--"} · 
+                  Terra: {qcRecord.probabilities?.terra != null ? `${(qcRecord.probabilities.terra * 100).toFixed(1)}%` : "--"} · 
+                  防篡改: {qcRecord.tamperDetected ? "⚠️ 检测到篡改" : "✅ 正常"}
+                </span>
+              </div>
+              <div className="border border-black/20 p-3">
+                <span className="font-bold text-black block mb-1">测试时间与状态码:</span>
+                <span className="text-black/70">
+                  {formatDateTime(qcRecord.testedAt)} · 状态: {qcRecord.outcomeCode || qcRecord.verdict}
+                </span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="border-2 border-dashed border-black/30 bg-white p-6 text-center">
+            <p className="font-mono text-sm text-black/60 mb-4">
+              该站点尚未在本地质检中心记录测试数据。您可以使用双引擎流水线对该站发起模型真伪与混用检测。
+            </p>
+            <Link
+              href={`/detector?siteId=${encodeURIComponent(String(record["站点ID"] || record.__id))}&model=gpt-5.6-sol`}
+              className="inline-flex items-center gap-2 border-2 border-black bg-black px-5 py-2.5 font-mono text-xs font-black text-white hover:bg-swiss-accent hover:border-swiss-accent transition-colors"
+            >
+              ⚡ 立即前往质检中心检测该站点
+            </Link>
+          </div>
+        )}
+      </DetailSection>
+
+      <DetailSection number="06" title="一键客户端接入与环境配置">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 font-mono text-xs">
           <div className="border border-swiss-fg/20 p-4 bg-white">
             <div className="font-bold text-swiss-fg uppercase tracking-wider mb-1">Standard OpenAI / OneAPI Base</div>

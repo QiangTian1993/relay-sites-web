@@ -170,9 +170,17 @@ export function SiteBadges({ row }: { row: RelaySiteRow }) {
   const isPurePro = noteText.includes("纯血") || noteText.includes("官网") || noteText.includes("pro池");
 
   return (
-    <div className="mt-1 flex flex-wrap gap-1">
+    <div className="mt-1 flex flex-wrap items-center gap-1">
       {changeEl}
       {riskEl}
+      <Link
+        href={`/detector?siteId=${encodeURIComponent(row.siteId || row.record.__id)}`}
+        onClick={(e) => e.stopPropagation()}
+        className="inline-flex items-center gap-0.5 border border-black/30 bg-black/5 px-1 font-mono text-[10px] font-bold text-black/75 transition-colors hover:border-swiss-accent hover:bg-swiss-accent hover:text-white"
+        title="前往质检中心对该站点进行真伪与混用检测"
+      >
+        <span>⚡ 质检</span>
+      </Link>
       {hasInvoice && <span className="border border-swiss-fg/20 bg-blue-50 px-1 font-mono text-[10px] font-bold text-blue-700">可开发票</span>}
       {hasRefund && <span className="border border-swiss-fg/20 bg-emerald-50 px-1 font-mono text-[10px] font-bold text-emerald-700">退款保障</span>}
       {isPurePro && <span className="border border-swiss-fg/20 bg-purple-50 px-1 font-mono text-[10px] font-bold text-purple-700">官网纯血Pro</span>}
