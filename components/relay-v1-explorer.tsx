@@ -49,16 +49,25 @@ function offerPrice(offer: RelayV1Offer, groups: RelayV1Group[]): number | null 
   if (basePrice == null) return null;
   if (groups.length === 0) return basePrice;
 
-  const applicableGroups = offer.enabledGroups.length > 0
-    ? groups.filter((g) => offer.enabledGroups.includes(g.name))
-    : groups;
+  // 1. 如果模型明确指定了启用的分组列表，仅在指定的分组中取最低倍率
+  if (offer.enabledGroups.length > 0) {
+    const applicableGroups = groups.filter((g) => offer.enabledGroups.includes(g.name));
+    if (applicableGroups.length > 0) {
+      const rates = applicableGroups.map((g) => g.rateMin).filter((r): r is number => r != null && r > 0);
+      if (rates.length > 0) {
+        return basePrice * Math.min(...rates);
+      }
+    }
+  }
 
-  if (applicableGroups.length === 0) return basePrice;
+  // 2. 如果未指定分组，优先查找 default 默认分组
+  const defaultGroup = groups.find((g) => g.name.toLowerCase() === "default");
+  if (defaultGroup && defaultGroup.rateMin != null && defaultGroup.rateMin > 0) {
+    return basePrice * defaultGroup.rateMin;
+  }
 
-  const rates = applicableGroups.map((g) => g.rateMin).filter((r): r is number => r != null);
-  if (rates.length === 0) return basePrice;
-
-  return basePrice * Math.min(...rates);
+  // 3. 否则使用基础倍率
+  return basePrice;
 }
 
 function compareNullable(a: number | null, b: number | null, direction: "asc" | "desc"): number {

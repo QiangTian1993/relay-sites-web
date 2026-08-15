@@ -341,10 +341,7 @@ export function buildRelayV1Data(
     exactModelsBySite.set(siteId, new Set(offers.map((offer) => offer.modelName.toLocaleLowerCase())));
   }
 
-  // Some market snapshots expose model names and their base ratios only through
-  // each group's related_models_json. For groups without that list, infer the
-  // common OpenAI model family from the group name and use the mode of observed
-  // model ratios as the generic baseline. The UI still applies the group rate.
+  // For groups with related_models_json, include their explicitly bound models
   for (const [siteId, groups] of groupsBySite) {
     const exactModels = exactModelsBySite.get(siteId) ?? new Set<string>();
     const fallbackOffers = new Map<string, RelayV1Offer>();
@@ -373,30 +370,6 @@ export function buildRelayV1Data(
           fetchedAt: group.updatedAt,
           priceSource: "related_group",
         });
-      }
-      if (group.relatedModels.length === 0 && isOpenAIGroup(group.name)) {
-        for (const baseline of commonOpenAIModels) {
-          const normalizedName = baseline.name.toLocaleLowerCase();
-          if (exactModels.has(normalizedName)) continue;
-          const existing = fallbackOffers.get(normalizedName);
-          if (existing) {
-            if (!existing.enabledGroups.includes(group.name)) existing.enabledGroups.push(group.name);
-            continue;
-          }
-          fallbackOffers.set(normalizedName, {
-            id: `${group.id}:${baseline.name}`,
-            modelName: baseline.name,
-            modelType: "text",
-            inputRate: baseline.inputRate,
-            outputRate: baseline.outputRate,
-            cacheRate: null,
-            createCacheRate: null,
-            perCallPrice: null,
-            enabledGroups: [group.name],
-            fetchedAt: group.updatedAt,
-            priceSource: "family_group",
-          });
-        }
       }
     }
     if (fallbackOffers.size > 0) {
