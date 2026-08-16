@@ -255,6 +255,12 @@ export function RelaySitesExplorer({ records, performanceRecords, modelOffers, g
         onClearFilters={clearFilters}
         onViewModeChange={setViewMode}
       />
+      {viewMode === "model" && (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-2 border-swiss-fg bg-swiss-muted px-4 py-3 font-mono text-sm">
+          <span><strong>模型覆盖</strong> 只回答“哪些站支持”，这里的费率是原始参考值。</span>
+          <a href="/relay" className="border-2 border-swiss-fg bg-swiss-fg px-3 py-2 font-black text-swiss-bg transition-colors hover:bg-swiss-accent">去模型比价 →</a>
+        </div>
+      )}
 
       {viewMode === "model" ? (
         <ModelView

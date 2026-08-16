@@ -27,8 +27,7 @@ export function RelaySubNav() {
           isTable ? "bg-black text-white" : "text-black hover:bg-black/10"
         }`}
       >
-        <Database className="h-4 w-4" />
-        全量站点大盘
+        站点档案库
       </Link>
       <Link
         href="/detector"

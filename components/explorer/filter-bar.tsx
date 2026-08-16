@@ -65,11 +65,9 @@ export function FilterBar({ state, modelNames, filteredCount, totalCount, viewMo
           <button
             type="button"
             onClick={() => onViewModeChange("model")}
-            className={`flex h-11 items-center gap-2 border-l border-swiss-bg/30 px-4 font-mono text-sm font-black uppercase tracking-widest sm:h-10 ${viewMode === "model" ? "bg-swiss-bg text-swiss-fg" : "text-swiss-bg hover:bg-swiss-bg/15"}`}
-            aria-pressed={viewMode === "model"}
-            title="按模型查所有站 (F.01)"
+            title="按模型查覆盖站点；价格决策请使用模型比价"
           >
-            按模型查
+            模型覆盖
           </button>
         </div>
       </div>
@@ -196,9 +194,8 @@ export function FilterBar({ state, modelNames, filteredCount, totalCount, viewMo
         <label className="ml-auto flex items-center gap-2">
           <span className="text-swiss-fg/55">排序</span>
           <select value={state.sortKey} onChange={(event) => onChange({ sortKey: event.target.value as FilterState["sortKey"] })} className="appearance-none border border-swiss-fg bg-swiss-bg px-2 py-1.5 font-mono text-sm font-black outline-none">
-            <option value="rate">{state.modelQuery ? "模型价格" : "全站最低（参考）"}</option>
             <option value="availability">7 日可用率</option>
-            <option value="ttft">TTFT</option>
+            <option value="rate">{state.modelQuery ? "原始费率参考" : "全站最低（参考）"}</option>
             <option value="updated">最近检查</option>
           </select>
         </label>

@@ -62,8 +62,8 @@ export const TABLES: TableConfig[] = [
   {
     id: "relay_sites_tracker",
     tableId: "tblxY3tOnccSAxyg",
-    displayName: "中转站",
-    description: "AI 中转站（OpenAI/Claude/Gemini/xAI 等 provider 维度）",
+    displayName: "中转站档案",
+    description: "AI 中转站实体档案：Provider、接入条件、框架、原始倍率与性能覆盖",
     primaryKey: "站点ID",
     titleField: "名称",
     subtitleField: "域名",

@@ -30,10 +30,10 @@ export function ModelView({ modelQuery, modelNames, onModelChange, offersBySite,
     return (
       <section className="border-2 border-swiss-fg bg-swiss-bg p-8 swiss-dots">
         <div className="mx-auto max-w-2xl text-center">
-          <div className="font-mono text-sm font-black uppercase tracking-widest text-swiss-fg/55">F.01 / MODEL VIEW</div>
-          <h3 className="mt-3 text-2xl font-black tracking-tighter sm:text-3xl">输入模型名查所有站</h3>
+          <div className="font-mono text-sm font-black uppercase tracking-widest text-swiss-fg/55">F.01 / MODEL COVERAGE</div>
+          <h3 className="mt-3 text-2xl font-black tracking-tighter sm:text-3xl">查模型覆盖，不在这里排名</h3>
           <p className="mt-3 font-mono text-sm text-swiss-fg/55">
-            例：GPT-5.6 · Claude-Opus-4-6 · DeepSeek-V4 · Gemini-3-Pro
+            用于确认哪些站点接入目标模型；价格仅显示原始模型费率参考，完整分组折扣与成本估算请进入模型比价。
           </p>
           <div className="mt-6">
             <label className="flex max-w-md items-center border-2 border-swiss-fg bg-swiss-bg mx-auto">
@@ -79,7 +79,7 @@ export function ModelView({ modelQuery, modelNames, onModelChange, offersBySite,
   for (const [siteId, offers] of offersBySite.entries()) {
     const matching = offers.filter((o) => o.name.toLowerCase().includes(modelQuery.toLowerCase()));
     if (matching.length === 0) continue;
-    // 取最低价（text 用 input，image 用 perCallPrice）
+    // 取最低原始费率，仅用于覆盖清单参考，不代表最终到手价。
     const sorted = [...matching].sort((a, b) => {
       const av = a.type === "image" ? (a.perCallPrice ?? Infinity) : (a.inputRate ?? a.outputRate ?? Infinity);
       const bv = b.type === "image" ? (b.perCallPrice ?? Infinity) : (b.inputRate ?? b.outputRate ?? Infinity);
@@ -107,29 +107,30 @@ export function ModelView({ modelQuery, modelNames, onModelChange, offersBySite,
 
   return (
     <section className="border-2 border-swiss-fg bg-swiss-bg">
-      {/* 顶部：模型选择器 + 计数 */}
       <div className="flex flex-wrap items-stretch gap-0 border-b-2 border-swiss-fg">
         <div className="flex flex-1 items-center gap-3 px-4 py-3">
           <span className="bg-swiss-accent px-2 py-1 font-mono text-sm font-black text-swiss-bg">F.01</span>
-          <span className="font-mono text-sm font-black uppercase tracking-widest">Model:</span>
-          <label className="flex flex-1 items-center border-2 border-swiss-fg">
-            <span className="flex h-10 w-10 items-center justify-center border-r border-swiss-fg bg-swiss-muted">
-              <IconSearch className="h-4 w-4" />
-            </span>
-            <input
-              value={modelQuery}
-              onChange={(event) => onModelChange(event.target.value)}
-              list="relay-model-options"
-              className="min-w-0 flex-1 bg-swiss-bg px-3 py-2 font-mono text-sm font-bold outline-none"
-            />
-            <datalist id="relay-model-options">
-              {modelNames.map((name) => <option key={name} value={name} />)}
-            </datalist>
-          </label>
+          <span className="font-mono text-sm font-black uppercase tracking-widest">模型覆盖</span>
+          <span className="hidden text-xs text-swiss-fg/50 sm:inline">站点接入清单 · 非最终价格排名</span>
         </div>
         <div className="flex items-center border-l-2 border-swiss-fg bg-swiss-fg px-4 font-mono text-sm font-black uppercase tracking-widest text-swiss-bg">
           {rows.length} STATIONS
         </div>
+      </div>
+      <div className="flex items-center gap-3 border-b-2 border-swiss-fg px-4 py-3">
+        <span className="font-mono text-sm font-black uppercase tracking-widest text-swiss-fg/55">MODEL</span>
+        <label className="flex flex-1 items-center border-2 border-swiss-fg">
+          <IconSearch className="ml-3 h-4 w-4 text-swiss-fg/45" />
+          <input
+            value={modelQuery}
+            onChange={(event) => onModelChange(event.target.value)}
+            list="relay-model-options"
+            className="min-w-0 flex-1 bg-swiss-bg px-3 py-2 font-mono text-sm font-bold outline-none"
+          />
+          <datalist id="relay-model-options">
+            {modelNames.map((name) => <option key={name} value={name} />)}
+          </datalist>
+        </label>
       </div>
 
       {rows.length === 0 ? (
@@ -141,11 +142,11 @@ export function ModelView({ modelQuery, modelNames, onModelChange, offersBySite,
               <tr className="border-b-2 border-swiss-fg bg-swiss-muted font-mono text-sm font-black uppercase tracking-widest text-swiss-fg/55">
                 <th className="px-3 py-3 text-left">#</th>
                 <th className="px-3 py-3 text-left">站点</th>
-                <th className="px-3 py-3 text-left">价格</th>
+                <th className="px-3 py-3 text-left">原始费率参考</th>
                 <th className="px-3 py-3 text-right">7d 可用率</th>
                 <th className="px-3 py-3 text-right">成功率</th>
                 <th className="px-3 py-3 text-center">风控</th>
-                <th className="px-3 py-3 text-left">分组</th>
+                <th className="px-3 py-3 text-left">分组覆盖</th>
                 <th className="px-3 py-3 text-left" />
               </tr>
             </thead>
@@ -164,21 +165,15 @@ export function ModelView({ modelQuery, modelNames, onModelChange, offersBySite,
                     </td>
                     <td className="px-3 py-3">
                       <span className={`inline-block border-2 border-swiss-fg px-2 py-1 font-mono text-sm font-black ${tier.classes}`}>
-                        {row.offer.type === "image"
-                          ? row.offer.perCallPrice == null ? "--" : `¥${row.offer.perCallPrice}/次`
-                          : formatRate(rateValue)}
+                        {row.offer.type === "image" ? row.offer.perCallPrice == null ? "--" : `¥${row.offer.perCallPrice}/次` : formatRate(rateValue)}
                       </span>
                       <div className="mt-1 font-mono text-sm text-swiss-fg/45">{modelOfferLabel(row.offer)}</div>
                     </td>
                     <td className={`px-3 py-3 text-right font-mono text-sm font-black ${a7Tone}`}>{row.availability7d == null ? "--" : `${row.availability7d.toFixed(1)}%`}</td>
                     <td className="px-3 py-3 text-right font-mono text-sm font-black">{row.successRate == null ? "--" : `${(row.successRate * 100).toFixed(0)}%`}</td>
                     <td className="px-3 py-3 text-center">{row.hasPerf ? riskIcon : <span className="font-mono text-sm text-swiss-fg/45">未测</span>}</td>
-                    <td className="px-3 py-3 truncate font-mono text-sm text-swiss-fg/65 max-w-[200px]" title={row.offer.group}>{row.offer.group || "--"}</td>
-                    <td className="px-3 py-3">
-                      <Link href={`/table/relay_sites_tracker/${encodeURIComponent(row.siteId)}`} className="border border-swiss-fg bg-swiss-fg px-3 py-1.5 font-mono text-sm font-black uppercase tracking-widest text-swiss-bg transition-colors hover:bg-swiss-accent">
-                        VIEW →
-                      </Link>
-                    </td>
+                    <td className="max-w-[200px] truncate px-3 py-3 font-mono text-sm text-swiss-fg/65" title={row.offer.group}>{row.offer.group || "--"}</td>
+                    <td className="px-3 py-3"><Link href={`/table/relay_sites_tracker/${encodeURIComponent(row.siteId)}`} className="border border-swiss-fg bg-swiss-fg px-3 py-1.5 font-mono text-sm font-black uppercase tracking-widest text-swiss-bg transition-colors hover:bg-swiss-accent">VIEW →</Link></td>
                   </tr>
                 );
               })}

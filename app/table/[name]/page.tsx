@@ -77,8 +77,8 @@ export default async function TableListPage({ params }: Params) {
           <div className="mx-auto grid max-w-[1600px] gap-6 px-5 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-end">
             <div>
               <div className="font-mono text-sm font-black uppercase tracking-widest text-swiss-fg/50">MODULE 01</div>
-              <h1 className="mt-2 text-4xl font-black leading-none sm:text-5xl">中转站选站</h1>
-              <p className="mt-3 text-sm text-swiss-fg/60">按目标模型、价格、性能和接入状态缩小候选范围。</p>
+              <h1 className="mt-2 text-4xl font-black leading-none sm:text-5xl">中转站档案库</h1>
+              <p className="mt-3 text-sm text-swiss-fg/60">按站点实体查接入条件、Provider、框架与覆盖情况；精确价格决策请进入模型比价。</p>
             </div>
             <div className="grid grid-cols-3 border-y-2 border-swiss-fg lg:border-2">
               <ModuleMetric label="站点" value={data.records.length} />
