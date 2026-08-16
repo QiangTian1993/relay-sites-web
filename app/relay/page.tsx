@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/relay" },
 };
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 export default async function RelayPage() {
   const [sites, groups, performance, modelRates, qcRecords] = await Promise.all([
