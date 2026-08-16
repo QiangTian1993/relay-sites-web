@@ -693,6 +693,15 @@ export const PRESET_MODEL_FAMILIES: ModelFamilyConfig[] = [
   },
 ];
 
+const IMAGE_GENERATION_GROUP_PATTERN = /(?:image|img|iamge|dall(?:-?e)?|midjourney|nanobanana|nano\s*banana|生图|绘图|图片|图像|画布|香蕉|即梦)/i;
+
+/** 文本模型不能使用生图专用分组；图片模型仍可正常命中。 */
+function isImageGenerationGroup(group: RelayV1Group): boolean {
+  return IMAGE_GENERATION_GROUP_PATTERN.test(
+    `${group.name} ${group.remark} ${group.relatedModels.join(" ")}`,
+  );
+}
+
 /**
  * 解析 Offer 的计费公式与最优命中分组 (集成官方基准归一化)
  */
@@ -701,6 +710,7 @@ export function resolveOfferFormula(
   siteGroups: RelayV1Group[],
 ): PriceFormulaBreakdown {
   const isImage = offer.modelType === "image";
+  const eligibleSiteGroups = isImage ? siteGroups : siteGroups.filter((group) => !isImageGenerationGroup(group));
   const benchmark = getOfficialModelBenchmark(offer.modelName);
   const basePrice = isImage
     ? (offer.perCallPrice ?? 0)
@@ -712,7 +722,7 @@ export function resolveOfferFormula(
     ? "input_rate"
     : "output_rate";
 
-  if (siteGroups.length === 0 || basePrice <= 0) {
+  if (eligibleSiteGroups.length === 0 || basePrice <= 0) {
     const rawEffectivePrice = basePrice;
     const normalizedMultiplier = isImage
       ? rawEffectivePrice
@@ -740,11 +750,11 @@ export function resolveOfferFormula(
     };
   }
 
-  // 筛选适用分组
+  // 文本模型先排除生图专用分组，再按报价显式绑定范围筛选。
   const candidateGroups =
     offer.enabledGroups && offer.enabledGroups.length > 0
-      ? siteGroups.filter((g) => offer.enabledGroups.includes(g.name))
-      : siteGroups;
+      ? eligibleSiteGroups.filter((g) => offer.enabledGroups.includes(g.name))
+      : eligibleSiteGroups;
 
   let optimalGroup: RelayV1Group | null = null;
   let minRate = Number.POSITIVE_INFINITY;
@@ -756,9 +766,9 @@ export function resolveOfferFormula(
     }
   }
 
-  // 未指定分组时优先 default
+  // 未指定分组时优先 default（仍只在当前模型允许的分组范围内）。
   if (!optimalGroup && (!offer.enabledGroups || offer.enabledGroups.length === 0)) {
-    const defaultGroup = siteGroups.find((g) => g.name.toLowerCase() === "default");
+    const defaultGroup = eligibleSiteGroups.find((g) => g.name.toLowerCase() === "default");
     if (defaultGroup && defaultGroup.rateMin != null && defaultGroup.rateMin > 0) {
       optimalGroup = defaultGroup;
       minRate = defaultGroup.rateMin;
