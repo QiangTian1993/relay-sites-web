@@ -32,7 +32,7 @@ const MODEL_PAGE_SIZE = 50;
 export function RelaySiteDetail({ record, performance, groups, modelOffers, qcRecord }: Props) {
   const [modelSearch, setModelSearch] = useState("");
   const [modelPage, setModelPage] = useState(0);
-  const [showAllGroups, setShowAllGroups] = useState(false);
+  const [showAllGroups, setShowAllGroups] = useState(true);
   const [copiedDomain, setCopiedDomain] = useState(false);
 
   function copyText(text: string) {
