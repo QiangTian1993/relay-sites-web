@@ -7,7 +7,7 @@ export const dynamic = "force-static";
 export const metadata: Metadata = {
   title: "专题文章 — 信息杂货铺",
   description:
-    "源自知识库的深度长文：AI Agent 架构、Skill 变现合规、多平台 API 选型、自托管运维与商业化实操调研。",
+    "掌柜的随手杂记：折腾的、看到的、想到的，不拘一格，随手码字摆上货架。",
   alternates: { canonical: "/articles" },
 };
 
@@ -19,7 +19,7 @@ export default async function ArticlesPage() {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     name: "专题文章",
-    description: "围绕单一现实工程或商业问题深挖的专题文章与实战调研。",
+    description: "掌柜的随手杂记：折腾的、看到的、想到的，不拘一格，随手码字摆上货架。",
     url: "https://www.xiuxai.com/relay-index/articles",
     hasPart: articles.map((art) => ({
       "@type": "Article",

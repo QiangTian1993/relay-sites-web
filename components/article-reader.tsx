@@ -100,7 +100,7 @@ export default function ArticleReader({
             href="/articles"
             className="hover:text-zinc-900 transition-colors"
           >
-            深度专刊
+            专题文章
           </Link>
           <ChevronRight className="h-3.5 w-3.5 text-zinc-300" />
           <span className="text-zinc-900 font-bold max-w-[200px] sm:max-w-xs truncate">
@@ -113,7 +113,7 @@ export default function ArticleReader({
           className="inline-flex items-center gap-1 font-bold text-zinc-600 hover:text-[#E03E1A] transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          <span>返回专栏货架</span>
+          <span>返回文章货架</span>
         </Link>
       </nav>
 
@@ -267,12 +267,12 @@ export default function ArticleReader({
           {/* Adjacent Articles Navigator Card */}
           <div className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-2xs font-mono text-xs space-y-3">
             <div className="font-bold text-zinc-400 text-[11px] uppercase tracking-wider pb-2 border-b border-zinc-100">
-              前后手稿导航
+              前后文章导航
             </div>
 
             {prev && (
               <div>
-                <div className="text-[10px] text-zinc-400">上一篇手稿</div>
+                <div className="text-[10px] text-zinc-400">上一篇文章</div>
                 <Link
                   href={`/articles/${prev.slug}`}
                   className="mt-0.5 block font-bold text-zinc-800 hover:text-[#E03E1A] transition-colors line-clamp-2"
@@ -284,7 +284,7 @@ export default function ArticleReader({
 
             {next && (
               <div className="pt-2">
-                <div className="text-[10px] text-zinc-400">下一篇手稿</div>
+                <div className="text-[10px] text-zinc-400">下一篇文章</div>
                 <Link
                   href={`/articles/${next.slug}`}
                   className="mt-0.5 block font-bold text-zinc-800 hover:text-[#E03E1A] transition-colors line-clamp-2"

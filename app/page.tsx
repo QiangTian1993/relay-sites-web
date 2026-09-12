@@ -95,7 +95,7 @@ export default async function Home() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "信息杂货铺 — Relay Index",
-    alternateName: "AI 中转站比价 / GitHub 热榜 / AI 编程工具 / 深度专刊",
+    alternateName: "AI 中转站比价 / GitHub 热榜 / AI 编程工具 / 专题文章",
     url: "https://www.xiuxai.com/relay-index/",
     description:
       "AI 世界的实用情报收集成册：AI 中转站模型比价、Vibe Coding 工具横评、GitHub 开源热榜、深度专题研报，按模块摆齐上架。",
@@ -168,7 +168,7 @@ export default async function Home() {
 
                 {/* Lead Pitch */}
                 <p className="text-zinc-600 text-sm sm:text-base leading-relaxed max-w-xl mb-8">
-                  不搞虚头巴脑的宏大叙事。把真正能帮你降本提效的实测情报分门别类，按货架码齐——中转底价、编程武器、开源生鲜与深度手稿，实测验讫，明码标价。
+                  不搞虚头巴脑的宏大叙事。把真正能帮你降本提效的实测情报分门别类，按货架码齐——中转底价、编程武器、开源生鲜与专题文章，实测验讫，明码标价。
                 </p>
 
                 {/* Quick Shelf Jump Links (Aisle Shortcuts) */}
@@ -699,7 +699,7 @@ export default async function Home() {
               </span>
             </div>
             <RubberStamp
-              text="实操核验 · VERIFIED"
+              text="随手杂记 · NOTES"
               subtext="OBSIDIAN VAULT"
               variant="amber"
               rotate={-3}
@@ -712,14 +712,14 @@ export default async function Home() {
               <div className="flex items-center gap-2 mb-2">
                 <span className="inline-flex h-2 w-2 rounded-full bg-[#E03E1A]" />
                 <span className="font-mono text-xs font-bold text-[#E03E1A] uppercase tracking-wider">
-                  独立事实核验 · 拒绝资料清单堆砌
+                  随手杂记 · 不拘一格
                 </span>
               </div>
               <h2 className="text-2xl sm:text-3xl font-black text-zinc-950 mb-3 tracking-tight">
                 专题文章 · 掌柜手记
               </h2>
               <p className="text-zinc-600 text-sm sm:text-base leading-relaxed max-w-2xl mb-6 font-normal">
-                源自本地 Obsidian 知识库。一篇文章只回答一个主要现实问题并给出清楚的中心判断——涵盖 Agent 架构设计、Skill 变现合规、多平台 API 选型风险、Dokploy VPS 运维与 2026 信息差变现深度报告。
+                源自本地 Obsidian 知识库。掌柜的随手杂记：折腾的、看到的、想到的，不拘一格，随手码字摆上货架。
               </p>
 
               {/* 3 Featured Articles Quick View */}
@@ -751,7 +751,7 @@ export default async function Home() {
               <ShelfTicketButton
                 href="/articles"
                 label="翻阅全部专题文章"
-                sublabel={`在架 ${articlesCount} 篇 · ${(articles.reduce((sum, a) => sum + a.wordCount, 0) / 10000).toFixed(1)}万字实操沉淀`}
+                sublabel={`在架 ${articlesCount} 篇 · ${(articles.reduce((sum, a) => sum + a.wordCount, 0) / 10000).toFixed(1)}万字随笔沉淀`}
                 skuCode="TICKET #04-ARTICLES"
                 primary
               />

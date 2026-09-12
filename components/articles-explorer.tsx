@@ -89,7 +89,7 @@ export default function ArticlesExplorer({
                 ARTICLES & ESSAYS
               </span>
               <span className="text-zinc-400">
-                OBSIDIAN 知识库精选 · 独立核验
+                OBSIDIAN 知识库精选 · 掌柜手记
               </span>
             </div>
 
@@ -97,7 +97,7 @@ export default function ArticlesExplorer({
               专题文章
             </h1>
             <p className="mt-2 text-zinc-600 text-sm sm:text-base max-w-2xl leading-relaxed">
-              围绕单一现实工程或商业问题深挖，不堆砌资料清单，只讲真实核验、实操细节与商业边界。
+              掌柜的随手杂记：折腾的、看到的、想到的，不拘一格，随手码字摆上货架。
             </p>
           </div>
 
@@ -121,11 +121,11 @@ export default function ArticlesExplorer({
               </div>
             </div>
             <div className="text-center px-3">
-              <div className="font-mono text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded-md">
-                100% 独立核验
+              <div className="font-mono text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200/60 px-2 py-0.5 rounded-md">
+                自由杂记 · 随写随更
               </div>
               <div className="font-mono text-[10.5px] text-zinc-500 mt-1 uppercase">
-                七筛证据门禁
+                实操踩坑记录
               </div>
             </div>
           </div>
@@ -134,7 +134,7 @@ export default function ArticlesExplorer({
         {/* 装饰印章 */}
         <div className="absolute right-4 bottom-2 opacity-15 pointer-events-none hidden md:block">
           <RubberStamp
-            text="手稿阅毕 · ARCHIVED"
+            text="文章阅毕 · ARCHIVED"
             subtext="VAULT SYNCED"
             variant="dark"
             rotate={-8}
@@ -181,7 +181,7 @@ export default function ArticlesExplorer({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="搜索手稿标题、关键词或标签..."
+              placeholder="搜索文章标题、关键词或标签..."
               className="w-full pl-9.5 pr-8 py-2 rounded-xl border border-zinc-200 bg-zinc-50/60 text-zinc-900 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E03E1A]/20 focus:border-[#E03E1A] transition-all"
             />
             {searchQuery && (
