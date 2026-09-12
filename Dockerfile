@@ -10,6 +10,7 @@ ARG NEXT_PUBLIC_BASE_PATH
 ENV NEXT_PUBLIC_BASE_PATH=$NEXT_PUBLIC_BASE_PATH
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+ENV NODE_OPTIONS="--max-old-space-size=1536"
 RUN npm run build
 
 FROM node:20-alpine AS runner
