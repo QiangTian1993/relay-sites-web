@@ -138,3 +138,183 @@ tr.swiss-row:hover {
 .swiss-highlight {
   box-shadow: inset 4px 0 0 0 #ff3000;
 }
+
+/* ===== 专栏长文排版系统 (Article Prose & Callouts) ===== */
+
+.article-prose {
+  font-size: 16.5px;
+  line-height: 1.88;
+  color: #27272a;
+  word-break: break-word;
+}
+
+.article-prose p {
+  margin-top: 1.35em;
+  margin-bottom: 1.35em;
+}
+
+.article-prose strong {
+  font-weight: 700;
+  color: #09090b;
+}
+
+.article-prose h2 {
+  margin-top: 2.75em;
+  margin-bottom: 0.85em;
+  font-size: 1.55rem;
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.025em;
+  color: #09090b;
+  padding-bottom: 0.4em;
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+}
+
+.article-prose h3 {
+  margin-top: 2.1em;
+  margin-bottom: 0.65em;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.015em;
+  color: #18181b;
+}
+
+.article-prose h4 {
+  margin-top: 1.6em;
+  margin-bottom: 0.5em;
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: #27272a;
+}
+
+.article-prose ul {
+  list-style-type: disc;
+  margin-top: 1.1em;
+  margin-bottom: 1.1em;
+  padding-left: 1.6em;
+}
+
+.article-prose ol {
+  list-style-type: decimal;
+  margin-top: 1.1em;
+  margin-bottom: 1.1em;
+  padding-left: 1.6em;
+}
+
+.article-prose li {
+  margin-top: 0.45em;
+  margin-bottom: 0.45em;
+  line-height: 1.8;
+}
+
+.article-prose li::marker {
+  color: #E03E1A;
+}
+
+.article-prose code:not(pre code) {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background-color: #f4f4f5;
+  color: #b91c1c;
+  padding: 0.15em 0.4em;
+  border-radius: 0.35rem;
+  font-size: 0.88em;
+  font-weight: 600;
+}
+
+.article-prose pre {
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+  padding: 1.1em 1.25em;
+  background-color: #18181b;
+  color: #fafafa;
+  border-radius: 0.875rem;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+
+.article-prose a {
+  color: #E03E1A;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(224, 62, 26, 0.4);
+  transition: all 0.15s ease;
+}
+
+.article-prose a:hover {
+  text-decoration-color: #E03E1A;
+}
+
+.article-prose hr {
+  margin: 3em 0;
+  border: none;
+  border-top: 2px dashed #e4e4e7;
+}
+
+/* Callout Cards (Obsidian Style) */
+.callout-card {
+  margin: 1.75em 0;
+  padding: 1rem 1.25rem;
+  border-radius: 1rem;
+  border: 1px solid #e4e4e7;
+  background-color: #fcfcfb;
+}
+
+.callout-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.callout-indicator {
+  color: #E03E1A;
+  font-size: 0.95rem;
+}
+
+.callout-title {
+  font-family: var(--font-inter), sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #18181b;
+  letter-spacing: -0.01em;
+}
+
+.callout-content {
+  font-size: 0.95rem;
+  line-height: 1.75;
+  color: #3f3f46;
+}
+
+.callout-content p:first-child {
+  margin-top: 0;
+}
+.callout-content p:last-child {
+  margin-bottom: 0;
+}
+
+.callout-tip {
+  border-color: rgba(245, 158, 11, 0.4);
+  background-color: rgba(254, 243, 199, 0.3);
+}
+.callout-tip .callout-indicator {
+  color: #d97706;
+}
+
+.callout-note, .callout-info {
+  border-color: rgba(59, 130, 246, 0.3);
+  background-color: rgba(239, 246, 255, 0.4);
+}
+.callout-note .callout-indicator, .callout-info .callout-indicator {
+  color: #2563eb;
+}
+
+.callout-warning, .callout-caution {
+  border-color: rgba(239, 68, 68, 0.35);
+  background-color: rgba(254, 242, 242, 0.45);
+}
+.callout-warning .callout-indicator, .callout-caution .callout-indicator {
+  color: #dc2626;
+}

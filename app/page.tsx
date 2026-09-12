@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  BookOpen,
   CheckCircle2,
   Clock,
   Coins,
@@ -18,6 +19,7 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import { loadTable } from "@/lib/data-loader";
+import { getAllArticles } from "@/lib/articles";
 import { latestFetchTime, calcFreshness } from "@/lib/freshness";
 import {
   RubberStamp,
@@ -34,12 +36,13 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const [sitesData, groupsData, perfData, toolsData, trendingData] = await Promise.all([
+  const [sitesData, groupsData, perfData, toolsData, trendingData, articles] = await Promise.all([
     loadTable("relay_sites_tracker"),
     loadTable("relay_site_groups"),
     loadTable("relay_site_perf"),
     loadTable("vibe_coding_tracker"),
     loadTable("github_trending"),
+    getAllArticles(),
   ]);
 
   const siteCount = sitesData?.records.length ?? 0;
@@ -47,6 +50,7 @@ export default async function Home() {
   const perfCount = perfData?.records.length ?? 0;
   const toolCount = toolsData?.records.length ?? 0;
   const trendingCount = trendingData?.records.length ?? 0;
+  const articlesCount = articles.length;
 
   const trendingLangs = new Set(
     (trendingData?.records ?? []).map((r) => {
@@ -85,16 +89,16 @@ export default async function Home() {
     latestFetchTime([sitesData?.fetchedAt, groupsData?.fetchedAt, toolsData?.fetchedAt]),
   );
 
-  const totalRecords = siteCount + groupCount + toolCount + trendingCount;
+  const totalRecords = siteCount + groupCount + toolCount + trendingCount + articlesCount;
 
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "信息杂货铺 — Relay Index",
-    alternateName: "AI 中转站比价 / GitHub 热榜 / AI 编程工具",
+    alternateName: "AI 中转站比价 / GitHub 热榜 / AI 编程工具 / 深度专刊",
     url: "https://www.xiuxai.com/relay-index/",
     description:
-      "AI 世界的实用情报收集成册：AI 中转站模型比价、Vibe Coding 工具横评、GitHub 开源热榜，按模块摆齐上架。",
+      "AI 世界的实用情报收集成册：AI 中转站模型比价、Vibe Coding 工具横评、GitHub 开源热榜、深度专题研报，按模块摆齐上架。",
     inLanguage: "zh-CN",
   };
 
@@ -158,98 +162,34 @@ export default async function Home() {
                     信息<span className="text-[#E03E1A]">杂货铺</span>
                   </h1>
                   <div className="mt-2.5 font-mono text-xs sm:text-sm font-bold tracking-widest text-zinc-400 uppercase">
-                    XIUXAI INFORMATION GENERAL STORE
-                  </div>
-
-                  {/* Elegant Rubber Stamp overlay */}
-                  <div className="absolute top-1 right-2 sm:right-10 pointer-events-none hidden sm:block">
-                    <RubberStamp
-                      text="货真价实 · 官方验讫"
-                      subtext="ALL AUTHENTIC · 2026"
-                      variant="red"
-                      rotate={-4}
-                      size="md"
-                    />
+                    INFORMATION GENERAL STORE · NO. 8848
                   </div>
                 </div>
 
-                {/* Store Slogan & Concept */}
-                <p className="text-base sm:text-lg text-zinc-650 max-w-xl leading-relaxed mb-6 font-normal">
-                  把 AI 世界的实用情报分门别类，摆上货架 ——<br className="hidden sm:inline" />
-                  模型折后比价、编程武器全景、开源热门生鲜、硬探针验真。<br className="hidden sm:inline" />
-                  <strong className="font-bold text-zinc-900">想查什么，挑对应货架直接逛。</strong>
+                {/* Lead Pitch */}
+                <p className="text-zinc-600 text-sm sm:text-base leading-relaxed max-w-xl mb-8">
+                  不搞虚头巴脑的宏大叙事。把真正能帮你降本提效的实测情报分门别类，按货架码齐——中转底价、编程武器、开源生鲜与深度手稿，实测验讫，明码标价。
                 </p>
 
-                {/* 掌柜便签 / 进店须知 (Store Bulletin) */}
-                <div className="rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50/70 via-orange-50/30 to-white p-4 sm:p-5 mb-6 max-w-xl shadow-xs">
-                  <div className="flex items-center justify-between border-b border-amber-200/60 pb-2.5 mb-3">
-                    <div className="flex items-center gap-2">
-                      <Receipt className="h-4 w-4 text-amber-700" />
-                      <span className="font-mono text-xs font-bold tracking-wider uppercase text-amber-950">
-                        掌柜进店须知 · STORE BULLETIN
-                      </span>
-                    </div>
-                    <span className="font-mono text-[9.5px] text-amber-800/70 font-bold">TERM #01-A</span>
-                  </div>
-
-                  <div className="grid sm:grid-cols-3 gap-3 font-mono text-xs">
-                    <div className="rounded-xl bg-white/90 p-3 border border-amber-200/50 shadow-2xs">
-                      <div className="font-bold text-zinc-900 text-xs flex items-center gap-1.5">
-                        <Tag className="h-3 w-3 text-[#E03E1A]" />
-                        <span>真实折后价</span>
-                      </div>
-                      <div className="text-[10.5px] text-zinc-500 mt-1 leading-snug">
-                        倍率×分组最低系数，剔除异构虚标
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl bg-white/90 p-3 border border-amber-200/50 shadow-2xs">
-                      <div className="font-bold text-zinc-900 text-xs flex items-center gap-1.5">
-                        <Clock className="h-3 w-3 text-amber-600" />
-                        <span>每日双更鲜货</span>
-                      </div>
-                      <div className="text-[10.5px] text-zinc-500 mt-1 leading-snug">
-                        早 08:00 / 晚 21:00 定时采收 14 语种
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl bg-white/90 p-3 border border-amber-200/50 shadow-2xs">
-                      <div className="font-bold text-zinc-900 text-xs flex items-center gap-1.5">
-                        <ShieldCheck className="h-3 w-3 text-emerald-600" />
-                        <span>自主质检验货</span>
-                      </div>
-                      <div className="text-[10.5px] text-zinc-500 mt-1 leading-snug">
-                        现场投递 Key 探针，Juice 指纹严防套壳
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Aisle Fast-Track Jumpers */}
-              <div className="pt-4 border-t border-zinc-100">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-400 font-bold mr-1 flex items-center gap-1">
-                    <span>🛒</span>
-                    <span>货架直达:</span>
+                {/* Quick Shelf Jump Links (Aisle Shortcuts) */}
+                <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-zinc-100">
+                  <span className="font-mono text-[11px] font-bold uppercase text-zinc-400 mr-1 flex items-center gap-1">
+                    <Tag className="h-3 w-3" />
+                    货架直达:
                   </span>
                   {[
                     { num: "01", name: "算力批发", href: "#aisle-01", count: `${siteCount}+ 站` },
                     { num: "02", name: "编程武器", href: "#aisle-02", count: `${toolCount} 款` },
                     { num: "03", name: "开源生鲜", href: "#aisle-03", count: "双更" },
+                    { num: "04", name: "深度专刊", href: "#aisle-04", count: `${articlesCount} 篇` },
                     { num: "05", name: "验货质检", href: "#aisle-05", count: "在线" },
-                    { num: "04", name: "后备仓库", href: "#aisle-04", count: "Soon", soon: true },
                   ].map((aisle) => (
                     <a
                       key={aisle.num}
                       href={aisle.href}
-                      className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 font-mono text-xs font-bold transition-all ${
-                        aisle.soon
-                          ? "bg-zinc-50 text-zinc-400 border-zinc-200/60"
-                          : "bg-zinc-50/80 text-zinc-700 border-zinc-200/80 hover:bg-zinc-950 hover:text-white hover:border-zinc-950 shadow-2xs"
-                      }`}
+                      className="inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 font-mono text-xs font-bold transition-all bg-zinc-50/80 text-zinc-700 border-zinc-200/80 hover:bg-zinc-950 hover:text-white hover:border-zinc-950 shadow-2xs"
                     >
-                      <span className={aisle.soon ? "text-zinc-400" : "text-[#E03E1A]"}>
+                      <span className="text-[#E03E1A]">
                         #{aisle.num}
                       </span>
                       <span>{aisle.name}</span>
@@ -306,6 +246,10 @@ export default async function Home() {
                   <div className="flex justify-between items-baseline">
                     <span className="text-zinc-600">[03] 开源生鲜热榜</span>
                     <span className="font-bold text-zinc-950">{trendingCount} 仓双更</span>
+                  </div>
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-zinc-600">[04] 深度专刊手稿</span>
+                    <span className="font-bold text-zinc-950">{articlesCount} 篇沉淀</span>
                   </div>
                   <div className="flex justify-between items-baseline">
                     <span className="text-zinc-600">[05] 假一赔十质检台</span>
@@ -738,41 +682,80 @@ export default async function Home() {
           </div>
         </article>
 
-        {/* ── Aisle 04: 库房筹备中 (后备仓库 · 理货中) ────────────────── */}
+        {/* ── Aisle 04: 深度专刊 · 调研手稿货架 ──────────────────────── */}
         <article
           id="aisle-04"
-          className="rounded-3xl border border-dashed border-zinc-300 bg-zinc-100/50 p-6 sm:p-8"
+          className="rounded-3xl border border-zinc-200/80 bg-white p-6 sm:p-8 lg:p-10 shadow-sm relative overflow-hidden"
         >
           <span id="module-04" className="sr-only">module-04</span>
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
             <div className="flex items-center gap-2">
-              <span className="rounded-full bg-zinc-200 text-zinc-700 px-3 py-0.5 font-mono text-xs font-bold">
+              <span className="rounded-full bg-zinc-950 text-white px-3 py-0.5 font-mono text-xs font-bold">
                 AISLE 04
               </span>
               <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500 font-bold">
-                SKU: MOD-04-SKILL · 库房重地
+                SKU: MOD-04-ARTICLES · 思想手稿
               </span>
             </div>
             <RubberStamp
-              text="闭门理货"
-              subtext="COMING SOON"
-              variant="dark"
+              text="手稿上架 · SYNCED"
+              subtext="OBSIDIAN VAULT"
+              variant="amber"
               rotate={-3}
               size="sm"
-              className="opacity-60"
             />
           </div>
 
-          <h2 className="text-xl sm:text-2xl font-black text-zinc-800 mb-2">
-            个人技能库与提示词工坊
-          </h2>
+          <div className="grid lg:grid-cols-[1fr_360px] gap-8 items-center">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="inline-flex h-2 w-2 rounded-full bg-[#E03E1A]" />
+                <span className="font-mono text-xs font-bold text-[#E03E1A] uppercase tracking-wider">
+                  独立事实核验 · 拒绝资料清单堆砌
+                </span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-zinc-950 mb-3 tracking-tight">
+                深度专刊 · 调研手稿货架
+              </h2>
+              <p className="text-zinc-600 text-sm sm:text-base leading-relaxed max-w-2xl mb-6 font-normal">
+                源自本地 Obsidian 知识库。一篇文章只回答一个主要现实问题并给出清楚的中心判断——涵盖 Agent 架构设计、Skill 变现合规、多平台 API 选型风险、Dokploy VPS 运维与 2026 信息差变现深度报告。
+              </p>
 
-          <p className="text-sm text-zinc-500 leading-relaxed max-w-2xl">
-            掌柜正在对实用的 AI 编程 Prompt、复杂 Agent 工作流模版与可复用代码片段进行拆解归档，即将摆上货架。
-          </p>
+              {/* 3 Featured Articles Quick View */}
+              <div className="grid sm:grid-cols-3 gap-3">
+                {articles.slice(0, 3).map((art) => (
+                  <Link
+                    key={art.id}
+                    href={`/articles/${art.slug}`}
+                    className="group flex flex-col justify-between rounded-2xl border border-zinc-200/70 bg-zinc-50/60 hover:bg-white hover:border-zinc-300 p-3.5 transition-all shadow-2xs"
+                  >
+                    <div>
+                      <div className="font-mono text-[10px] font-bold text-zinc-400 mb-1">
+                        {art.category}
+                      </div>
+                      <div className="text-xs font-bold text-zinc-900 group-hover:text-[#E03E1A] transition-colors line-clamp-2 leading-snug">
+                        {art.title}
+                      </div>
+                    </div>
+                    <div className="mt-3 pt-2 border-t border-zinc-200/50 font-mono text-[10.5px] text-zinc-400 flex items-center justify-between">
+                      <span>{art.wordCount.toLocaleString()} 字</span>
+                      <span className="text-[#E03E1A] group-hover:translate-x-0.5 transition-transform">→</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
 
-          <div className="mt-4 inline-flex items-center gap-2 rounded-xl border border-dashed border-zinc-300 px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-wider text-zinc-500 font-bold bg-white/70">
-            <span>📦 仓库盘点中 · DATA PENDING</span>
+            <div className="flex flex-col justify-center">
+              <ShelfTicketButton
+                href="/articles"
+                label="翻阅全部专栏手稿"
+                sublabel={`在架 ${articlesCount} 篇 · ${(articles.reduce((sum, a) => sum + a.wordCount, 0) / 10000).toFixed(1)}万字独立沉淀`}
+                skuCode="TICKET #04-ARTICLES"
+                primary
+              />
+            </div>
           </div>
         </article>
 

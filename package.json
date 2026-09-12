@@ -11,10 +11,13 @@
     "trending": "tsx scripts/fetch-github-trending.ts",
     "qc:backup": "tsx scripts/sync-qc-backup.ts",
     "qc:restore": "tsx scripts/sync-qc-backup.ts --restore",
+    "sync:articles": "tsx scripts/sync-obsidian-articles.ts",
     "lint": "next lint"
   },
   "dependencies": {
+    "gray-matter": "^4.0.3",
     "lucide-react": "^1.33.0",
+    "marked": "^18.0.12",
     "next": "14.2.18",
     "react": "18.3.1",
     "react-dom": "18.3.1",

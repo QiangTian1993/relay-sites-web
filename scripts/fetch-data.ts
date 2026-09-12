@@ -217,9 +217,18 @@ async function main() {
     } catch (err) {
       console.error(`✗ ${t.id} (table_id=${t.tableId}) 失败:`, err instanceof Error ? err.message : err);
     }
-  }
-
   await probeAndSyncPerformance();
+
+  // 自动同步 Obsidian 专题文章（如果本地知识库目录存在）
+  const vaultArticlesDir = process.env.OBSIDIAN_ARTICLES_DIR || "/Users/ian-mbp/工作/project/agent-memory/专题文章";
+  if (fs.existsSync(vaultArticlesDir)) {
+    try {
+      console.log("\n📚 正在自动同步 Obsidian 知识库专题文章...");
+      execFileSync("npx", ["tsx", "scripts/sync-obsidian-articles.ts"], { stdio: "inherit" });
+    } catch (err) {
+      console.warn("⚠️ 同步 Obsidian 文章异常 (非致命):", err);
+    }
+  }
 
   console.log(`\n✓ 全部拉取与探针更新完成。数据目录: ${DATA_DIR}`);
 }
