@@ -586,44 +586,35 @@ export function getModelComprehensiveVerdict(model: ModelBenchmarkRecord): Model
   const normName = model.模型名称.trim();
   const matched = MODEL_VERDICTS[normName];
 
-  // 综合指数评分算法 (70.0 - 99.4)
-  // 1. 代码工程 (权重 30%): SWE-bench Verified (基准上限 80)
-  const swe = model.SWE_bench_Verified || 35;
-  const sweScore = 55 + (swe / 80) * 44; 
+  // 综合实力指数评分算法 (70.0 - 99.4)
+  // 遵循纯净的客观基准评测模型（代码修复 35% + 深度奥数与科学逻辑 40% + 人类盲测 Elo 25%），杜绝价格因数拉低高智商旗舰模型的综合实力！
 
-  // 2. 深度数理与科学逻辑 (权重 30%): AIME 2024 / GPQA / MATH-500
-  const aime = model.AIME_2024 || 0;
+  // 1. 代码工程硬核能力 (权重 35%): SWE-bench Verified (基准上限 80)
+  const swe = model.SWE_bench_Verified || 35;
+  const sweScore = 60 + (swe / 80) * 39.5;
+
+  // 2. 深度奥数与前沿科学逻辑 (权重 40%): AIME 2024 (45%) + GPQA Diamond (35%) + MATH-500 (20%)
+  const aime = model.AIME_2024 || (model.MATH_500 ? model.MATH_500 * 0.65 : 20);
   const gpqa = model.GPQA_Diamond || 50;
   const math500 = model.MATH_500 || 60;
-  let logicScore = 55;
+
+  let aimeScore = 55;
   if (aime >= 50) {
-    logicScore = 78 + ((aime - 50) / 45) * 21; 
-  } else if (aime > 0) {
-    logicScore = 58 + (aime / 50) * 18; 
+    aimeScore = 82 + ((aime - 50) / 45) * 17.5;
   } else {
-    logicScore = 55 + (math500 / 100) * 30;
+    aimeScore = 55 + (aime / 50) * 27;
   }
-  // GPQA 博士级科学加成
-  if (gpqa >= 80) logicScore = Math.min(99, logicScore + 3);
-  else if (gpqa >= 70) logicScore = Math.min(99, logicScore + 1.5);
 
-  // 3. 人类盲测 Elo (权重 25%): 取总榜与代码榜有效高者
-  const rawElo = Math.max(model.LMSYS总榜Elo || 0, (model.LMSYS代码Elo || 0) + 10);
+  const gpqaScore = 42 + (gpqa / 100) * 66;
+  const mathScore = 40 + (math500 / 100) * 60;
+  const logicScore = aimeScore * 0.45 + gpqaScore * 0.35 + mathScore * 0.20;
+
+  // 3. 人类多轮对抗与通用遵循 (权重 25%): LMSYS Arena Elo (取总榜与代码榜有效高者)
+  const rawElo = Math.max(model.LMSYS总榜Elo || 0, (model.LMSYS代码Elo || 0) + 12);
   const elo = Math.max(1200, Math.min(1500, rawElo || 1350));
-  const eloScore = 60 + ((elo - 1200) / (1490 - 1200)) * 38;
+  const eloScore = 70 + ((elo - 1200) / (1490 - 1200)) * 29.5;
 
-  // 4. 价格效能与生产实用度 (权重 15%)
-  let priceScore = 78;
-  if (model.输入价格_美元 <= 0) priceScore = 98;
-  else if (model.输入价格_美元 < 0.2) priceScore = 96;
-  else if (model.输入价格_美元 < 0.6) priceScore = 93;
-  else if (model.输入价格_美元 < 1.5) priceScore = 90;
-  else if (model.输入价格_美元 < 3.5) priceScore = 87;
-  else if (model.输入价格_美元 < 6.0) priceScore = 82;
-  else if (model.输入价格_美元 < 12.0) priceScore = 75;
-  else priceScore = 68;
-
-  const rawScore = sweScore * 0.30 + logicScore * 0.30 + eloScore * 0.25 + priceScore * 0.15;
+  const rawScore = sweScore * 0.35 + logicScore * 0.40 + eloScore * 0.25;
   const score = Number(Math.min(99.4, Math.max(70.0, rawScore)).toFixed(1));
 
   if (matched) {
