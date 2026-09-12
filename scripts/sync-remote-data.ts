@@ -104,6 +104,30 @@ function larkBatchCreate(tableId: string, rows: Record<string, unknown>[]) {
   }
 }
 
+function larkBatchUpdate(tableId: string, updates: { recordId: string; fields: Record<string, unknown> }[]) {
+  if (updates.length === 0) return;
+  const BATCH_SIZE = 200;
+  for (let i = 0; i < updates.length; i += BATCH_SIZE) {
+    const chunk = updates.slice(i, i + BATCH_SIZE);
+    const updateRecords: Record<string, Record<string, unknown>> = {};
+    for (const u of chunk) {
+      updateRecords[u.recordId] = u.fields;
+    }
+    const j = runLark([
+      "base", "+record-batch-update",
+      "--as", "bot",
+      "--base-token", KB_TOKEN,
+      "--table-id", tableId,
+      "--json", JSON.stringify({ update_records: updateRecords }),
+    ]);
+    if (!j.ok) throw new Error(`lark batch update failed: ${JSON.stringify(j).slice(0, 300)}`);
+    const ignoredFields = j.data?.ignored_fields ?? j.ignored_fields ?? [];
+    if (ignoredFields.length > 0) {
+      throw new Error(`lark ignored fields: ${JSON.stringify(ignoredFields)}`);
+    }
+  }
+}
+
 function larkDeleteRecords(tableId: string, recordIds: string[]) {
   if (recordIds.length === 0) return;
   const j = runLark([
@@ -369,6 +393,7 @@ async function upsertGroups(sites: MarketSite[], siteIndex: SiteIndex) {
   let ok = 0, skip = 0, unchanged = 0;
   let sourceDuplicates = 0;
   const creates: Record<string, unknown>[] = [];
+  const updates: { recordId: string; fields: Record<string, unknown> }[] = [];
   const seenSourceKeys = new Set<string>();
   const compareFields = [
     "site_id", "site_name", "group_name", "rate_min", "rate_max", "rate_values",
@@ -380,8 +405,8 @@ async function upsertGroups(sites: MarketSite[], siteIndex: SiteIndex) {
   const VERBOSE = process.env.SYNC_VERBOSE === "1";
   for (const site of sites) {
     siteIdx++;
-    if (siteIdx % 5 === 0 || siteIdx === totalSites || VERBOSE) {
-      log(`  ⏳ 进度 ${siteIdx}/${totalSites} (${site.name}, ${site.groupRows.length} groups) ok=${ok} unchanged=${unchanged} skip=${skip} creates=${creates.length}`);
+    if (siteIdx % 20 === 0 || siteIdx === totalSites || VERBOSE) {
+      log(`  ⏳ 扫描进度 ${siteIdx}/${totalSites} (${site.name}, ${site.groupRows.length} groups) updates=${updates.length} unchanged=${unchanged} creates=${creates.length}`);
     }
     if (!hasSiteId && duplicateSiteNames.has(site.name)) {
       skip += site.groupRows.length;
@@ -414,22 +439,20 @@ async function upsertGroups(sites: MarketSite[], siteIndex: SiteIndex) {
       if (current && DEBUG_DIFF) {
         log(`  Δ ${site.name} / ${g.name}: ${changedFields(current, desiredFields, compareFields).join(", ")}`);
       }
-      if (DRY_RUN) {
-        ok++;
-        continue;
-      }
-      try {
-        await larkUpsert(table.tableId, existingId, desiredFields);
-        ok++;
-      } catch (e) {
-        log(`  ✗ ${site.name} / ${g.name}: ${e}`);
-        skip++;
-      }
-      await sleep(800); // QPS 限流（提防 1.0.79 SDK 偶发 429）
+      updates.push({ recordId: existingId, fields: desiredFields });
     }
   }
+
+  if (DRY_RUN && updates.length > 0) log(`  ~ would update ${updates.length}`);
+  if (!DRY_RUN && updates.length > 0) {
+    log(`  ~ 正在批量更新 ${updates.length} 条变动记录...`);
+    larkBatchUpdate(table.tableId, updates);
+    log(`  ✓ 批量更新完成！`);
+  }
+  ok += updates.length;
+
   if (DRY_RUN && creates.length > 0) log(`  + would create ${creates.length}`);
-  if (!DRY_RUN) await createInBatches(table.tableId, creates);
+  if (!DRY_RUN && creates.length > 0) await createInBatches(table.tableId, creates);
   ok += creates.length;
 
   const sourceSiteIdsWithGroups = new Set(
@@ -493,6 +516,7 @@ async function upsertPerf(perf: MarketPerfSummaryResponse, sites: MarketSite[], 
   const now = formatFeishuDate(perf.generatedAt || new Date());
   let ok = 0, skip = 0, unchanged = 0;
   const creates: Record<string, unknown>[] = [];
+  const updates: { recordId: string; fields: Record<string, unknown> }[] = [];
   const compareFields = [
     "site_id", "site_name", "host", "success_rate", "ttft_p50_ms", "latency_p95_ms",
     "tps_avg", "availability_24h", "availability_7d", "consecutive_failures",
@@ -533,21 +557,19 @@ async function upsertPerf(perf: MarketPerfSummaryResponse, sites: MarketSite[], 
     if (current && DEBUG_DIFF) {
       log(`  Δ ${p.name}: ${changedFields(current, fields, compareFields).join(", ")}`);
     }
-    if (DRY_RUN) {
-      ok++;
-      continue;
-    }
-    try {
-      larkUpsert(table.tableId, existingId, fields);
-      ok++;
-    } catch (e) {
-      log(`  ✗ ${p.name}: ${e}`);
-      skip++;
-    }
-    await sleep(600);
+    updates.push({ recordId: existingId, fields });
   }
+
+  if (DRY_RUN && updates.length > 0) log(`  ~ would update ${updates.length}`);
+  if (!DRY_RUN && updates.length > 0) {
+    log(`  ~ 正在批量更新 ${updates.length} 条 perf 变动记录...`);
+    larkBatchUpdate(table.tableId, updates);
+    log(`  ✓ 批量更新完成！`);
+  }
+  ok += updates.length;
+
   if (DRY_RUN && creates.length > 0) log(`  + would create ${creates.length}`);
-  if (!DRY_RUN) await createInBatches(table.tableId, creates);
+  if (!DRY_RUN && creates.length > 0) await createInBatches(table.tableId, creates);
   ok += creates.length;
   log(`✓ relay_site_perf upsert 完成: ok=${ok} unchanged=${unchanged} skip=${skip}`);
   return { ok, unchanged, skip };
