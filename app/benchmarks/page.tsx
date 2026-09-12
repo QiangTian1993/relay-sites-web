@@ -9,7 +9,7 @@ export const dynamic = "force-static";
 export const metadata: Metadata = {
   title: "大模型评测天梯榜 — 信息杂货铺",
   description:
-    "主流大模型（Claude / GPT / Gemini / GLM / DeepSeek / 通义千问）实测评分、LMSYS 竞技场天梯、SWE-bench Verified 代码缺陷率、AIME 数学奥赛与官方价格横评。",
+    "前沿与主流大模型（GPT-6 / GPT-5.6 / Claude Fable 5 / Claude Opus 4.6 / Claude 3.7 / Gemini 3.0 / DeepSeek / 智谱 GLM / 通义千问）实测评分、LMSYS 竞技场天梯、SWE-bench Verified 代码缺陷率、AIME 数学奥赛与官方价格横评。",
   alternates: { canonical: "/benchmarks" },
 };
 
@@ -34,7 +34,7 @@ export default function BenchmarksPage() {
     "@type": "CollectionPage",
     name: "大模型评测天梯榜",
     description:
-      "主流大模型（Claude 3.7 / OpenAI o3 / Gemini 2.5 / DeepSeek R1 / 智谱 GLM / 通义千问）实测评分、LMSYS 竞技场天梯与工程基准横评。",
+      "主流大模型（GPT-6 Astra / GPT-5.6 / Claude Fable 5 / Claude Opus 4.6 / Gemini 3.0 / DeepSeek R1 / 智谱 GLM / 通义千问）实测评分、LMSYS 竞技场天梯与工程基准横评。",
     url: "https://www.xiuxai.com/relay-index/benchmarks",
     hasPart: records.map((m) => ({
       "@type": "Thing",

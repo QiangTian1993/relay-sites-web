@@ -803,35 +803,35 @@ export default async function Home() {
                 大模型实测天梯 · 性能与价格全景
               </h2>
               <p className="text-zinc-600 text-sm sm:text-base leading-relaxed max-w-2xl mb-6 font-normal">
-                收录 Claude 3.7 / OpenAI o3 / Gemini 2.5 / DeepSeek R1 / 智谱 GLM / 通义千问等主流旗舰的真实客观基准。基于 LMSYS Arena 人类盲测 Elo、SWE-bench Verified 真实代码修复、AIME 数学奥赛与官方价格横向透视。
+                收录 GPT-6 Astra / GPT-5.6 / Claude Fable & Opus / Gemini 3.0 / DeepSeek R1 / 智谱 GLM / 通义千问等前沿主流旗舰的真实客观基准。基于 LMSYS Arena 盲测 Elo、SWE-bench Verified 真实代码缺陷率、AIME 数学奥赛与官方价格全景透视。
               </p>
 
               {/* 3 Top Benchmark Models Preview Cards */}
               <div className="grid sm:grid-cols-3 gap-3">
                 {[
                   {
-                    name: "Claude 3.7 Sonnet",
-                    badge: "代码 SOTA",
-                    metric: "70.3%",
-                    metricLabel: "SWE-bench Verified",
-                    sub: "混合双模 · 128K思考",
-                    color: "text-[#E03E1A]",
-                  },
-                  {
-                    name: "Gemini 2.5 Pro",
-                    badge: "Arena 总分 #1",
-                    metric: "1466.2",
+                    name: "GPT-6 Astra",
+                    badge: "Arena 登顶",
+                    metric: "1486.2",
                     metricLabel: "LMSYS 竞技场 Elo",
-                    sub: "200万上下文 · 霸榜首",
-                    color: "text-blue-600",
+                    sub: "新一代跨模态 · 登顶",
+                    color: "text-emerald-600",
                   },
                   {
-                    name: "OpenAI o3-mini",
-                    badge: "数学奥赛登顶",
-                    metric: "87.3%",
-                    metricLabel: "AIME 2024 竞赛",
-                    sub: "极客超高性价比",
-                    color: "text-emerald-600",
+                    name: "Claude Fable 5",
+                    badge: "长程代码 SOTA",
+                    metric: "77.8%",
+                    metricLabel: "SWE-bench Verified",
+                    sub: "前瞻探索 · 128K输出",
+                    color: "text-orange-600",
+                  },
+                  {
+                    name: "Claude Opus 4.6",
+                    badge: "超重满血旗舰",
+                    metric: "75.4%",
+                    metricLabel: "SWE-bench 修复率",
+                    sub: "满血深思 · 缜密推演",
+                    color: "text-[#E03E1A]",
                   },
                 ].map((item) => (
                   <Link

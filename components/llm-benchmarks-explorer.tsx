@@ -157,7 +157,7 @@ export default function LlmBenchmarksExplorer({ records }: Props) {
               大模型实测天梯榜
             </h1>
             <p className="mt-2 text-xs sm:text-sm text-zinc-600 max-w-3xl leading-relaxed">
-              汇集全球主流旗舰（Claude 3.7 / OpenAI o3 / Gemini 2.5 / DeepSeek R1 / 智谱 GLM / 通义千问）真实测评基准：涵盖 LMSYS Arena 盲测、SWE-bench Verified 真实代码缺陷率、AIME 数学奥赛与官方价格横评。
+              汇集全球前沿旗舰（GPT-6 Astra / GPT-5.6 Sol / Claude Fable 5 & Opus 4.6 / Gemini 3.0 / DeepSeek R1 / 智谱 GLM-5.2 / 通义千问）真实测评基准：涵盖 LMSYS Arena 盲测、SWE-bench Verified 真实代码修复率、AIME 数学奥赛与官方价格横评。
             </p>
           </div>
 
@@ -165,18 +165,18 @@ export default function LlmBenchmarksExplorer({ records }: Props) {
           <div className="flex flex-wrap sm:flex-nowrap items-center gap-3">
             <div className="rounded-2xl border border-zinc-200/80 bg-white/90 p-3.5 shadow-2xs font-mono text-center min-w-[120px]">
               <div className="text-[10px] uppercase text-zinc-400 font-bold">Arena 竞技榜首</div>
-              <div className="text-base font-black text-blue-600 mt-0.5">Gemini 2.5 Pro</div>
-              <div className="text-[11px] text-zinc-500 font-bold">1466.2 Elo</div>
+              <div className="text-base font-black text-emerald-600 mt-0.5">GPT-6 Astra</div>
+              <div className="text-[11px] text-zinc-500 font-bold">1486.2 Elo</div>
             </div>
             <div className="rounded-2xl border border-zinc-200/80 bg-white/90 p-3.5 shadow-2xs font-mono text-center min-w-[120px]">
-              <div className="text-[10px] uppercase text-zinc-400 font-bold">代码实战 SOTA</div>
-              <div className="text-base font-black text-[#E03E1A] mt-0.5">Claude 3.7 Sonnet</div>
-              <div className="text-[11px] text-zinc-500 font-bold">70.3% SWE-bench</div>
+              <div className="text-[10px] uppercase text-zinc-400 font-bold">长程代码 SOTA</div>
+              <div className="text-base font-black text-orange-600 mt-0.5">Claude Fable 5</div>
+              <div className="text-[11px] text-zinc-500 font-bold">77.8% SWE-bench</div>
             </div>
             <div className="rounded-2xl border border-zinc-200/80 bg-white/90 p-3.5 shadow-2xs font-mono text-center min-w-[120px]">
-              <div className="text-[10px] uppercase text-zinc-400 font-bold">数学奥赛登顶</div>
-              <div className="text-base font-black text-emerald-600 mt-0.5">OpenAI o3-mini</div>
-              <div className="text-[11px] text-zinc-500 font-bold">87.3% AIME 2024</div>
+              <div className="text-[10px] uppercase text-zinc-400 font-bold">超重满血旗舰</div>
+              <div className="text-base font-black text-[#E03E1A] mt-0.5">Claude Opus 4.6</div>
+              <div className="text-[11px] text-zinc-500 font-bold">75.4% 代码修复</div>
             </div>
           </div>
         </div>
