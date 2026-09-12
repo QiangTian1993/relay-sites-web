@@ -25,7 +25,8 @@ import {
   Star,
   Award,
   ShieldCheck,
-  TrendingUp
+  TrendingUp,
+  Flame
 } from "lucide-react";
 import type { ModelBenchmarkRecord } from "@/lib/benchmarks";
 import { getModelComprehensiveVerdict } from "@/lib/benchmarks";
@@ -338,22 +339,22 @@ export default function LlmBenchmarksExplorer({ records }: Props) {
               </p>
             </div>
 
-            {/* 6. 中转站避坑金律 */}
+            {/* 6. 全模型工程落地与调用踩坑金律 */}
             <div className="rounded-2xl border border-rose-200/70 bg-rose-50/30 p-4 shadow-2xs space-y-2">
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-1.5 font-bold text-rose-800">
-                  <span className="text-sm">🛡️</span>
-                  <span>中转站实测避坑金律</span>
+                  <span className="text-sm">⚡</span>
+                  <span>实操踩坑指北 · 通用避坑金律</span>
                 </span>
                 <span className="px-2 py-0.5 rounded bg-rose-100 text-rose-800 text-[10px] font-bold border border-rose-200">
-                  验真必看
+                  工程必读
                 </span>
               </div>
               <div className="text-zinc-900 font-bold text-sm font-sans">
-                警惕 GPT-5.6 偷换 & Fable 假路由
+                思考截断 · 温度陷阱 · 超时与真伪
               </div>
               <p className="text-zinc-600 font-sans text-[11.5px] leading-relaxed">
-                中转站标称 <strong>GPT-5.6 Sol</strong> 极易被偷换为低成本的 Terra 甚至 Luna（建议进 Module 05 验货台测 Juice 指纹）；高倍率 <strong>Fable 5</strong> 需核验思考深度。
+                ① <strong>思考模型切勿乱设 temp=0</strong>（Claude 3.7 需固定 1.0，DeepSeek-R1 建议 0.6，否则逻辑退化死循环）；② <strong>max_tokens 需放宽至 8K~16K</strong>（防思考占满预算截断）；③ <strong>TTFT 长首字超时需调至 60s+</strong> 并剥离 &lt;think&gt; 标签防 JSON 解析崩溃。
               </p>
             </div>
           </div>
@@ -586,22 +587,58 @@ export default function LlmBenchmarksExplorer({ records }: Props) {
                     </p>
                   </div>
 
-                  {/* Strengths & Caveats */}
-                  <div className="mt-4 space-y-2 text-xs">
-                    <div className="rounded-xl bg-emerald-50/60 border border-emerald-100/80 p-2.5 text-zinc-700 leading-relaxed">
-                      <span className="font-bold text-emerald-800 mr-1 flex items-center gap-1">
-                        <CheckCircle2 className="inline h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                        核心优势:
-                      </span>
-                      <span className="text-zinc-600">{model.核心优势}</span>
+                  {/* 优势、短板与落地踩坑指北 */}
+                  <div className="mt-4 space-y-2.5 text-xs font-sans">
+                    {/* 1. 核心优势 */}
+                    <div className="rounded-xl bg-emerald-50/60 border border-emerald-100/80 p-2.5 text-zinc-700">
+                      <div className="font-bold text-emerald-900 flex items-center gap-1.5 mb-1.5 font-mono text-[11px]">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                        <span>核心优势 (STRENGTHS)</span>
+                      </div>
+                      <ul className="space-y-1 text-zinc-600 text-[11.5px] leading-relaxed">
+                        {verdict.strengths?.map((s, idx) => (
+                          <li key={idx} className="flex items-start gap-1.5">
+                            <span className="text-emerald-500 font-bold leading-none mt-1 shrink-0">•</span>
+                            <span>{s}</span>
+                          </li>
+                        )) || (
+                          <li>{model.核心优势}</li>
+                        )}
+                      </ul>
                     </div>
 
-                    <div className="rounded-xl bg-amber-50/60 border border-amber-100/80 p-2.5 text-zinc-700 leading-relaxed">
-                      <span className="font-bold text-amber-800 mr-1 flex items-center gap-1">
-                        <AlertTriangle className="inline h-3.5 w-3.5 text-amber-600 shrink-0" />
-                        短板与踩坑:
-                      </span>
-                      <span className="text-zinc-600">{model.短板风险}</span>
+                    {/* 2. 明显短板与局限 */}
+                    <div className="rounded-xl bg-rose-50/60 border border-rose-100/80 p-2.5 text-zinc-700">
+                      <div className="font-bold text-rose-900 flex items-center gap-1.5 mb-1.5 font-mono text-[11px]">
+                        <AlertTriangle className="h-3.5 w-3.5 text-rose-600 shrink-0" />
+                        <span>明显短板与局限 (WEAKNESSES)</span>
+                      </div>
+                      <ul className="space-y-1 text-zinc-600 text-[11.5px] leading-relaxed">
+                        {verdict.weaknesses?.map((w, idx) => (
+                          <li key={idx} className="flex items-start gap-1.5">
+                            <span className="text-rose-500 font-bold leading-none mt-1 shrink-0">•</span>
+                            <span>{w}</span>
+                          </li>
+                        )) || (
+                          <li>{model.短板风险}</li>
+                        )}
+                      </ul>
+                    </div>
+
+                    {/* 3. 实操踩坑指北 */}
+                    <div className="rounded-xl bg-amber-50/70 border border-amber-200/80 p-2.5 text-zinc-700">
+                      <div className="font-bold text-amber-900 flex items-center gap-1.5 mb-1.5 font-mono text-[11px]">
+                        <Flame className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                        <span>实操避坑指北 (ENGINEERING PITFALLS)</span>
+                      </div>
+                      <ul className="space-y-1.5 text-zinc-600 text-[11px] leading-relaxed">
+                        {verdict.pitfalls?.map((p, idx) => (
+                          <li key={idx} className="flex items-start gap-1.5">
+                            <span className="text-amber-500 font-bold leading-none mt-0.5 shrink-0">⚡</span>
+                            <span>{p}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   </div>
 
@@ -693,9 +730,15 @@ export default function LlmBenchmarksExplorer({ records }: Props) {
                         <span>{verdict.score}</span>
                       </span>
                     </td>
-                    <td className="p-3.5 font-sans text-xs text-zinc-700">
+                    <td className="p-3.5 font-sans text-xs text-zinc-700 max-w-[300px]">
                       <div className="font-bold text-zinc-900 line-clamp-1">{verdict.tagline}</div>
                       <div className="text-[11px] text-zinc-500 line-clamp-1 mt-0.5">{verdict.summary}</div>
+                      {verdict.pitfalls && verdict.pitfalls.length > 0 && (
+                        <div className="mt-1 text-[10.5px] text-amber-800 line-clamp-1 bg-amber-50/80 px-1.5 py-0.5 rounded border border-amber-200/50">
+                          <span className="font-bold">⚡ 避坑: </span>
+                          <span>{verdict.pitfalls[0]}</span>
+                        </div>
+                      )}
                     </td>
                     <td className="p-3.5 text-right font-black text-zinc-900">
                       {m.LMSYS总榜Elo || "—"}
@@ -925,20 +968,58 @@ export default function LlmBenchmarksExplorer({ records }: Props) {
                     ))}
                   </tr>
                   <tr>
-                    <td className="p-3 text-zinc-400 font-bold">核心优势</td>
-                    {comparedRecords.map((r) => (
-                      <td key={r.模型名称} className="p-3 text-zinc-700 leading-relaxed">
-                        {r.核心优势}
-                      </td>
-                    ))}
+                    <td className="p-3 text-zinc-400 font-bold">核心优势 (Strengths)</td>
+                    {comparedRecords.map((r) => {
+                      const v = getModelComprehensiveVerdict(r);
+                      return (
+                        <td key={r.模型名称} className="p-3 text-zinc-700 leading-relaxed font-sans text-xs">
+                          <ul className="space-y-1">
+                            {v.strengths?.map((s, idx) => (
+                              <li key={idx} className="flex items-start gap-1 text-emerald-800">
+                                <span className="text-emerald-500 font-bold shrink-0">•</span>
+                                <span>{s}</span>
+                              </li>
+                            )) || <li>{r.核心优势}</li>}
+                          </ul>
+                        </td>
+                      );
+                    })}
                   </tr>
                   <tr className="bg-zinc-50/50">
-                    <td className="p-3 text-zinc-400 font-bold">短板与踩坑</td>
-                    {comparedRecords.map((r) => (
-                      <td key={r.模型名称} className="p-3 text-zinc-600 leading-relaxed">
-                        {r.短板风险}
-                      </td>
-                    ))}
+                    <td className="p-3 text-zinc-400 font-bold">明显短板 (Weaknesses)</td>
+                    {comparedRecords.map((r) => {
+                      const v = getModelComprehensiveVerdict(r);
+                      return (
+                        <td key={r.模型名称} className="p-3 text-zinc-700 leading-relaxed font-sans text-xs">
+                          <ul className="space-y-1">
+                            {v.weaknesses?.map((w, idx) => (
+                              <li key={idx} className="flex items-start gap-1 text-rose-800">
+                                <span className="text-rose-500 font-bold shrink-0">•</span>
+                                <span>{w}</span>
+                              </li>
+                            )) || <li>{r.短板风险}</li>}
+                          </ul>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                  <tr>
+                    <td className="p-3 text-zinc-400 font-bold">实操避坑 (Pitfalls)</td>
+                    {comparedRecords.map((r) => {
+                      const v = getModelComprehensiveVerdict(r);
+                      return (
+                        <td key={r.模型名称} className="p-3 text-zinc-700 leading-relaxed font-sans text-xs bg-amber-50/30">
+                          <ul className="space-y-1.5">
+                            {v.pitfalls?.map((p, idx) => (
+                              <li key={idx} className="flex items-start gap-1 text-amber-900 text-[11px]">
+                                <span className="text-amber-500 font-bold shrink-0">⚡</span>
+                                <span>{p}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </td>
+                      );
+                    })}
                   </tr>
                   <tr>
                     <td className="p-3 text-zinc-400 font-bold">推荐适用场景</td>
