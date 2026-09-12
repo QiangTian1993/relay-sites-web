@@ -3,34 +3,14 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import type { ModelBenchmarkRecord } from "../lib/benchmarks";
+
+export type { ModelBenchmarkRecord };
 
 const rawKbToken = process.env.FEISHU_BASE_TOKEN ?? process.env.FEISHU_KB_TOKEN ?? process.env.KB_TOKEN;
 const KB_TOKEN = (rawKbToken && !rawKbToken.includes("…")) ? rawKbToken : "SchGbU6UDaT5q9sDjHTct79Sn9d";
 const LARK_AS = process.env.LARK_AS ?? "bot";
 const TABLE_NAME = "llm_benchmarks";
-
-export interface ModelBenchmarkRecord {
-  模型名称: string;
-  厂商: string;
-  家族系列: string;
-  模型定位: string;
-  梯队评级: string;
-  LMSYS总榜Elo: number;
-  LMSYS代码Elo: number;
-  LMSYS数学Elo: number;
-  SWE_bench_Verified: number;
-  AIME_2024: number;
-  GPQA_Diamond: number;
-  MATH_500: number;
-  上下文窗口: string;
-  最大输出: string;
-  输入价格_美元: number;
-  输出价格_美元: number;
-  核心优势: string;
-  短板风险: string;
-  推荐场景: string;
-  官方发布时间: string;
-}
 
 export const BENCHMARK_MODELS: ModelBenchmarkRecord[] = [
   {
@@ -633,7 +613,14 @@ async function main() {
   console.log(`==> 6. 已同步生成本地缓存 data/llm_benchmarks.json (${BENCHMARK_MODELS.length} 款模型)`);
 }
 
-main().catch((err) => {
-  console.error("执行失败:", err);
-  process.exit(1);
-});
+const isDirectRun = process.argv[1] && (
+  process.argv[1].endsWith("sync-llm-benchmarks.ts") ||
+  process.argv[1].endsWith("sync-llm-benchmarks.js")
+);
+
+if (isDirectRun) {
+  main().catch((err) => {
+    console.error("执行失败:", err);
+    process.exit(1);
+  });
+}

@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import fs from "node:fs";
 import path from "node:path";
 import LlmBenchmarksExplorer from "@/components/llm-benchmarks-explorer";
-import type { ModelBenchmarkRecord } from "@/scripts/sync-llm-benchmarks";
-import { BENCHMARK_MODELS } from "@/scripts/sync-llm-benchmarks";
+import type { ModelBenchmarkRecord } from "@/lib/benchmarks";
 
 export const dynamic = "force-static";
 
@@ -21,10 +20,10 @@ function loadBenchmarks(): ModelBenchmarkRecord[] {
       const raw = fs.readFileSync(filePath, "utf-8");
       return JSON.parse(raw);
     } catch {
-      return BENCHMARK_MODELS;
+      return [];
     }
   }
-  return BENCHMARK_MODELS;
+  return [];
 }
 
 export default function BenchmarksPage() {

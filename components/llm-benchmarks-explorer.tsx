@@ -22,7 +22,7 @@ import {
   ChevronDown,
   Info
 } from "lucide-react";
-import type { ModelBenchmarkRecord } from "@/scripts/sync-llm-benchmarks";
+import type { ModelBenchmarkRecord } from "@/lib/benchmarks";
 
 interface Props {
   records: ModelBenchmarkRecord[];
