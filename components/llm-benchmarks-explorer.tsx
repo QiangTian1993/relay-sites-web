@@ -44,6 +44,283 @@ type SortKey =
   | "MATH_500"
   | "输入价格_美元";
 
+// 梯队颜色映射
+const getTierBadge = (tier: string) => {
+  if (tier.startsWith("S+")) {
+    return "bg-rose-50 text-rose-700 border-rose-200/80";
+  }
+  if (tier.startsWith("S")) {
+    return "bg-amber-50 text-amber-700 border-amber-200/80";
+  }
+  if (tier.startsWith("A+")) {
+    return "bg-indigo-50 text-indigo-700 border-indigo-200/80";
+  }
+  return "bg-emerald-50 text-emerald-700 border-emerald-200/80";
+};
+
+// 家族配色
+const getFamilyBadge = (fam: string) => {
+  switch (fam) {
+    case "Claude":
+      return "bg-orange-50 text-orange-700 border-orange-200/80";
+    case "GPT":
+      return "bg-emerald-50 text-emerald-700 border-emerald-200/80";
+    case "Gemini":
+      return "bg-blue-50 text-blue-700 border-blue-200/80";
+    case "DeepSeek":
+      return "bg-cyan-50 text-cyan-700 border-cyan-200/80";
+    case "GLM":
+      return "bg-purple-50 text-purple-700 border-purple-200/80";
+    case "Qwen":
+      return "bg-indigo-50 text-indigo-700 border-indigo-200/80";
+    case "Grok":
+      return "bg-zinc-100 text-zinc-800 border-zinc-300";
+    default:
+      return "bg-zinc-50 text-zinc-700 border-zinc-200";
+  }
+};
+
+interface ModelCardProps {
+  model: ModelBenchmarkRecord;
+  isCompared: boolean;
+  onToggleCompare: () => void;
+  density: "detailed" | "compact";
+}
+
+function ModelCard({
+  model,
+  isCompared,
+  onToggleCompare,
+  density,
+}: ModelCardProps) {
+  const [activeTab, setActiveTab] = useState<"pitfalls" | "strengths" | "weaknesses">("pitfalls");
+  const verdict = useMemo(() => getModelComprehensiveVerdict(model), [model]);
+
+  return (
+    <article
+      className={`group relative flex flex-col justify-between rounded-3xl border transition-all duration-200 bg-white p-5 sm:p-6 shadow-2xs hover:shadow-md ${
+        isCompared ? "border-[#E03E1A] ring-1 ring-[#E03E1A]/20" : "border-zinc-200/80 hover:border-zinc-300"
+      }`}
+    >
+      <div>
+        {/* Card Header: 家族 + 梯队 + 综合评分 + 厂商 */}
+        <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-zinc-100">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className={`px-2 py-0.5 rounded-md font-mono text-[10.5px] font-bold border ${getFamilyBadge(model.家族系列)}`}>
+              {model.家族系列}
+            </span>
+            <span className={`px-2 py-0.5 rounded-md font-mono text-[10.5px] font-bold border ${getTierBadge(model.梯队评级)}`}>
+              {model.梯队评级}
+            </span>
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-md font-mono text-[10.5px] font-bold bg-amber-500/10 text-amber-800 border border-amber-500/25">
+              <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+              <span>综合 {verdict.score}</span>
+            </span>
+          </div>
+          <span className="font-mono text-xs text-zinc-400">
+            {model.厂商}
+          </span>
+        </div>
+
+        {/* Title & Positioning */}
+        <div className="flex items-baseline justify-between gap-2">
+          <h3 className="text-lg font-bold text-zinc-950 group-hover:text-[#E03E1A] transition-colors leading-snug">
+            {model.模型名称}
+          </h3>
+        </div>
+        <div className="mt-1 flex items-center gap-2 font-mono text-[11px] text-zinc-500">
+          <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-zinc-600 font-bold">
+            {model.模型定位}
+          </span>
+          <span>• 上下文 {model.上下文窗口}</span>
+          <span>• 输出 {model.最大输出}</span>
+        </div>
+
+        {/* Benchmarks Matrix Pill Box */}
+        <div className="mt-4 grid grid-cols-3 gap-2 rounded-2xl border border-zinc-100 bg-zinc-50/70 p-3 font-mono text-center">
+          <div className="flex flex-col justify-center">
+            <div className="text-[10px] uppercase text-zinc-400 font-bold">Arena 总分</div>
+            <div className="text-sm font-black text-zinc-900 mt-0.5">
+              {model.LMSYS总榜Elo ? `${model.LMSYS总榜Elo}` : "—"}
+            </div>
+            <div className="text-[9.5px] text-zinc-400">
+              {model.LMSYS代码Elo ? `代码 ${model.LMSYS代码Elo}` : ""}
+            </div>
+          </div>
+          <div className="flex flex-col justify-center border-x border-zinc-200/50 px-1">
+            <div className="text-[10px] uppercase text-zinc-400 font-bold">SWE-bench</div>
+            <div className="text-sm font-black text-[#E03E1A] mt-0.5">
+              {model.SWE_bench_Verified ? `${model.SWE_bench_Verified}%` : "—"}
+            </div>
+            <div className="text-[9.5px] text-zinc-400">真实代码缺陷</div>
+          </div>
+          <div className="flex flex-col justify-center">
+            <div className="text-[10px] uppercase text-zinc-400 font-bold">AIME 奥数</div>
+            <div className="text-sm font-black text-blue-600 mt-0.5">
+              {model.AIME_2024 ? `${model.AIME_2024}%` : "—"}
+            </div>
+            <div className="text-[9.5px] text-zinc-400">
+              {model.GPQA_Diamond ? `GPQA ${model.GPQA_Diamond}%` : ""}
+            </div>
+          </div>
+        </div>
+
+        {/* 掌柜综合评价与研判断言 */}
+        {density === "compact" ? (
+          <div className="mt-3 flex items-center gap-1.5 rounded-xl border border-amber-200/50 bg-amber-50/40 px-2.5 py-1.5 text-xs text-zinc-700">
+            <Sparkles className="h-3.5 w-3.5 text-[#E03E1A] shrink-0" />
+            <span className="font-bold text-zinc-900 shrink-0 text-[11px]">断言:</span>
+            <span className="text-[#E03E1A] font-semibold text-[11px] truncate">{verdict.tagline}</span>
+          </div>
+        ) : (
+          <div className="mt-3 rounded-2xl border border-amber-200/60 bg-gradient-to-r from-amber-50/50 via-white to-orange-50/30 p-2.5 sm:p-3 shadow-2xs">
+            <div className="flex items-center gap-1.5 text-[11px] font-bold text-zinc-900">
+              <Sparkles className="h-3.5 w-3.5 text-[#E03E1A] shrink-0" />
+              <span>综合断言:</span>
+              <span className="text-[#E03E1A] font-black">{verdict.tagline}</span>
+            </div>
+            <p className="mt-1 text-xs text-zinc-600 leading-relaxed font-sans line-clamp-2" title={verdict.summary}>
+              {verdict.summary}
+            </p>
+          </div>
+        )}
+
+        {/* 详细模式：微型三态分段器 (优势 / 短板 / 避坑) */}
+        {density === "detailed" && (
+          <div className="mt-3.5">
+            {/* 分段器 Tab 控制条 */}
+            <div className="grid grid-cols-3 gap-1 rounded-xl bg-zinc-100/90 p-1 font-mono text-[11px]">
+              <button
+                type="button"
+                onClick={() => setActiveTab("pitfalls")}
+                className={`flex items-center justify-center gap-1 py-1 px-1 rounded-lg font-bold transition-all text-center ${
+                  activeTab === "pitfalls"
+                    ? "bg-amber-500 text-white shadow-xs"
+                    : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200/60"
+                }`}
+              >
+                <Flame className="h-3 w-3 shrink-0" />
+                <span>避坑 ({verdict.pitfalls?.length || 0})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("strengths")}
+                className={`flex items-center justify-center gap-1 py-1 px-1 rounded-lg font-bold transition-all text-center ${
+                  activeTab === "strengths"
+                    ? "bg-emerald-600 text-white shadow-xs"
+                    : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200/60"
+                }`}
+              >
+                <CheckCircle2 className="h-3 w-3 shrink-0" />
+                <span>优势 ({verdict.strengths?.length || 0})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("weaknesses")}
+                className={`flex items-center justify-center gap-1 py-1 px-1 rounded-lg font-bold transition-all text-center ${
+                  activeTab === "weaknesses"
+                    ? "bg-rose-600 text-white shadow-xs"
+                    : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200/60"
+                }`}
+              >
+                <AlertTriangle className="h-3 w-3 shrink-0" />
+                <span>短板 ({verdict.weaknesses?.length || 0})</span>
+              </button>
+            </div>
+
+            {/* 激活 Tab 面板 */}
+            <div className="mt-2 min-h-[96px]">
+              {activeTab === "pitfalls" && (
+                <div className="rounded-xl bg-amber-50/70 border border-amber-200/80 p-2.5 text-zinc-700">
+                  <div className="font-bold text-amber-900 flex items-center gap-1.5 mb-1 font-mono text-[10.5px]">
+                    <Flame className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                    <span>实操避坑指北 (ENGINEERING PITFALLS)</span>
+                  </div>
+                  <ul className="space-y-1 text-zinc-700 text-[11px] leading-relaxed">
+                    {verdict.pitfalls?.map((p, idx) => (
+                      <li key={idx} className="flex items-start gap-1.5">
+                        <span className="text-amber-600 font-bold shrink-0 mt-0.5">⚡</span>
+                        <span>{p}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {activeTab === "strengths" && (
+                <div className="rounded-xl bg-emerald-50/70 border border-emerald-200/80 p-2.5 text-zinc-700">
+                  <div className="font-bold text-emerald-900 flex items-center gap-1.5 mb-1 font-mono text-[10.5px]">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                    <span>核心优势 (STRENGTHS)</span>
+                  </div>
+                  <ul className="space-y-1 text-zinc-700 text-[11.5px] leading-relaxed">
+                    {verdict.strengths?.map((s, idx) => (
+                      <li key={idx} className="flex items-start gap-1.5">
+                        <span className="text-emerald-600 font-bold shrink-0 mt-0.5">•</span>
+                        <span>{s}</span>
+                      </li>
+                    )) || <li>{model.核心优势}</li>}
+                  </ul>
+                </div>
+              )}
+
+              {activeTab === "weaknesses" && (
+                <div className="rounded-xl bg-rose-50/70 border border-rose-200/80 p-2.5 text-zinc-700">
+                  <div className="font-bold text-rose-900 flex items-center gap-1.5 mb-1 font-mono text-[10.5px]">
+                    <AlertTriangle className="h-3.5 w-3.5 text-rose-600 shrink-0" />
+                    <span>明显短板与局限 (WEAKNESSES)</span>
+                  </div>
+                  <ul className="space-y-1 text-zinc-700 text-[11.5px] leading-relaxed">
+                    {verdict.weaknesses?.map((w, idx) => (
+                      <li key={idx} className="flex items-start gap-1.5">
+                        <span className="text-rose-600 font-bold shrink-0 mt-0.5">•</span>
+                        <span>{w}</span>
+                      </li>
+                    )) || <li>{model.短板风险}</li>}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            {/* 推荐场景 */}
+            <div className="mt-2.5 font-mono text-[11px] text-zinc-500 truncate" title={model.推荐场景}>
+              <span className="font-bold text-zinc-700">推荐场景: </span>
+              <span>{model.推荐场景}</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Card Footer: Pricing & Compare Action */}
+      <div className="mt-4 pt-3 border-t border-zinc-100 flex items-center justify-between font-mono text-xs">
+        <div className="flex items-baseline gap-1">
+          <span className="text-zinc-400 text-[10px]">输入</span>
+          <span className="font-bold text-zinc-900">
+            ${model.输入价格_美元.toFixed(2)}
+          </span>
+          <span className="text-zinc-400 text-[10px]">/ 输出</span>
+          <span className="font-bold text-zinc-900">
+            ${model.输出价格_美元.toFixed(2)}
+          </span>
+          <span className="text-zinc-400 text-[9px]">/1M</span>
+        </div>
+
+        <button
+          onClick={onToggleCompare}
+          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+            isCompared
+              ? "bg-[#E03E1A] text-white"
+              : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900"
+          }`}
+        >
+          <Scale className="h-3 w-3" />
+          <span>{isCompared ? "已选" : "对比"}</span>
+        </button>
+      </div>
+    </article>
+  );
+}
+
 export default function LlmBenchmarksExplorer({ records }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFamily, setSelectedFamily] = useState<string>("全部");
@@ -51,6 +328,7 @@ export default function LlmBenchmarksExplorer({ records }: Props) {
   const [sortKey, setSortKey] = useState<SortKey>("综合评分");
   const [sortAsc, setSortAsc] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+  const [density, setDensity] = useState<"detailed" | "compact">("detailed");
   const [compareList, setCompareList] = useState<string[]>([]);
   const [showCompareModal, setShowCompareModal] = useState<boolean>(false);
   const [showVerdictGuide, setShowVerdictGuide] = useState<boolean>(true);
@@ -128,41 +406,6 @@ export default function LlmBenchmarksExplorer({ records }: Props) {
     return compareList.map((name) => records.find((r) => r.模型名称 === name)!).filter(Boolean);
   }, [compareList, records]);
 
-  // 梯队颜色映射
-  const getTierBadge = (tier: string) => {
-    if (tier.startsWith("S+")) {
-      return "bg-rose-50 text-rose-700 border-rose-200/80";
-    }
-    if (tier.startsWith("S")) {
-      return "bg-amber-50 text-amber-700 border-amber-200/80";
-    }
-    if (tier.startsWith("A+")) {
-      return "bg-indigo-50 text-indigo-700 border-indigo-200/80";
-    }
-    return "bg-emerald-50 text-emerald-700 border-emerald-200/80";
-  };
-
-  // 家族配色
-  const getFamilyBadge = (fam: string) => {
-    switch (fam) {
-      case "Claude":
-        return "bg-orange-50 text-orange-700 border-orange-200/80";
-      case "GPT":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200/80";
-      case "Gemini":
-        return "bg-blue-50 text-blue-700 border-blue-200/80";
-      case "DeepSeek":
-        return "bg-cyan-50 text-cyan-700 border-cyan-200/80";
-      case "GLM":
-        return "bg-purple-50 text-purple-700 border-purple-200/80";
-      case "Qwen":
-        return "bg-indigo-50 text-indigo-700 border-indigo-200/80";
-      case "Grok":
-        return "bg-zinc-100 text-zinc-800 border-zinc-300";
-      default:
-        return "bg-zinc-50 text-zinc-700 border-zinc-200";
-    }
-  };
 
   return (
     <div className="space-y-6 pb-20">
@@ -485,6 +728,34 @@ export default function LlmBenchmarksExplorer({ records }: Props) {
                 <TableIcon className="h-3.5 w-3.5" />
               </button>
             </div>
+
+            {/* 密度切换（仅在网格视图有效） */}
+            {viewMode === "grid" && (
+              <div className="flex items-center rounded-xl border border-zinc-200 bg-zinc-100/80 p-0.5 text-xs font-mono">
+                <button
+                  onClick={() => setDensity("detailed")}
+                  className={`px-2.5 py-1 rounded-lg transition-colors font-bold ${
+                    density === "detailed"
+                      ? "bg-white shadow-2xs text-[#E03E1A]"
+                      : "text-zinc-500 hover:text-zinc-800"
+                  }`}
+                  title="深度研判模式：显示优势/短板/避坑微型分段器"
+                >
+                  深度
+                </button>
+                <button
+                  onClick={() => setDensity("compact")}
+                  className={`px-2.5 py-1 rounded-lg transition-colors font-bold ${
+                    density === "compact"
+                      ? "bg-white shadow-2xs text-[#E03E1A]"
+                      : "text-zinc-500 hover:text-zinc-800"
+                  }`}
+                  title="极简紧凑模式：仅保留核心指标与价格"
+                >
+                  紧凑
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -508,183 +779,15 @@ export default function LlmBenchmarksExplorer({ records }: Props) {
         </div>
       ) : viewMode === "grid" ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredRecords.map((model) => {
-            const isCompared = compareList.includes(model.模型名称);
-            const verdict = getModelComprehensiveVerdict(model);
-
-            return (
-              <article
-                key={model.模型名称}
-                className={`group relative flex flex-col justify-between rounded-3xl border transition-all duration-200 bg-white p-5 sm:p-6 shadow-2xs hover:shadow-md ${
-                  isCompared ? "border-[#E03E1A] ring-1 ring-[#E03E1A]/20" : "border-zinc-200/80 hover:border-zinc-300"
-                }`}
-              >
-                <div>
-                  {/* Card Header: 家族 + 梯队 + 综合评分 + 厂商 */}
-                  <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-zinc-100">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className={`px-2 py-0.5 rounded-md font-mono text-[10.5px] font-bold border ${getFamilyBadge(model.家族系列)}`}>
-                        {model.家族系列}
-                      </span>
-                      <span className={`px-2 py-0.5 rounded-md font-mono text-[10.5px] font-bold border ${getTierBadge(model.梯队评级)}`}>
-                        {model.梯队评级}
-                      </span>
-                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-md font-mono text-[10.5px] font-bold bg-amber-500/10 text-amber-800 border border-amber-500/25">
-                        <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
-                        <span>综合 {verdict.score}</span>
-                      </span>
-                    </div>
-                    <span className="font-mono text-xs text-zinc-400">
-                      {model.厂商}
-                    </span>
-                  </div>
-
-                  {/* Title & Positioning */}
-                  <div className="flex items-baseline justify-between gap-2">
-                    <h3 className="text-lg font-bold text-zinc-950 group-hover:text-[#E03E1A] transition-colors leading-snug">
-                      {model.模型名称}
-                    </h3>
-                  </div>
-                  <div className="mt-1 flex items-center gap-2 font-mono text-[11px] text-zinc-500">
-                    <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-zinc-600 font-bold">
-                      {model.模型定位}
-                    </span>
-                    <span>• 上下文 {model.上下文窗口}</span>
-                    <span>• 输出 {model.最大输出}</span>
-                  </div>
-
-                  {/* Benchmarks Matrix Pill Box */}
-                  <div className="mt-4 grid grid-cols-3 gap-2 rounded-2xl border border-zinc-100 bg-zinc-50/70 p-3 font-mono text-center">
-                    <div className="flex flex-col justify-center">
-                      <div className="text-[10px] uppercase text-zinc-400 font-bold">Arena 总分</div>
-                      <div className="text-sm font-black text-zinc-900 mt-0.5">
-                        {model.LMSYS总榜Elo ? `${model.LMSYS总榜Elo}` : "—"}
-                      </div>
-                      <div className="text-[9.5px] text-zinc-400">
-                        {model.LMSYS代码Elo ? `代码 ${model.LMSYS代码Elo}` : ""}
-                      </div>
-                    </div>
-                    <div className="flex flex-col justify-center border-x border-zinc-200/50 px-1">
-                      <div className="text-[10px] uppercase text-zinc-400 font-bold">SWE-bench</div>
-                      <div className="text-sm font-black text-[#E03E1A] mt-0.5">
-                        {model.SWE_bench_Verified ? `${model.SWE_bench_Verified}%` : "—"}
-                      </div>
-                      <div className="text-[9.5px] text-zinc-400">真实代码缺陷</div>
-                    </div>
-                    <div className="flex flex-col justify-center">
-                      <div className="text-[10px] uppercase text-zinc-400 font-bold">AIME 奥数</div>
-                      <div className="text-sm font-black text-blue-600 mt-0.5">
-                        {model.AIME_2024 ? `${model.AIME_2024}%` : "—"}
-                      </div>
-                      <div className="text-[9.5px] text-zinc-400">
-                        {model.GPQA_Diamond ? `GPQA ${model.GPQA_Diamond}%` : ""}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 掌柜综合评价与研判断言 */}
-                  <div className="mt-3.5 rounded-2xl border border-amber-200/60 bg-gradient-to-r from-amber-50/50 via-white to-orange-50/30 p-3 shadow-2xs">
-                    <div className="flex items-center gap-1.5 text-[11px] font-bold text-zinc-900">
-                      <Sparkles className="h-3.5 w-3.5 text-[#E03E1A] shrink-0" />
-                      <span>综合断言:</span>
-                      <span className="text-[#E03E1A] font-black">{verdict.tagline}</span>
-                    </div>
-                    <p className="mt-1 text-xs text-zinc-600 leading-relaxed font-sans">
-                      {verdict.summary}
-                    </p>
-                  </div>
-
-                  {/* 优势、短板与落地踩坑指北 */}
-                  <div className="mt-4 space-y-2.5 text-xs font-sans">
-                    {/* 1. 核心优势 */}
-                    <div className="rounded-xl bg-emerald-50/60 border border-emerald-100/80 p-2.5 text-zinc-700">
-                      <div className="font-bold text-emerald-900 flex items-center gap-1.5 mb-1.5 font-mono text-[11px]">
-                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                        <span>核心优势 (STRENGTHS)</span>
-                      </div>
-                      <ul className="space-y-1 text-zinc-600 text-[11.5px] leading-relaxed">
-                        {verdict.strengths?.map((s, idx) => (
-                          <li key={idx} className="flex items-start gap-1.5">
-                            <span className="text-emerald-500 font-bold leading-none mt-1 shrink-0">•</span>
-                            <span>{s}</span>
-                          </li>
-                        )) || (
-                          <li>{model.核心优势}</li>
-                        )}
-                      </ul>
-                    </div>
-
-                    {/* 2. 明显短板与局限 */}
-                    <div className="rounded-xl bg-rose-50/60 border border-rose-100/80 p-2.5 text-zinc-700">
-                      <div className="font-bold text-rose-900 flex items-center gap-1.5 mb-1.5 font-mono text-[11px]">
-                        <AlertTriangle className="h-3.5 w-3.5 text-rose-600 shrink-0" />
-                        <span>明显短板与局限 (WEAKNESSES)</span>
-                      </div>
-                      <ul className="space-y-1 text-zinc-600 text-[11.5px] leading-relaxed">
-                        {verdict.weaknesses?.map((w, idx) => (
-                          <li key={idx} className="flex items-start gap-1.5">
-                            <span className="text-rose-500 font-bold leading-none mt-1 shrink-0">•</span>
-                            <span>{w}</span>
-                          </li>
-                        )) || (
-                          <li>{model.短板风险}</li>
-                        )}
-                      </ul>
-                    </div>
-
-                    {/* 3. 实操踩坑指北 */}
-                    <div className="rounded-xl bg-amber-50/70 border border-amber-200/80 p-2.5 text-zinc-700">
-                      <div className="font-bold text-amber-900 flex items-center gap-1.5 mb-1.5 font-mono text-[11px]">
-                        <Flame className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-                        <span>实操避坑指北 (ENGINEERING PITFALLS)</span>
-                      </div>
-                      <ul className="space-y-1.5 text-zinc-600 text-[11px] leading-relaxed">
-                        {verdict.pitfalls?.map((p, idx) => (
-                          <li key={idx} className="flex items-start gap-1.5">
-                            <span className="text-amber-500 font-bold leading-none mt-0.5 shrink-0">⚡</span>
-                            <span>{p}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-
-                  {/* Best Used For */}
-                  <div className="mt-3 font-mono text-[11px] text-zinc-500">
-                    <span className="font-bold text-zinc-700">推荐场景: </span>
-                    <span>{model.推荐场景}</span>
-                  </div>
-                </div>
-
-                {/* Card Footer: Pricing & Compare Action */}
-                <div className="mt-5 pt-3.5 border-t border-zinc-100 flex items-center justify-between font-mono text-xs">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-zinc-400 text-[10px]">输入</span>
-                    <span className="font-bold text-zinc-900">
-                      ${model.输入价格_美元.toFixed(2)}
-                    </span>
-                    <span className="text-zinc-400 text-[10px]">/ 输出</span>
-                    <span className="font-bold text-zinc-900">
-                      ${model.输出价格_美元.toFixed(2)}
-                    </span>
-                    <span className="text-zinc-400 text-[9px]">/1M</span>
-                  </div>
-
-                  <button
-                    onClick={() => toggleCompare(model.模型名称)}
-                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
-                      isCompared
-                        ? "bg-[#E03E1A] text-white"
-                        : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900"
-                    }`}
-                  >
-                    <Scale className="h-3 w-3" />
-                    <span>{isCompared ? "已加入对比" : "对比"}</span>
-                  </button>
-                </div>
-              </article>
-            );
-          })}
+          {filteredRecords.map((model) => (
+            <ModelCard
+              key={model.模型名称}
+              model={model}
+              isCompared={compareList.includes(model.模型名称)}
+              onToggleCompare={() => toggleCompare(model.模型名称)}
+              density={density}
+            />
+          ))}
         </div>
       ) : (
         /* ── 全维表格视图 ────────────────────────────────────────── */
