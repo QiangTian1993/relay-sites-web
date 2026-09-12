@@ -217,6 +217,8 @@ async function main() {
     } catch (err) {
       console.error(`✗ ${t.id} (table_id=${t.tableId}) 失败:`, err instanceof Error ? err.message : err);
     }
+  }
+
   await probeAndSyncPerformance();
 
   // 自动同步 Obsidian 专题文章（如果本地知识库目录存在）
