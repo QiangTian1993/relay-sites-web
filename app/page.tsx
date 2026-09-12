@@ -36,13 +36,14 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const [sitesData, groupsData, perfData, toolsData, trendingData, articles] = await Promise.all([
+  const [sitesData, groupsData, perfData, toolsData, trendingData, articles, benchmarksData] = await Promise.all([
     loadTable("relay_sites_tracker"),
     loadTable("relay_site_groups"),
     loadTable("relay_site_perf"),
     loadTable("vibe_coding_tracker"),
     loadTable("github_trending"),
     getAllArticles(),
+    loadTable("llm_benchmarks"),
   ]);
 
   const siteCount = sitesData?.records.length ?? 0;
@@ -51,6 +52,7 @@ export default async function Home() {
   const toolCount = toolsData?.records.length ?? 0;
   const trendingCount = trendingData?.records.length ?? 0;
   const articlesCount = articles.length;
+  const benchmarkCount = benchmarksData?.records.length ?? 0;
 
   const trendingLangs = new Set(
     (trendingData?.records ?? []).map((r) => {
@@ -89,13 +91,13 @@ export default async function Home() {
     latestFetchTime([sitesData?.fetchedAt, groupsData?.fetchedAt, toolsData?.fetchedAt]),
   );
 
-  const totalRecords = siteCount + groupCount + toolCount + trendingCount + articlesCount;
+  const totalRecords = siteCount + groupCount + toolCount + trendingCount + articlesCount + benchmarkCount;
 
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "信息杂货铺 — Relay Index",
-    alternateName: "AI 中转站比价 / GitHub 热榜 / AI 编程工具 / 专题文章",
+    alternateName: "AI 中转站比价 / GitHub 热榜 / AI 编程工具 / 专题文章 / 大模型评测天梯",
     url: "https://www.xiuxai.com/relay-index/",
     description:
       "AI 世界的实用情报收集成册：AI 中转站模型比价、Vibe Coding 工具横评、GitHub 开源热榜、深度专题研报，按模块摆齐上架。",
@@ -183,6 +185,7 @@ export default async function Home() {
                     { num: "03", name: "开源生鲜", href: "#aisle-03", count: "双更" },
                     { num: "04", name: "专题文章", href: "#aisle-04", count: `${articlesCount} 篇` },
                     { num: "05", name: "验货质检", href: "#aisle-05", count: "在线" },
+                    { num: "06", name: "天梯评测", href: "#aisle-06", count: `${benchmarkCount} 款` },
                   ].map((aisle) => (
                     <a
                       key={aisle.num}
@@ -254,6 +257,10 @@ export default async function Home() {
                   <div className="flex justify-between items-baseline">
                     <span className="text-zinc-600">[05] 假一赔十质检台</span>
                     <span className="font-bold text-[#E03E1A]">24H 在线验真</span>
+                  </div>
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-zinc-600">[06] 大模型评测天梯</span>
+                    <span className="font-bold text-zinc-950">{benchmarkCount} 款旗舰</span>
                   </div>
                 </div>
 
@@ -753,6 +760,114 @@ export default async function Home() {
                 label="翻阅全部专题文章"
                 sublabel={`在架 ${articlesCount} 篇 · ${(articles.reduce((sum, a) => sum + a.wordCount, 0) / 10000).toFixed(1)}万字随笔沉淀`}
                 skuCode="TICKET #04-ARTICLES"
+                primary
+              />
+            </div>
+          </div>
+        </article>
+
+        {/* ── AISLE 06: 大模型评测天梯 ───────────────────────────────── */}
+        <article
+          id="aisle-06"
+          className="rounded-3xl border border-zinc-200/80 bg-white p-6 sm:p-10 shadow-xs relative overflow-hidden"
+        >
+          <span id="module-06" className="sr-only">module-06</span>
+          
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-zinc-950 text-white px-3 py-0.5 font-mono text-xs font-bold">
+                AISLE 06
+              </span>
+              <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500 font-bold">
+                SKU: MOD-06-BENCHMARKS · 模型天梯
+              </span>
+            </div>
+            <RubberStamp
+              text="实测基准 · BENCHMARKS"
+              subtext="LMSYS & SWE-BENCH"
+              variant="dark"
+              rotate={2}
+              size="sm"
+            />
+          </div>
+
+          <div className="grid lg:grid-cols-[1fr_360px] gap-8 items-center">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="inline-flex h-2 w-2 rounded-full bg-[#E03E1A]" />
+                <span className="font-mono text-xs font-bold text-[#E03E1A] uppercase tracking-wider">
+                  权威基准横评 · 拒绝玄学盲猜
+                </span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-zinc-950 mb-3 tracking-tight">
+                大模型实测天梯 · 性能与价格全景
+              </h2>
+              <p className="text-zinc-600 text-sm sm:text-base leading-relaxed max-w-2xl mb-6 font-normal">
+                收录 Claude 3.7 / OpenAI o3 / Gemini 2.5 / DeepSeek R1 / 智谱 GLM / 通义千问等主流旗舰的真实客观基准。基于 LMSYS Arena 人类盲测 Elo、SWE-bench Verified 真实代码修复、AIME 数学奥赛与官方价格横向透视。
+              </p>
+
+              {/* 3 Top Benchmark Models Preview Cards */}
+              <div className="grid sm:grid-cols-3 gap-3">
+                {[
+                  {
+                    name: "Claude 3.7 Sonnet",
+                    badge: "代码 SOTA",
+                    metric: "70.3%",
+                    metricLabel: "SWE-bench Verified",
+                    sub: "混合双模 · 128K思考",
+                    color: "text-[#E03E1A]",
+                  },
+                  {
+                    name: "Gemini 2.5 Pro",
+                    badge: "Arena 总分 #1",
+                    metric: "1466.2",
+                    metricLabel: "LMSYS 竞技场 Elo",
+                    sub: "200万上下文 · 霸榜首",
+                    color: "text-blue-600",
+                  },
+                  {
+                    name: "OpenAI o3-mini",
+                    badge: "数学奥赛登顶",
+                    metric: "87.3%",
+                    metricLabel: "AIME 2024 竞赛",
+                    sub: "极客超高性价比",
+                    color: "text-emerald-600",
+                  },
+                ].map((item) => (
+                  <Link
+                    key={item.name}
+                    href="/benchmarks"
+                    className="group flex flex-col justify-between rounded-2xl border border-zinc-200/70 bg-zinc-50/60 hover:bg-white hover:border-zinc-300 p-3.5 transition-all shadow-2xs"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between font-mono text-[10px] mb-1">
+                        <span className="font-bold text-zinc-400">{item.badge}</span>
+                      </div>
+                      <div className="text-xs font-bold text-zinc-900 group-hover:text-[#E03E1A] transition-colors line-clamp-2 leading-snug">
+                        {item.name}
+                      </div>
+                      <div className={`mt-2 text-xl font-black ${item.color} font-mono`}>
+                        {item.metric}
+                      </div>
+                      <div className="font-mono text-[9.5px] text-zinc-400">
+                        {item.metricLabel}
+                      </div>
+                    </div>
+                    <div className="mt-3 pt-2 border-t border-zinc-200/50 font-mono text-[10.5px] text-zinc-400 flex items-center justify-between">
+                      <span>{item.sub}</span>
+                      <span className="text-[#E03E1A] group-hover:translate-x-0.5 transition-transform">→</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-col justify-center">
+              <ShelfTicketButton
+                href="/benchmarks"
+                label="查阅大模型天梯榜"
+                sublabel={`在架 ${benchmarkCount} 款主流旗舰 · 竞技场与代码基准透视`}
+                skuCode="TICKET #06-BENCHMARKS"
                 primary
               />
             </div>

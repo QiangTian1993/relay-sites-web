@@ -10,6 +10,7 @@ import { ToolsExplorer } from "@/components/explorer/tools-explorer";
 import { FreshnessBanner } from "@/components/freshness-banner";
 import { IconSites, IconTools } from "@/components/icons";
 import { RelaySubNav } from "@/components/relay-sub-nav";
+import LlmBenchmarksExplorer from "@/components/llm-benchmarks-explorer";
 import type { Metadata } from "next";
 
 export const dynamicParams = false;
@@ -131,6 +132,34 @@ export default async function TableListPage({ params }: Params) {
         <FreshnessBanner fetchedAts={[data.fetchedAt]} />
         <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 sm:py-8">
           <ToolsExplorer records={data.records} />
+        </div>
+      </div>
+    );
+  }
+
+  if (table.id === "llm_benchmarks") {
+    return (
+      <div className="pb-20">
+        <header className="border-b border-zinc-200/80 bg-white/70 backdrop-blur-md">
+          <div className="mx-auto grid max-w-[1600px] gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-end">
+            <div>
+              <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-400">
+                <span className="rounded bg-zinc-900 px-1.5 py-0.5 text-[10px] text-white">06</span>
+                <span>MODULE 06 · 模型评测</span>
+              </div>
+              <h1 className="mt-2.5 text-3xl font-extrabold tracking-tight text-zinc-900 sm:text-4xl">大模型实测天梯</h1>
+              <p className="mt-2 text-xs sm:text-sm text-zinc-500">主流大模型实测天梯榜 · LMSYS 竞技场 / SWE-bench Verified / AIME 数学与官方定价横评</p>
+            </div>
+            <div className="grid grid-cols-3 rounded-2xl border border-zinc-200/80 bg-white shadow-sm overflow-hidden divide-x divide-zinc-100">
+              <ModuleMetric label="在架模型" value={data.records.length} />
+              <ModuleMetric label="最高竞技" value="1466" />
+              <ModuleMetric label="代码 SOTA" value="70.3%" />
+            </div>
+          </div>
+        </header>
+        <FreshnessBanner fetchedAts={[data.fetchedAt]} />
+        <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 sm:py-8">
+          <LlmBenchmarksExplorer records={data.records as any} />
         </div>
       </div>
     );
