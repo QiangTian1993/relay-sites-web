@@ -181,7 +181,7 @@ export default async function Home() {
                     { num: "01", name: "算力批发", href: "#aisle-01", count: `${siteCount}+ 站` },
                     { num: "02", name: "编程武器", href: "#aisle-02", count: `${toolCount} 款` },
                     { num: "03", name: "开源生鲜", href: "#aisle-03", count: "双更" },
-                    { num: "04", name: "深度专刊", href: "#aisle-04", count: `${articlesCount} 篇` },
+                    { num: "04", name: "专题文章", href: "#aisle-04", count: `${articlesCount} 篇` },
                     { num: "05", name: "验货质检", href: "#aisle-05", count: "在线" },
                   ].map((aisle) => (
                     <a
@@ -248,7 +248,7 @@ export default async function Home() {
                     <span className="font-bold text-zinc-950">{trendingCount} 仓双更</span>
                   </div>
                   <div className="flex justify-between items-baseline">
-                    <span className="text-zinc-600">[04] 深度专刊手稿</span>
+                    <span className="text-zinc-600">[04] 专题文章手记</span>
                     <span className="font-bold text-zinc-950">{articlesCount} 篇沉淀</span>
                   </div>
                   <div className="flex justify-between items-baseline">
@@ -682,7 +682,7 @@ export default async function Home() {
           </div>
         </article>
 
-        {/* ── Aisle 04: 深度专刊 · 调研手稿货架 ──────────────────────── */}
+        {/* ── Aisle 04: 专题文章 · 掌柜手记货架 ──────────────────────── */}
         <article
           id="aisle-04"
           className="rounded-3xl border border-zinc-200/80 bg-white p-6 sm:p-8 lg:p-10 shadow-sm relative overflow-hidden"
@@ -695,11 +695,11 @@ export default async function Home() {
                 AISLE 04
               </span>
               <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500 font-bold">
-                SKU: MOD-04-ARTICLES · 思想手稿
+                SKU: MOD-04-ARTICLES · 掌柜手记
               </span>
             </div>
             <RubberStamp
-              text="手稿上架 · SYNCED"
+              text="实操核验 · VERIFIED"
               subtext="OBSIDIAN VAULT"
               variant="amber"
               rotate={-3}
@@ -716,7 +716,7 @@ export default async function Home() {
                 </span>
               </div>
               <h2 className="text-2xl sm:text-3xl font-black text-zinc-950 mb-3 tracking-tight">
-                深度专刊 · 调研手稿货架
+                专题文章 · 掌柜手记
               </h2>
               <p className="text-zinc-600 text-sm sm:text-base leading-relaxed max-w-2xl mb-6 font-normal">
                 源自本地 Obsidian 知识库。一篇文章只回答一个主要现实问题并给出清楚的中心判断——涵盖 Agent 架构设计、Skill 变现合规、多平台 API 选型风险、Dokploy VPS 运维与 2026 信息差变现深度报告。
@@ -750,8 +750,8 @@ export default async function Home() {
             <div className="flex flex-col justify-center">
               <ShelfTicketButton
                 href="/articles"
-                label="翻阅全部专栏手稿"
-                sublabel={`在架 ${articlesCount} 篇 · ${(articles.reduce((sum, a) => sum + a.wordCount, 0) / 10000).toFixed(1)}万字独立沉淀`}
+                label="翻阅全部专题文章"
+                sublabel={`在架 ${articlesCount} 篇 · ${(articles.reduce((sum, a) => sum + a.wordCount, 0) / 10000).toFixed(1)}万字实操沉淀`}
                 skuCode="TICKET #04-ARTICLES"
                 primary
               />

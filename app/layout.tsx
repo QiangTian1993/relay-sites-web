@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import Link from "next/link";
-import { Activity, Flame, Send, ShieldCheck, Store, Wrench } from "lucide-react";
+import { Activity, BookOpen, Flame, Send, ShieldCheck, Store, Wrench } from "lucide-react";
 import SiteFooter from "@/components/site-footer";
 import "./globals.css";
 
@@ -146,6 +146,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </span>
                   <Flame className="h-3.5 w-3.5 text-zinc-500 group-hover:text-zinc-900" />
                   <span>开源热榜</span>
+                </Link>
+                <Link
+                  href="/articles"
+                  className="flex shrink-0 items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono text-xs font-bold text-zinc-600 hover:text-zinc-950 hover:bg-zinc-200/60 transition-all group"
+                >
+                  <span className="rounded border border-zinc-200 bg-white px-1.5 py-0.5 text-[9px] text-zinc-500 font-mono group-hover:border-zinc-300 group-hover:text-zinc-800 shadow-2xs">
+                    04
+                  </span>
+                  <BookOpen className="h-3.5 w-3.5 text-zinc-500 group-hover:text-zinc-900" />
+                  <span>专题文章</span>
                 </Link>
               </nav>
 

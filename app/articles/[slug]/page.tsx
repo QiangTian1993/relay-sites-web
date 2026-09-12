@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   return {
-    title: `${article.title} — 深度专刊`,
+    title: `${article.title} — 专题文章`,
     description: article.summary.slice(0, 160),
     alternates: {
       canonical: `/articles/${article.slug}`,

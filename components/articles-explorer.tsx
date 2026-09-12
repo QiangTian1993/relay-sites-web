@@ -86,18 +86,18 @@ export default function ArticlesExplorer({
                 MODULE 04
               </span>
               <span className="rounded-full bg-orange-50 border border-orange-200/60 px-3 py-0.5 text-[#E03E1A] uppercase tracking-wider">
-                DEEP ARTICLES & ESSAYS
+                ARTICLES & ESSAYS
               </span>
               <span className="text-zinc-400">
-                OBSIDIAN 知识库直连同步 · 独立核验
+                OBSIDIAN 知识库精选 · 独立核验
               </span>
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-zinc-950 tracking-tight leading-tight">
-              深度专刊 <span className="text-[#E03E1A]">·</span> 调研手稿
+              专题文章
             </h1>
             <p className="mt-2 text-zinc-600 text-sm sm:text-base max-w-2xl leading-relaxed">
-              围绕单一现实工程或商业问题深挖，不堆砌资料清单，只保留真实证据、边界核验与独立行动判断。
+              围绕单一现实工程或商业问题深挖，不堆砌资料清单，只讲真实核验、实操细节与商业边界。
             </p>
           </div>
 
@@ -238,7 +238,7 @@ export default function ArticlesExplorer({
           </button>
         </div>
       ) : (
-        <div className="grid md:grid-cols-2 gap-5">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredArticles.map((art) => {
             const isStable = art.status === "stable";
             const isAuthored = art.provenance === "authored";
@@ -246,34 +246,34 @@ export default function ArticlesExplorer({
             return (
               <article
                 key={art.id}
-                className="group relative flex flex-col justify-between rounded-3xl border border-zinc-200/80 bg-white p-6 sm:p-7 shadow-2xs hover:shadow-md hover:border-zinc-300 transition-all duration-200"
+                className="group relative flex flex-col justify-between rounded-3xl border border-zinc-200/80 bg-white p-5 sm:p-6 shadow-2xs hover:shadow-md hover:border-zinc-300 transition-all duration-200"
               >
                 <div>
                   {/* Card Top Meta */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 mb-3.5 font-mono text-[11px]">
-                    <div className="flex items-center gap-2">
-                      <span className="rounded-lg bg-zinc-100 px-2.5 py-0.5 font-bold text-zinc-700">
+                  <div className="flex flex-wrap items-center justify-between gap-1.5 mb-3 font-mono text-[10.5px]">
+                    <div className="flex items-center gap-1.5">
+                      <span className="rounded-lg bg-zinc-100 px-2 py-0.5 font-bold text-zinc-700">
                         {art.category}
                       </span>
                       <span
-                        className={`rounded-md px-2 py-0.5 font-bold ${
+                        className={`rounded-md px-1.5 py-0.5 font-bold ${
                           isStable
                             ? "bg-emerald-50 text-emerald-800 border border-emerald-200/60"
                             : "bg-amber-50 text-amber-800 border border-amber-200/60"
                         }`}
                       >
-                        {isStable ? "STABLE 定稿" : "IN-REVIEW 评审"}
+                        {isStable ? "STABLE" : "IN-REVIEW"}
                       </span>
                     </div>
 
-                    <span className="text-zinc-400 flex items-center gap-1">
+                    <span className="text-zinc-400 flex items-center gap-1 text-[10px]">
                       <Calendar className="h-3 w-3" />
                       {art.updated}
                     </span>
                   </div>
 
                   {/* Title */}
-                  <h2 className="text-xl sm:text-2xl font-black text-zinc-950 tracking-tight leading-snug group-hover:text-[#E03E1A] transition-colors">
+                  <h2 className="text-base sm:text-lg font-black text-zinc-950 tracking-tight leading-snug group-hover:text-[#E03E1A] transition-colors line-clamp-2">
                     <Link href={`/articles/${art.slug}`}>
                       {art.title}
                     </Link>
@@ -281,17 +281,17 @@ export default function ArticlesExplorer({
 
                   {/* Summary */}
                   {art.summary && (
-                    <p className="mt-3 text-zinc-600 text-sm leading-relaxed line-clamp-3 font-serif italic text-[14.5px]">
+                    <p className="mt-2 text-zinc-600 text-xs sm:text-[13px] leading-relaxed line-clamp-3 font-serif italic text-zinc-500">
                       “{art.summary}”
                     </p>
                   )}
 
                   {/* Tags */}
-                  <div className="flex flex-wrap gap-1.5 mt-4">
-                    {art.tags.slice(0, 4).map((tag) => (
+                  <div className="flex flex-wrap gap-1 mt-3">
+                    {art.tags.slice(0, 3).map((tag) => (
                       <span
                         key={tag}
-                        className="inline-flex items-center rounded-md bg-zinc-50 border border-zinc-200/60 px-2 py-0.5 font-mono text-[10.5px] text-zinc-500"
+                        className="inline-flex items-center rounded-md bg-zinc-50 border border-zinc-200/60 px-1.5 py-0.2 font-mono text-[10px] text-zinc-500"
                       >
                         #{tag}
                       </span>
@@ -300,28 +300,24 @@ export default function ArticlesExplorer({
                 </div>
 
                 {/* Card Footer Bar */}
-                <div className="mt-6 pt-4 border-t border-zinc-100 flex items-center justify-between font-mono text-xs text-zinc-500">
-                  <div className="flex items-center gap-3">
+                <div className="mt-5 pt-3 border-t border-zinc-100 flex items-center justify-between font-mono text-[11px] text-zinc-500">
+                  <div className="flex items-center gap-2">
                     <span className="flex items-center gap-1">
-                      <FileText className="h-3.5 w-3.5 text-zinc-400" />
+                      <FileText className="h-3 w-3 text-zinc-400" />
                       {art.wordCount.toLocaleString()} 字
                     </span>
                     <span className="text-zinc-300">·</span>
                     <span className="flex items-center gap-1">
-                      <Clock className="h-3.5 w-3.5 text-zinc-400" />
-                      ~{art.readingTime} 分钟
-                    </span>
-                    <span className="text-zinc-300">·</span>
-                    <span className="text-[10px] text-zinc-400">
-                      {isAuthored ? "原创撰写" : "综合调研"}
+                      <Clock className="h-3 w-3 text-zinc-400" />
+                      ~{art.readingTime}m
                     </span>
                   </div>
 
                   <Link
                     href={`/articles/${art.slug}`}
-                    className="inline-flex items-center gap-1 font-bold text-zinc-950 group-hover:text-[#E03E1A] group-hover:translate-x-0.5 transition-all"
+                    className="inline-flex items-center gap-1 font-bold text-zinc-950 group-hover:text-[#E03E1A] group-hover:translate-x-0.5 transition-all text-xs"
                   >
-                    <span>查阅全文</span>
+                    <span>阅读</span>
                     <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>

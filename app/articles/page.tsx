@@ -5,9 +5,9 @@ import ArticlesExplorer from "@/components/articles-explorer";
 export const dynamic = "force-static";
 
 export const metadata: Metadata = {
-  title: "深度专刊 · 调研手稿 — 信息杂货铺",
+  title: "专题文章 — 信息杂货铺",
   description:
-    "围绕单一现实工程或商业问题深挖：AI Agent 架构、Skill 生态变现、多平台 API 选型、自托管运维与信息差变现深度报告。",
+    "源自知识库的深度长文：AI Agent 架构、Skill 变现合规、多平台 API 选型、自托管运维与商业化实操调研。",
   alternates: { canonical: "/articles" },
 };
 
@@ -18,8 +18,8 @@ export default async function ArticlesPage() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: "深度专刊 · 调研手稿",
-    description: "围绕单一现实工程或商业问题深挖的调研手稿与分析报告。",
+    name: "专题文章",
+    description: "围绕单一现实工程或商业问题深挖的专题文章与实战调研。",
     url: "https://www.xiuxai.com/relay-index/articles",
     hasPart: articles.map((art) => ({
       "@type": "Article",
