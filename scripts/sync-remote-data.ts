@@ -14,15 +14,16 @@ import type {
   RelaySiteGroupRecord,
 } from "../lib/remote-types";
 
-const MARKET_DATA_ENDPOINT = process.env.MARKET_DATA_ENDPOINT ?? "";
+const MARKET_DATA_ENDPOINT = process.env.MARKET_DATA_ENDPOINT ?? "https://relay.qizhang.org";
 const rawKbToken = process.env.FEISHU_BASE_TOKEN ?? process.env.FEISHU_KB_TOKEN ?? process.env.KB_TOKEN;
 const KB_TOKEN = (rawKbToken && !rawKbToken.includes("…")) ? rawKbToken : "SchGbU6UDaT5q9sDjHTct79Sn9d";
 // bot 需开通 base:record:*；当前默认走 user（可用 LARK_AS=bot 覆盖）
-const LARK_AS = process.env.LARK_AS ?? "user";
+const LARK_AS = process.env.LARK_AS ?? "bot";
 const LOG_DIR = "/tmp";
 const PAGE_SIZE = 200;
 const DRY_RUN = process.env.SYNC_DRY_RUN === "1";
 const DEBUG_DIFF = process.env.SYNC_DEBUG_DIFF === "1";
+const FORCE_DELETE_STALE = process.env.SYNC_FORCE_DELETE_STALE === "1";
 
 // ============ 工具函数 ============
 
@@ -441,7 +442,9 @@ async function upsertGroups(sites: MarketSite[], siteIndex: SiteIndex) {
     const groupName = asText(record.fields.group_name);
     return sourceSiteIdsWithGroups.has(siteKey) && groupName && !seenSourceKeys.has(`${siteKey}|${groupName}`);
   });
-  const staleLimit = Math.max(20, Math.ceil(existing.length * 0.05));
+  const staleLimit = FORCE_DELETE_STALE
+    ? Number.MAX_SAFE_INTEGER
+    : (process.env.SYNC_STALE_LIMIT ? Number(process.env.SYNC_STALE_LIMIT) : Math.max(20, Math.ceil(existing.length * 0.05)));
   if (staleRecords.length > staleLimit) {
     log(`  ⚠ 跳过清理 ${staleRecords.length} 条过期记录：超过安全阈值 ${staleLimit}`);
   } else if (staleRecords.length > 0 && skip > 0) {

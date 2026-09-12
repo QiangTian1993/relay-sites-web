@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Calculator } from "lucide-react";
+import { Calculator, ChevronDown } from "lucide-react";
 import type { PriceFormulaBreakdown, RelayV1Offer, RelayV1Site, SiteFeatureTags } from "@/lib/relay-v1";
 import { extractSiteTags } from "@/lib/relay-v1";
 
@@ -60,9 +60,10 @@ function formatEffective(formula: PriceFormulaBreakdown): string {
 }
 
 export function RelayCostEstimator({ selectedModel, sites }: CostEstimatorProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true); // 估算器默认展开
   const [tokenMillions, setTokenMillions] = useState<number>(20); // 默认 20M tokens/月
   const [showCount, setShowCount] = useState<number>(0); // 0 = 全部展示
+  const [showFullList, setShowFullList] = useState(false); // 全站成本排序列表默认收起
 
   // 按 sub2api 的真实账单公式逐项计费：
   // 总费用 = 输入 token×输入价 + 输出 token×输出价 + 缓存创建 token×创建价 + 缓存读取 token×读取价。
@@ -118,37 +119,38 @@ export function RelayCostEstimator({ selectedModel, sites }: CostEstimatorProps)
   const visibleSites = showCount > 0 ? rankedSites.slice(0, showCount) : rankedSites;
 
   return (
-    <div className="mb-6 border-2 border-black bg-[#fbfbf8] p-4 sm:p-5">
+    <div className="mb-6 rounded-2xl border border-zinc-200/80 bg-white p-5 sm:p-6 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center border border-black bg-swiss-accent text-white">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200/80 bg-zinc-50 text-zinc-800 shadow-2xs">
             <Calculator className="h-4 w-4" />
           </div>
           <div>
-            <h3 className="font-mono text-sm font-black uppercase tracking-wider text-black">
-              💡 月度消耗与成本预估器 (Token Cost Estimator)
+            <h3 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
+              <span>月度消耗与成本预估器</span>
+              <span className="font-mono text-xs font-normal text-zinc-400">Token Cost Estimator</span>
             </h3>
-            <p className="font-mono text-[11px] text-black/55">
-              拖动总 Token 用量，按 sub2api 实测的输入 / 输出 / 缓存构成逐项测算 <strong className="text-black">{selectedModel}</strong> 月度账单
+            <p className="text-xs text-zinc-500 mt-0.5">
+              拖动总 Token 用量，按 sub2api 实测的输入 / 输出 / 缓存构成测算 <strong className="text-zinc-800 font-semibold">{selectedModel}</strong> 月度账单
             </p>
           </div>
         </div>
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="border-2 border-black bg-white px-3 py-1.5 font-mono text-xs font-black uppercase tracking-wider hover:bg-black hover:text-white transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 hover:border-zinc-300 transition-colors shadow-2xs"
         >
           {isOpen ? "收起估算器 ▲" : "展开月度算账器 ▼"}
         </button>
       </div>
 
       {isOpen && (
-        <div className="mt-5 border-t-2 border-dashed border-black/20 pt-5">
+        <div className="mt-5 border-t border-zinc-100 pt-5">
           <div className="grid gap-6 md:grid-cols-12 md:items-start">
-            <div className="md:col-span-5">
-              <label className="mb-2 flex items-center justify-between font-mono text-xs font-bold text-black/70">
+            <div className="md:col-span-5 rounded-xl border border-zinc-200/60 bg-zinc-50/50 p-4">
+              <label className="mb-2 flex items-center justify-between font-mono text-xs font-semibold text-zinc-700">
                 <span>预估每月 Token 消耗量：</span>
-                <span className="font-mono text-sm font-black text-swiss-accent">{tokenMillions}M Tokens / 月</span>
+                <span className="font-mono text-sm font-bold text-[#E03E1A]">{tokenMillions}M Tokens / 月</span>
               </label>
               <input
                 type="range"
@@ -157,57 +159,53 @@ export function RelayCostEstimator({ selectedModel, sites }: CostEstimatorProps)
                 step="1"
                 value={tokenMillions}
                 onChange={(e) => setTokenMillions(Number(e.target.value))}
-                className="h-2 w-full cursor-pointer appearance-none bg-black/10 accent-swiss-accent"
+                className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-zinc-200 accent-zinc-900"
               />
-              <div className="mt-2 flex justify-between font-mono text-[10px] text-black/45">
+              <div className="mt-2 flex justify-between font-mono text-[10px] text-zinc-400">
                 <span>1M</span>
                 <span>100M</span>
                 <span>500M</span>
                 <span>1000M</span>
               </div>
 
-              <p className="mt-4 border-t-2 border-dashed border-black/20 pt-2.5 font-mono text-[10px] leading-4 text-black/45">
-                采用你服务器 sub2api 2026-05 完整月实测构成：输入 10.40% · 输出 0.47% · 缓存读取 89.13% · 缓存创建 0%。四类 Token 分别乘各自价格后相加；不再使用固定命中率猜测。
+              <p className="mt-3.5 border-t border-zinc-200/60 pt-2.5 text-[11px] leading-relaxed text-zinc-500">
+                基于 sub2api 2026-05 完整月实测构成：输入 10.40% · 输出 0.47% · 缓存读取 89.13% · 缓存创建 0%。四类 Token 分别按对应费率计价求和。
               </p>
             </div>
 
             <div className="md:col-span-7">
-              <div className="font-mono text-xs font-bold text-black/70 mb-2">
-                🏆 当前消耗量下最省钱推荐：
+              <div className="text-xs font-semibold text-zinc-700 mb-2.5 flex items-center gap-1.5">
+                <span>🏆 当前消耗量下最省钱推荐</span>
               </div>
-              <div className="grid gap-2 sm:grid-cols-3">
+              <div className="grid gap-2.5 sm:grid-cols-3">
                 {topPicks.map((item, idx) => (
-                  <div key={item.site.id} className="border border-black bg-white p-2.5">
+                  <div key={item.site.id} className="rounded-xl border border-zinc-200/80 bg-white p-3.5 shadow-2xs hover:border-zinc-300 transition-all">
                     <div className="flex items-center justify-between gap-1">
-                      <span className="truncate font-mono text-xs font-black text-black">
+                      <span className="truncate font-mono text-xs font-bold text-zinc-900">
                         #{idx + 1} {item.site.name}
                       </span>
                       {idx === 0 && (
-                        <span className="border border-black bg-swiss-accent px-1 text-[9px] font-black text-white">
+                        <span className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.2 text-[9px] font-bold">
                           最省
                         </span>
                       )}
                     </div>
-                    <div className="mt-1.5 font-mono text-lg font-black text-swiss-accent">
+                    <div className="mt-2 font-mono text-lg font-bold text-zinc-900">
                       {item.monthlyCostCny != null ? (
                         <>
-                          ¥ {item.monthlyCostCny.toFixed(1)} <span className="text-[10px] text-black/50">/月</span>
+                          ¥ {item.monthlyCostCny.toFixed(1)} <span className="text-[10px] text-zinc-400 font-normal">/月</span>
                         </>
                       ) : (
-                        <span className="text-sm text-black/60">
+                        <span className="text-sm text-zinc-500 font-normal">
                           {item.formula.basePriceType === "per_call" ? "按次计费" : "价格未知"}
                         </span>
                       )}
                     </div>
-                    <div className="mt-1 flex flex-wrap gap-1 font-mono text-[9px] text-black/50">
-                      <span>输入到手 {formatEffective(item.formula)}</span>
+                    <div className="mt-2 flex flex-wrap gap-1 font-mono text-[10px] text-zinc-500">
+                      <span className="rounded bg-zinc-100 px-1 py-0.5">到手 {formatEffective(item.formula)}</span>
                       {item.blendedCostPer1M != null && (
-                        <span className="bg-black/5 px-1">混合 ¥{item.blendedCostPer1M.toFixed(3)}/1M</span>
+                        <span className="rounded bg-zinc-100 px-1 py-0.5">混合 ¥{item.blendedCostPer1M.toFixed(3)}/1M</span>
                       )}
-                      {item.cacheReadCostPer1M != null && (
-                        <span className="bg-black/5 px-1">缓存 ¥{item.cacheReadCostPer1M.toFixed(3)}/1M</span>
-                      )}
-                      {item.tags.hasInvoice && <span className="bg-black/5 px-1">可开票</span>}
                     </div>
                   </div>
                 ))}
@@ -215,65 +213,77 @@ export function RelayCostEstimator({ selectedModel, sites }: CostEstimatorProps)
             </div>
           </div>
 
-          {/* 全量成本排序表 */}
-          <div className="mt-5 border-t-2 border-dashed border-black/20 pt-4">
+            {/* 全量成本排序表 */}
+          <div className="mt-5 border-t border-zinc-100 pt-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="font-mono text-xs font-bold text-black/70">
-                全站成本排序 · 已对全部 <strong className="font-black text-swiss-accent">{rankedSites.length}</strong> 站完成计算
-              </div>
-              <div className="flex flex-wrap gap-1 font-mono text-[11px]">
-                {SHOW_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.label}
-                    type="button"
-                    onClick={() => setShowCount(opt.value)}
-                    className={`border-2 px-2 py-0.5 font-bold transition-colors ${
-                      showCount === opt.value
-                        ? "border-black bg-black text-white shadow-[1px_1px_0px_0px_#FF3000]"
-                        : "border-black/30 bg-white text-black/70 hover:border-black hover:text-black"
-                    }`}
-                  >
-                    {opt.value === 0 ? `全部 (${rankedSites.length})` : opt.label}
-                  </button>
-                ))}
-              </div>
+              <button
+                type="button"
+                onClick={() => setShowFullList(!showFullList)}
+                className="flex items-center gap-1.5 font-mono text-xs font-semibold text-zinc-700 transition-colors hover:text-zinc-900"
+              >
+                <ChevronDown className={`h-4 w-4 transition-transform ${showFullList ? "rotate-180" : ""}`} />
+                全站成本排序 · 已对全部 <strong className="font-bold text-zinc-900">{rankedSites.length}</strong> 站完成计算
+                <span className="ml-1 rounded-md border border-zinc-200 bg-zinc-50 px-1.5 py-0.5 text-[10px] text-zinc-500">
+                  {showFullList ? "收起 ▲" : "展开 ▼"}
+                </span>
+              </button>
+              {showFullList && (
+                <div className="flex flex-wrap gap-1 font-mono text-xs">
+                  {SHOW_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.label}
+                      type="button"
+                      onClick={() => setShowCount(opt.value)}
+                      className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition-colors ${
+                        showCount === opt.value
+                          ? "border-zinc-900 bg-zinc-900 text-white shadow-2xs"
+                          : "border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50"
+                      }`}
+                    >
+                      {opt.value === 0 ? `全部 (${rankedSites.length})` : opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
-            <div className="mt-2.5 max-h-[420px] overflow-auto border-2 border-black bg-white">
+            <div
+              className={`mt-3 max-h-[420px] overflow-auto rounded-xl border border-zinc-200/80 bg-white ${showFullList ? "" : "hidden"}`}
+            >
               <table className="w-full min-w-[800px] font-mono text-xs">
-                <thead className="sticky top-0 z-10 bg-black text-white">
+                <thead className="sticky top-0 z-10 bg-zinc-50/95 backdrop-blur-sm border-b border-zinc-200 text-zinc-600">
                   <tr>
-                    <th className="px-2.5 py-2 text-left font-black uppercase tracking-wider">#</th>
-                    <th className="px-2.5 py-2 text-left font-black uppercase tracking-wider">站点</th>
-                    <th className="px-2.5 py-2 text-right font-black uppercase tracking-wider">输入到手</th>
-                    <th className="px-2.5 py-2 text-right font-black uppercase tracking-wider">混合价 ¥/1M</th>
-                    <th className="px-2.5 py-2 text-right font-black uppercase tracking-wider">月费用 ¥</th>
-                    <th className="px-2.5 py-2 text-right font-black uppercase tracking-wider">7D 可用率</th>
-                    <th className="px-2.5 py-2 text-left font-black uppercase tracking-wider">特性</th>
+                    <th className="px-3 py-2.5 text-left font-semibold">#</th>
+                    <th className="px-3 py-2.5 text-left font-semibold">站点</th>
+                    <th className="px-3 py-2.5 text-right font-semibold">输入到手</th>
+                    <th className="px-3 py-2.5 text-right font-semibold">混合价 ¥/1M</th>
+                    <th className="px-3 py-2.5 text-right font-semibold">月费用 ¥</th>
+                    <th className="px-3 py-2.5 text-right font-semibold">7D 可用率</th>
+                    <th className="px-3 py-2.5 text-left font-semibold">特性</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-black/10">
+                <tbody className="divide-y divide-zinc-100">
                   {visibleSites.map((item, idx) => {
                     const availability = item.site.performance?.availability7d ?? null;
                     return (
-                      <tr key={item.site.id} className={idx === 0 ? "bg-[#FFEFEA]" : idx % 2 === 0 ? "bg-white" : "bg-[#FAFAFA]"}>
-                        <td className="whitespace-nowrap px-2.5 py-1.5 font-black">
+                      <tr key={item.site.id} className={`transition-colors ${idx === 0 ? "bg-amber-50/30" : "hover:bg-zinc-50/50"}`}>
+                        <td className="whitespace-nowrap px-3 py-2 font-bold text-zinc-700">
                           #{idx + 1}
                           {idx === 0 && (
-                            <span className="ml-1 bg-swiss-accent px-1 text-[9px] font-black text-white">最省</span>
+                            <span className="ml-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 px-1.5 py-0.2 text-[9px] font-bold">最省</span>
                           )}
                         </td>
-                        <td className="whitespace-nowrap px-2.5 py-1.5">
-                          <span className="font-black text-black">{item.site.name}</span>
+                        <td className="whitespace-nowrap px-3 py-2">
+                          <span className="font-semibold text-zinc-900">{item.site.name}</span>
                           {item.site.domain && (
-                            <span className="ml-1.5 text-[10px] text-black/45">
+                            <span className="ml-1.5 text-[10px] text-zinc-400">
                               {item.site.domain.replace(/^https?:\/\//i, "").replace(/\/.*$/, "")}
                             </span>
                           )}
                         </td>
-                        <td className="whitespace-nowrap px-2.5 py-1.5 text-right">{formatEffective(item.formula)}</td>
+                        <td className="whitespace-nowrap px-3 py-2 text-right text-zinc-700">{formatEffective(item.formula)}</td>
                         <td
-                          className="whitespace-nowrap px-2.5 py-1.5 text-right"
+                          className="whitespace-nowrap px-3 py-2 text-right text-zinc-600"
                           title={
                             item.blendedCostPer1M != null
                               ? `输入 ¥${item.inputCostPer1M?.toFixed(3)} / 输出 ¥${item.outputCostPer1M?.toFixed(3)} / 缓存读取 ¥${item.cacheReadCostPer1M?.toFixed(3)} / 缓存创建 ¥${item.cacheCreationCostPer1M?.toFixed(3)}`
@@ -282,17 +292,17 @@ export function RelayCostEstimator({ selectedModel, sites }: CostEstimatorProps)
                         >
                           {item.blendedCostPer1M != null ? `¥${item.blendedCostPer1M.toFixed(3)}` : "--"}
                         </td>
-                        <td className="whitespace-nowrap px-2.5 py-1.5 text-right font-black text-swiss-accent">
+                        <td className="whitespace-nowrap px-3 py-2 text-right font-bold text-zinc-900">
                           {item.monthlyCostCny != null
                             ? `¥${item.monthlyCostCny.toFixed(1)}`
                             : item.formula.basePriceType === "per_call"
                             ? "按次计费"
                             : "价格未知"}
                         </td>
-                        <td className="whitespace-nowrap px-2.5 py-1.5 text-right">
+                        <td className="whitespace-nowrap px-3 py-2 text-right text-zinc-700">
                           {availability == null ? "--" : `${availability.toFixed(1)}%`}
                         </td>
-                        <td className="whitespace-nowrap px-2.5 py-1.5 text-[10px] text-black/60">
+                        <td className="whitespace-nowrap px-3 py-2 text-[10px] text-zinc-500">
                           {item.tags.tagList.length > 0 ? item.tags.tagList.join(" / ") : "--"}
                         </td>
                       </tr>
@@ -301,8 +311,8 @@ export function RelayCostEstimator({ selectedModel, sites }: CostEstimatorProps)
                 </tbody>
               </table>
             </div>
-            {showCount > 0 && rankedSites.length > showCount && (
-              <p className="mt-1.5 font-mono text-[10px] text-black/45">
+            {showFullList && showCount > 0 && rankedSites.length > showCount && (
+              <p className="mt-2 text-[11px] text-zinc-400">
                 已对全部 {rankedSites.length} 站完成计算排序，当前仅展示前 {showCount} 名，点击「全部」查看完整列表。
               </p>
             )}

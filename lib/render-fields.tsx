@@ -13,7 +13,7 @@ function renderGroupRate(value: unknown): ReactNode {
     <div className="inline-flex flex-wrap gap-1.5">
       {parts.map((p, i) => {
         const m = p.match(/^(\S+)\s+(\S+)$/);
-        if (!m) return <span key={i} className="font-mono text-sm text-swiss-fg/50">{p}</span>;
+        if (!m) return <span key={i} className="font-mono text-xs text-zinc-400">{p}</span>;
         const [, name, rate] = m;
         return (
           <Tag key={i} variant="filled-success">

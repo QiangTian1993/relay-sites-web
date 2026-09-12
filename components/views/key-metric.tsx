@@ -28,8 +28,8 @@ export function KeyMetric({ icon = "zap", label, value, unit, empty = false }: P
 
   if (empty) {
     return (
-      <div className="flex items-center justify-end font-mono text-2xl text-swiss-fg/30 group-hover:text-swiss-bg/40">
-        <IconArrowRight className="h-5 w-5 stroke-[2]" />
+      <div className="flex items-center justify-end font-mono text-xl text-zinc-300 group-hover:text-zinc-400">
+        <IconArrowRight className="h-4 w-4 stroke-[2]" />
       </div>
     );
   }
@@ -37,16 +37,16 @@ export function KeyMetric({ icon = "zap", label, value, unit, empty = false }: P
   return (
     <div className="flex flex-col items-end text-right">
       {label && (
-        <span className="inline-flex items-center gap-1 font-mono text-[8px] uppercase tracking-ultra text-swiss-fg/60 group-hover:text-swiss-bg/60">
+        <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-zinc-400 group-hover:text-zinc-500">
           <Icon className="h-3 w-3 stroke-[2]" />
           <span>{label}</span>
         </span>
       )}
-      <span className="font-mono text-2xl font-black leading-none tracking-tighter text-swiss-accent group-hover:text-swiss-bg sm:text-3xl">
+      <span className="font-mono text-xl font-bold leading-none tracking-tight text-indigo-600 group-hover:text-indigo-700 sm:text-2xl">
         {value}
       </span>
       {unit && (
-        <span className="mt-1 hidden font-mono text-[8px] uppercase tracking-ultra text-swiss-fg/40 group-hover:text-swiss-bg/40 sm:inline">
+        <span className="mt-1 hidden font-mono text-[9px] uppercase tracking-wider text-zinc-400 sm:inline">
           {unit}
         </span>
       )}

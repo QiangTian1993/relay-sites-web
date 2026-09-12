@@ -141,11 +141,11 @@ export function NotionDataView({ table, records }: Props) {
       />
 
       {/* ===== Group tabs + Count ===== */}
-      <div className="flex flex-wrap items-stretch border-2 border-swiss-fg bg-swiss-bg">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-zinc-200/80 bg-white p-2.5 shadow-sm">
         {/* Group by tabs */}
-        <div className="flex min-w-0 flex-1 items-stretch overflow-x-auto">
-          <span className="flex items-center gap-2 border-r border-swiss-fg bg-swiss-muted px-3 font-mono text-sm uppercase tracking-ultra text-swiss-fg/60">
-            GROUP
+        <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto">
+          <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-400 px-2 shrink-0">
+            分组
           </span>
           {groupOptions.map((opt) => {
             const active = groupById === opt.id;
@@ -153,8 +153,8 @@ export function NotionDataView({ table, records }: Props) {
               <button
                 key={opt.id}
                 onClick={() => setGroupById(opt.id)}
-                className={`inline-flex shrink-0 items-center border-r border-swiss-fg px-3 py-2.5 font-mono text-sm font-black uppercase tracking-widest transition-colors last:border-r-0 ${
-                  active ? "bg-swiss-fg text-swiss-bg" : "bg-swiss-bg text-swiss-fg hover:bg-swiss-muted"
+                className={`rounded-lg px-3 py-1.5 font-mono text-xs font-semibold transition-colors shrink-0 ${
+                  active ? "bg-zinc-900 text-white shadow-2xs" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
                 }`}
                 aria-pressed={active}
               >
@@ -165,12 +165,13 @@ export function NotionDataView({ table, records }: Props) {
         </div>
 
         {/* Count */}
-        <div className="flex items-center gap-2 border-l-2 border-swiss-fg bg-swiss-fg px-4 py-2.5 font-mono text-sm font-black uppercase tracking-widest text-swiss-bg">
-          <span className="bg-swiss-bg px-1.5 py-0.5 text-swiss-fg">∑</span>
-          {filteredRecords.length}
+        <div className="flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 font-mono text-xs text-zinc-600 shrink-0">
+          <span>共</span>
+          <span className="font-bold text-zinc-900">{filteredRecords.length}</span>
           {filteredRecords.length !== records.length && (
-            <span className="font-normal text-swiss-bg/60">/ {records.length}</span>
+            <span className="text-zinc-400">/ {records.length}</span>
           )}
+          <span>条</span>
         </div>
       </div>
 

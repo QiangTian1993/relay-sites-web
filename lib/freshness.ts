@@ -23,8 +23,8 @@ export function calcFreshness(input: string | Date | null | undefined): Freshnes
       label: "无数据",
       minutesAgo: null,
       iso: null,
-      color: "text-swiss-fg/45",
-      bgColor: "bg-swiss-fg/5",
+      color: "text-zinc-400",
+      bgColor: "bg-zinc-100",
     };
   }
   const date = typeof input === "string" ? new Date(input) : input;
@@ -35,8 +35,8 @@ export function calcFreshness(input: string | Date | null | undefined): Freshnes
       label: "无数据",
       minutesAgo: null,
       iso: null,
-      color: "text-swiss-fg/45",
-      bgColor: "bg-swiss-fg/5",
+      color: "text-zinc-400",
+      bgColor: "bg-zinc-100",
     };
   }
   const minutesAgo = Math.max(0, (Date.now() - t) / 60_000);
@@ -48,18 +48,18 @@ export function calcFreshness(input: string | Date | null | undefined): Freshnes
   if (minutesAgo < FRESH_THRESHOLD_MIN) {
     level = "fresh";
     label = formatRelativeMinutes(minutesAgo);
-    color = "text-swiss-success";
-    bgColor = "bg-swiss-successBg/30";
+    color = "text-emerald-700";
+    bgColor = "bg-emerald-50";
   } else if (minutesAgo < STALE_THRESHOLD_MIN) {
     level = "stale";
     label = formatRelativeMinutes(minutesAgo);
-    color = "text-swiss-warning";
-    bgColor = "bg-swiss-warningBg/40";
+    color = "text-amber-700";
+    bgColor = "bg-amber-50";
   } else {
     level = "critical";
     label = formatRelativeMinutes(minutesAgo);
-    color = "text-swiss-warning";
-    bgColor = "bg-swiss-warningBg/70";
+    color = "text-rose-700";
+    bgColor = "bg-rose-50";
   }
   return { level, label, minutesAgo, iso, color, bgColor };
 }

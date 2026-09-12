@@ -28,20 +28,24 @@ export function detectChangeDirection(groupRows: Array<{ change_direction?: unkn
 export function ChangeBadge({ direction, delta, compact = false }: { direction: ChangeDirection; delta?: number; compact?: boolean }) {
   if (direction === "up") {
     return (
-      <span className={`inline-flex items-center gap-1 border border-swiss-warning bg-swiss-warningBg px-2 py-0.5 font-mono text-sm font-black text-swiss-warning ${compact ? "" : ""}`}>
+      <span className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 font-mono text-xs font-medium text-rose-700">
         ↑ 涨价{delta != null && delta > 0 ? ` +${(delta * 100).toFixed(0)}%` : ""}
       </span>
     );
   }
   if (direction === "down") {
     return (
-      <span className="inline-flex items-center gap-1 border border-swiss-success bg-swiss-successBg px-2 py-0.5 font-mono text-sm font-black text-swiss-success">
+      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-mono text-xs font-medium text-emerald-700">
         ↓ 降价{delta != null && delta > 0 ? ` −${(delta * 100).toFixed(0)}%` : ""}
       </span>
     );
   }
   if (direction === "flat") {
-    return <span className="inline-flex items-center gap-1 border border-swiss-fg/30 px-2 py-0.5 font-mono text-sm font-black">— 不变</span>;
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 font-mono text-xs font-medium text-zinc-500">
+        — 不变
+      </span>
+    );
   }
   return null;
 }
@@ -89,12 +93,14 @@ export function RiskBadge({ level, compact = false }: { level: RiskLevel; compac
   const isHigh = level.severity === "high";
   return (
     <span
-      className={`inline-flex items-center gap-1 border px-2 py-0.5 font-mono text-sm font-black ${
-        isHigh ? "border-swiss-warning bg-swiss-warningBg text-swiss-warning" : "border-swiss-fg/40"
+      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-xs font-medium ${
+        isHigh
+          ? "border-amber-200 bg-amber-50 text-amber-800"
+          : "border-zinc-200 bg-zinc-50 text-zinc-600"
       }`}
       title={level.reasons.join(" · ")}
     >
-      {isHigh ? <IconCircleAlert className="h-3.5 w-3.5" /> : <IconCircleDot className="h-3.5 w-3.5" />}
+      {isHigh ? <IconCircleAlert className="h-3 w-3 text-amber-600" /> : <IconCircleDot className="h-3 w-3 text-zinc-400" />}
       {isHigh ? "高风险" : "观察"}
     </span>
   );
@@ -115,8 +121,8 @@ export function detectFreshness(lastProbeAt: unknown, staleDays = 3): { freshnes
 export function FreshnessBadge({ freshness, daysAgo }: { freshness: Freshness; daysAgo: number | null }) {
   if (freshness === "missing") {
     return (
-      <span className="inline-flex items-center gap-1 border border-swiss-fg/30 px-2 py-0.5 font-mono text-sm font-black text-swiss-fg/45">
-        <IconCircleDot className="h-3.5 w-3.5" />无实测
+      <span className="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 font-mono text-xs font-medium text-zinc-400">
+        <IconCircleDot className="h-3 w-3 text-zinc-300" />无实测
       </span>
     );
   }
@@ -125,20 +131,20 @@ export function FreshnessBadge({ freshness, daysAgo }: { freshness: Freshness; d
     const isCritical = days > 14;
     return (
       <span
-        className={`inline-flex items-center gap-1 border px-2 py-0.5 font-mono text-sm font-black ${
+        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-xs font-medium ${
           isCritical
-            ? "border-swiss-warning bg-swiss-warningBg text-swiss-warning"
-            : "border-swiss-fg/30 text-swiss-fg/60"
+            ? "border-amber-200 bg-amber-50 text-amber-800"
+            : "border-zinc-200 bg-zinc-50 text-zinc-500"
         }`}
       >
-        <IconCircleAlert className="h-3.5 w-3.5" />
-        {isCritical ? `实测过期 ${days} 天前` : `无近期实测 (${days} 天前)`}
+        <IconCircleAlert className="h-3 w-3 text-amber-500" />
+        {isCritical ? `实测过期 ${days} 天` : `无近期实测 (${days} 天前)`}
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 border border-swiss-success bg-swiss-successBg px-2 py-0.5 font-mono text-sm font-black text-swiss-success">
-      <IconCircleCheck className="h-3.5 w-3.5" />实测 {daysAgo != null ? `${daysAgo.toFixed(1)} 天内` : ""}
+    <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-mono text-xs font-medium text-emerald-700">
+      <IconCircleCheck className="h-3 w-3 text-emerald-600" />实测 {daysAgo != null ? `${daysAgo.toFixed(1)} 天内` : ""}
     </span>
   );
 }

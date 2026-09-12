@@ -40,16 +40,16 @@ export default async function TableListPage({ params }: Params) {
   const data = await loadTable(table.id);
   if (!data) {
     return (
-      <div className="border-2 border-swiss-accent bg-swiss-bg p-8 swiss-dots">
+      <div className="rounded-2xl border border-amber-200/80 bg-amber-50/50 p-8 shadow-xs">
         <div className="flex items-start gap-4">
-          <span className="bg-swiss-accent px-3 py-1 font-mono text-sm font-black uppercase text-swiss-bg">
-            ! ERR
+          <span className="rounded-lg bg-amber-500/20 border border-amber-500/30 px-2.5 py-1 font-mono text-xs font-bold text-amber-800">
+            NOTICE
           </span>
           <div>
-            <h2 className="text-2xl font-black tracking-tight">数据未加载</h2>
-            <p className="mt-2 font-mono text-sm text-swiss-fg/70">
+            <h2 className="text-xl font-bold tracking-tight text-zinc-900">数据未加载</h2>
+            <p className="mt-1.5 font-mono text-xs text-zinc-600">
               请先在终端跑{" "}
-              <code className="border-2 border-swiss-fg bg-swiss-muted px-2 py-0.5 font-mono text-sm">
+              <code className="rounded-md border border-zinc-200 bg-white px-2 py-0.5 font-mono text-xs text-zinc-800 shadow-2xs">
                 npm run fetch
               </code>{" "}
               拉取数据。
@@ -73,14 +73,17 @@ export default async function TableListPage({ params }: Params) {
     return (
       <div className="pb-20">
         <RelaySubNav />
-        <header className="border-b-2 border-swiss-fg swiss-grid">
-          <div className="mx-auto grid max-w-[1600px] gap-6 px-5 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-end">
+        <header className="border-b border-zinc-200/80 bg-white/70 backdrop-blur-md">
+          <div className="mx-auto grid max-w-[1600px] gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-end">
             <div>
-              <div className="font-mono text-sm font-black uppercase tracking-widest text-swiss-fg/50">MODULE 01</div>
-              <h1 className="mt-2 text-4xl font-black leading-none sm:text-5xl">中转站档案库</h1>
-              <p className="mt-3 text-sm text-swiss-fg/60">按站点实体查接入条件、Provider、框架与覆盖情况；精确价格决策请进入模型比价。</p>
+              <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-400">
+                <span className="rounded bg-zinc-900 px-1.5 py-0.5 text-[10px] text-white">01</span>
+                <span>MODULE 01 · 站点大盘</span>
+              </div>
+              <h1 className="mt-2.5 text-3xl font-extrabold tracking-tight text-zinc-900 sm:text-4xl">中转站档案库</h1>
+              <p className="mt-2 text-xs sm:text-sm text-zinc-500">按站点实体查接入条件、Provider、框架与覆盖情况；精确价格决策请进入模型比价。</p>
             </div>
-            <div className="grid grid-cols-3 border-y-2 border-swiss-fg lg:border-2">
+            <div className="grid grid-cols-3 rounded-2xl border border-zinc-200/80 bg-white shadow-sm overflow-hidden divide-x divide-zinc-100">
               <ModuleMetric label="站点" value={data.records.length} />
               <ModuleMetric label="模型明细" value={modelSiteCount} />
               <ModuleMetric label="性能实测" value={performanceData?.records.length ?? 0} />
@@ -88,7 +91,7 @@ export default async function TableListPage({ params }: Params) {
           </div>
         </header>
         <FreshnessBanner fetchedAts={[data.fetchedAt, performanceData?.fetchedAt, groupsData?.fetchedAt]} />
-        <div className="mx-auto max-w-[1600px] px-5 py-6 sm:px-6 sm:py-8">
+        <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 sm:py-8">
           <RelaySitesExplorer records={data.records} performanceRecords={performanceData?.records ?? []} modelOffers={modelOffers} groupRecords={groupRecords} />
         </div>
       </div>
@@ -108,14 +111,17 @@ export default async function TableListPage({ params }: Params) {
 
     return (
       <div className="pb-20">
-        <header className="border-b-2 border-black">
-          <div className="mx-auto grid max-w-[1600px] gap-6 px-5 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-end">
+        <header className="border-b border-zinc-200/80 bg-white/70 backdrop-blur-md">
+          <div className="mx-auto grid max-w-[1600px] gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-end">
             <div>
-              <div className="font-mono text-sm font-black uppercase tracking-widest text-black/50">MODULE 02</div>
-              <h1 className="mt-2 text-4xl font-black leading-none sm:text-5xl">AI 编程工具</h1>
-              <p className="mt-3 text-sm text-black/60">Vibe Coding 工具全景 · 按类型、平台、多 Agent 能力横向对比</p>
+              <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-400">
+                <span className="rounded bg-zinc-900 px-1.5 py-0.5 text-[10px] text-white">02</span>
+                <span>MODULE 02 · 编程工具</span>
+              </div>
+              <h1 className="mt-2.5 text-3xl font-extrabold tracking-tight text-zinc-900 sm:text-4xl">AI 编程工具</h1>
+              <p className="mt-2 text-xs sm:text-sm text-zinc-500">Vibe Coding 工具全景 · 按类型、平台、多 Agent 能力横向对比</p>
             </div>
-            <div className="grid grid-cols-3 border-y-2 border-black lg:border-2">
+            <div className="grid grid-cols-3 rounded-2xl border border-zinc-200/80 bg-white shadow-sm overflow-hidden divide-x divide-zinc-100">
               <ModuleMetric label="工具" value={toolCount} />
               <ModuleMetric label="在用" value={activeCount} />
               <ModuleMetric label="均分" value={avgScore} />
@@ -123,7 +129,7 @@ export default async function TableListPage({ params }: Params) {
           </div>
         </header>
         <FreshnessBanner fetchedAts={[data.fetchedAt]} />
-        <div className="mx-auto max-w-[1600px] px-5 py-6 sm:px-6 sm:py-8">
+        <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 sm:py-8">
           <ToolsExplorer records={data.records} />
         </div>
       </div>
@@ -132,76 +138,46 @@ export default async function TableListPage({ params }: Params) {
 
   return (
     <div className="flex flex-col">
-      {/* Header — 编号大标题 */}
-      <header className="border-b-2 border-swiss-fg swiss-grid">
-        <div className="border-b border-swiss-fg/20 bg-swiss-fg text-swiss-bg">
-          <div className="mx-auto flex max-w-[1600px] items-center gap-4 px-6 py-3 font-mono text-sm uppercase tracking-ultra">
-            <span className="bg-swiss-accent px-2 py-0.5 text-swiss-bg">03.</span>
+      {/* Header */}
+      <header className="border-b border-zinc-200/80 bg-white/70 backdrop-blur-md">
+        <div className="border-b border-zinc-100 bg-zinc-50/50">
+          <div className="mx-auto flex max-w-[1600px] items-center gap-3 px-4 py-2 font-mono text-xs text-zinc-500 sm:px-6">
+            <span className="rounded bg-zinc-900 px-1.5 py-0.5 text-[10px] text-white font-bold">03</span>
             <span>{table.id.toUpperCase()} / LIST</span>
-            <span className="ml-auto">
+            <span className="ml-auto text-zinc-400">
               UPDATED {new Date(data.fetchedAt).toLocaleString("zh-CN", { hour12: false })}
             </span>
           </div>
         </div>
-        <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-0 px-6 py-12 sm:py-16 lg:grid-cols-[3fr_2fr]">
-          <div className="border-b-2 border-swiss-fg pb-8 lg:border-b-0 lg:border-r-2 lg:pr-12 lg:pb-0">
-            <div className="mb-3 font-mono text-sm uppercase tracking-ultra text-swiss-fg/60">
-              03.A / TITLE
-            </div>
+        <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-6 px-4 py-10 sm:px-6 lg:grid-cols-[3fr_2fr]">
+          <div>
             <div className="flex items-start gap-4">
-              <TableIcon className="h-14 w-14 shrink-0 stroke-[1.5] text-swiss-fg" />
-              <h1 className="text-[clamp(2.5rem,8vw,6rem)] font-black leading-[0.85] tracking-tightest">
-                {table.displayName}
-              </h1>
+              <TableIcon className="h-10 w-10 shrink-0 text-zinc-900" />
+              <div>
+                <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 sm:text-5xl">
+                  {table.displayName}
+                </h1>
+                <p className="mt-3 max-w-xl text-sm leading-relaxed text-zinc-500">
+                  {table.description}
+                </p>
+              </div>
             </div>
-            <p className="mt-4 max-w-xl text-base font-medium leading-relaxed text-swiss-fg/70">
-              {table.description}
-            </p>
           </div>
-          <div className="flex flex-col gap-4 pt-8 lg:pt-0 lg:pl-12">
-            <div className="font-mono text-sm uppercase tracking-ultra text-swiss-fg/60">
-              03.B / STATS
+          <div className="grid grid-cols-2 rounded-2xl border border-zinc-200/80 bg-white shadow-sm overflow-hidden divide-x divide-y sm:divide-y-0 divide-zinc-100">
+            <div className="p-4">
+              <div className="font-mono text-xs font-medium uppercase tracking-wider text-zinc-400">RECORDS</div>
+              <div className="mt-1 text-3xl font-extrabold text-zinc-900">{data.records.length}</div>
             </div>
-            <div className="grid grid-cols-2 gap-0 border-2 border-swiss-fg">
-              <div className="border-b-2 border-r-2 border-swiss-fg p-4">
-                <div className="font-mono text-sm uppercase tracking-ultra text-swiss-fg/50">
-                  RECORDS
-                </div>
-                <div className="mt-1 text-4xl font-black tracking-tighter">
-                  {data.records.length}
-                </div>
-              </div>
-              <div className="border-b-2 p-4">
-                <div className="font-mono text-sm uppercase tracking-ultra text-swiss-fg/50">
-                  FIELDS
-                </div>
-                <div className="mt-1 text-4xl font-black tracking-tighter">
-                  {table.fields.length}
-                </div>
-              </div>
-              <div className="border-r-2 p-4">
-                <div className="font-mono text-sm uppercase tracking-ultra text-swiss-fg/50">
-                  PRIMARY
-                </div>
-                <div className="mt-1 text-4xl font-black tracking-tighter">
-                  {table.fields.filter((f) => f.primary).length}
-                </div>
-              </div>
-              <div className="p-4">
-                <div className="font-mono text-sm uppercase tracking-ultra text-swiss-fg/50">
-                  FILTER
-                </div>
-                <div className="mt-1 text-4xl font-black tracking-tighter">
-                  {table.fields.filter((f) => f.filterable).length}
-                </div>
-              </div>
+            <div className="p-4">
+              <div className="font-mono text-xs font-medium uppercase tracking-wider text-zinc-400">FIELDS</div>
+              <div className="mt-1 text-3xl font-extrabold text-zinc-900">{table.fields.length}</div>
             </div>
           </div>
         </div>
       </header>
 
       {/* Table */}
-      <div className="mx-auto max-w-[1600px] px-6 py-8">
+      <div className="mx-auto max-w-[1600px] px-4 py-8 sm:px-6">
         <NotionDataView table={table} records={data.records} />
       </div>
     </div>
@@ -210,9 +186,9 @@ export default async function TableListPage({ params }: Params) {
 
 function ModuleMetric({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="border-r border-swiss-fg p-3 last:border-r-0 sm:p-4">
-      <div className="font-mono text-sm uppercase tracking-widest text-swiss-fg/45">{label}</div>
-      <div className="mt-1 text-2xl font-black">{value}</div>
+    <div className="p-4 text-center sm:text-left">
+      <div className="font-mono text-xs uppercase tracking-wider text-zinc-400">{label}</div>
+      <div className="mt-1 text-2xl font-extrabold text-zinc-900">{value}</div>
     </div>
   );
 }

@@ -7,8 +7,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries: MetadataRoute.Sitemap = [
     { url: `${BASE}/`, changeFrequency: "daily", priority: 1 },
     { url: `${BASE}/relay`, changeFrequency: "daily", priority: 0.9 },
+    { url: `${BASE}/table/relay_sites_tracker`, changeFrequency: "daily", priority: 0.9 },
+    { url: `${BASE}/detector`, changeFrequency: "daily", priority: 0.8 },
     { url: `${BASE}/modules/github_trending`, changeFrequency: "daily", priority: 0.8 },
-    { url: `${BASE}/table/vibe_coding_tracker`, changeFrequency: "weekly", priority: 0.6 },
+    { url: `${BASE}/table/vibe_coding_tracker`, changeFrequency: "weekly", priority: 0.7 },
   ];
 
   // relay 站点详情页 Top 100（按最低倍率，避免薄内容稀释权重）

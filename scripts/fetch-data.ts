@@ -79,6 +79,21 @@ interface KeyedRecord {
   __id: string;
   [k: string]: unknown;
 }
+interface ProbeRecord {
+  __id: string;
+  site_name: string;
+  consecutive_failures: number;
+  success_rate: number;
+  tps_avg: number;
+  site_id: string;
+  site: Array<{ id: string }>;
+  host: string;
+  last_probe_at: string;
+  ttft_p50_ms: number | null;
+  availability_7d: number;
+  availability_24h: number;
+  latency_p95_ms: number | null;
+}
 
 function convertToKeyed(raw: RawResponse): KeyedRecord[] {
   const data = raw.data?.data ?? [];
@@ -103,7 +118,7 @@ async function probeAndSyncPerformance() {
   const sites = JSON.parse(fs.readFileSync(trackerFile, "utf-8"));
   const nowStr = new Date().toISOString().replace("T", " ").substring(0, 19);
 
-  const perfResults = await Promise.all(sites.map(async (site: any) => {
+  async function probeSite(site: any): Promise<ProbeRecord | null> {
     const rawDomain = site["域名"] || "";
     const host = rawDomain.replace(/^https?:\/\//i, "").replace(/\/.*$/, "");
     const siteId = site["站点ID"] || site.__id;
@@ -161,11 +176,25 @@ async function probeAndSyncPerformance() {
       availability_24h: availability,
       latency_p95_ms: latencyP95Ms
     };
-  }));
+  }
 
-  const validPerf = perfResults.filter(Boolean);
+  // 受控并发：一次性并发 167 个 TLS 握手会被目标站侧 WAF 限流，导致大量误报离线
+  // （实测：全量并发在线数 0~61 剧烈波动；8 并发 → 148/167 在线稳定）
+  const perfResults: ProbeRecord[] = [];
+  const PROBE_CONCURRENCY = 8;
+  let cursor = 0;
+  const workers = Array.from({ length: Math.min(PROBE_CONCURRENCY, sites.length) }, async () => {
+    while (cursor < sites.length) {
+      const i = cursor++;
+      const r = await probeSite(sites[i]);
+      if (r) perfResults.push(r);
+    }
+  });
+  await Promise.all(workers);
+
+  const validPerf = perfResults;
   fs.writeFileSync(perfFile, JSON.stringify(validPerf, null, 2));
-  console.log(`✓ 探针完成：已生成 ${validPerf.length} 条实测记录（包含在线正常响应 ${validPerf.filter((p: any) => p.success_rate > 0).length} 个站点）。`);
+  console.log(`✓ 探针完成：已生成 ${validPerf.length} 条实测记录（包含在线正常响应 ${validPerf.filter((p) => p.success_rate > 0).length} 个站点）。`);
 }
 
 async function main() {

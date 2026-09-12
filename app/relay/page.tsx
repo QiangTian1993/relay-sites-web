@@ -1,7 +1,7 @@
 import { RelayV1Explorer } from "@/components/relay-v1-explorer";
 import { loadTable } from "@/lib/data-loader";
 import { buildRelayV1Data } from "@/lib/relay-v1";
-import { getAllQCRecords } from "@/lib/qc-store";
+import { getAllQCRecords, toArchiveRow } from "@/lib/qc-store";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -28,5 +28,6 @@ export default async function RelayPage() {
     performance?.records ?? [],
   );
 
-  return <RelayV1Explorer data={data} qcRecords={qcRecords} />;
+  // 剥离 logs/runs 重字段后再下发客户端
+  return <RelayV1Explorer data={data} qcRecords={qcRecords.map(toArchiveRow)} />;
 }

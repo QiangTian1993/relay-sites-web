@@ -39,41 +39,41 @@ export function FieldRow({
 }: Props) {
   const labelClasses =
     labelStyle === "filled"
-      ? "bg-swiss-muted border border-swiss-fg/20 px-2 py-0.5 text-swiss-fg/70 group-hover:bg-swiss-bg/20 group-hover:border-swiss-bg/20 group-hover:text-swiss-bg/70"
-      : "text-swiss-fg/40 group-hover:text-swiss-bg/40";
+      ? "bg-zinc-100 border border-zinc-200 px-1.5 py-0.5 text-zinc-600 rounded"
+      : "text-zinc-400";
 
   if (layout === "block") {
     return (
       <div
-        className={`flex flex-col gap-1.5 py-2 ${
-          first ? "" : "border-t border-swiss-fg/15 group-hover:border-swiss-bg/15"
+        className={`flex flex-col gap-1 py-1.5 ${
+          first ? "" : "border-t border-zinc-100"
         }`}
       >
         <dt
-          className={`font-mono text-sm font-black uppercase tracking-widest ${labelClasses}`}
+          className={`font-mono text-xs font-semibold uppercase tracking-wider ${labelClasses}`}
         >
           {label}
         </dt>
-        <dd className="font-mono text-sm font-medium text-swiss-fg group-hover:text-swiss-bg">
+        <dd className="font-mono text-xs text-zinc-800">
           {value}
         </dd>
       </div>
     );
   }
 
-  // inline 模式（默认）—— 字段名 + value 同行（value 自动换行）
+  // inline 模式（默认）
   return (
     <div
-      className={`flex items-start gap-3 py-2 ${
-        first ? "" : "border-t border-swiss-fg/15 group-hover:border-swiss-bg/15"
+      className={`flex items-start gap-2.5 py-1.5 ${
+        first ? "" : "border-t border-zinc-100"
       }`}
     >
       <dt
-        className={`${labelWidth} shrink-0 self-center font-mono text-sm font-black uppercase tracking-widest ${labelClasses}`}
+        className={`${labelWidth} shrink-0 self-center font-mono text-xs font-semibold uppercase tracking-wider ${labelClasses}`}
       >
         {label}
       </dt>
-      <dd className="flex-1 font-mono text-sm font-medium text-swiss-fg group-hover:text-swiss-bg break-words">
+      <dd className="flex-1 font-mono text-xs text-zinc-800 break-words">
         {value}
       </dd>
     </div>

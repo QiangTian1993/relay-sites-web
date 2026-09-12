@@ -42,11 +42,11 @@ function SortableHeader({ sortKey, currentSort, onSort, className = "", children
     <button
       type="button"
       onClick={() => onSort(sortKey)}
-      className={`group flex items-center gap-1 px-4 py-2 text-left transition-colors hover:bg-swiss-fg hover:text-swiss-bg ${isActive ? "bg-swiss-fg text-swiss-bg" : ""} ${className}`}
+      className={`group flex items-center gap-1.5 px-4 py-2.5 text-left transition-colors hover:bg-zinc-200/50 ${isActive ? "bg-zinc-200/60 text-zinc-900 font-bold" : "text-zinc-600"} ${className}`}
       title={`按${children}排序`}
     >
       <span>{children}</span>
-      <span className={`ml-auto text-[8px] transition-opacity ${isActive ? "opacity-100" : "opacity-30 group-hover:opacity-100"}`}>
+      <span className={`ml-auto text-[10px] transition-opacity ${isActive ? "opacity-100 text-zinc-900" : "opacity-30 group-hover:opacity-100"}`}>
         {isActive ? "▼" : "▾"}
       </span>
     </button>
@@ -256,9 +256,9 @@ export function RelaySitesExplorer({ records, performanceRecords, modelOffers, g
         onViewModeChange={setViewMode}
       />
       {viewMode === "model" && (
-        <div className="flex flex-wrap items-center justify-between gap-3 border-2 border-swiss-fg bg-swiss-muted px-4 py-3 font-mono text-sm">
-          <span><strong>模型覆盖</strong> 只回答“哪些站支持”，这里的费率是原始参考值。</span>
-          <a href="/relay" className="border-2 border-swiss-fg bg-swiss-fg px-3 py-2 font-black text-swiss-bg transition-colors hover:bg-swiss-accent">去模型比价 →</a>
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-zinc-200/80 bg-zinc-50/80 px-5 py-3.5 font-mono text-xs text-zinc-700">
+          <span><strong>模型覆盖视图</strong>：快速查阅哪些站点已支持指定模型，如需比价决策请使用专属比价观测台。</span>
+          <a href="/relay" className="rounded-xl bg-zinc-900 px-3.5 py-2 font-bold text-white transition-colors hover:bg-zinc-800 shadow-2xs">去模型比价 →</a>
         </div>
       )}
 
@@ -275,23 +275,23 @@ export function RelaySitesExplorer({ records, performanceRecords, modelOffers, g
       ) : viewMode === "matrix" ? (
         <ProviderMatrix records={filteredRecords} />
       ) : (
-        <section className="border-2 border-swiss-fg bg-swiss-bg">
-          <div className="hidden grid-cols-[minmax(220px,1.35fr)_minmax(230px,1.35fr)_minmax(170px,1fr)_minmax(190px,1fr)_105px_42px] border-b-2 border-swiss-fg bg-swiss-muted font-mono text-sm font-black uppercase tracking-widest text-swiss-fg/55 lg:grid">
+        <section className="rounded-2xl border border-zinc-200/80 bg-white shadow-sm overflow-hidden mb-6">
+          <div className="hidden grid-cols-[minmax(220px,1.35fr)_minmax(230px,1.35fr)_minmax(170px,1fr)_minmax(190px,1fr)_105px_42px] border-b border-zinc-200/80 bg-zinc-50/90 backdrop-blur-sm font-mono text-xs font-semibold text-zinc-500 uppercase tracking-wider lg:grid">
             <SortableHeader sortKey="updated" currentSort={sortKey} onSort={setSortKey}>
               站点
             </SortableHeader>
-            <span className="border-l border-swiss-fg/30 px-4 py-2">{modelQuery ? "目标模型 / 价格" : "Provider / 倍率"}</span>
-            <SortableHeader sortKey="availability" currentSort={sortKey} onSort={setSortKey} className="border-l border-swiss-fg/30">
+            <span className="border-l border-zinc-200/60 px-4 py-2.5">{modelQuery ? "目标模型 / 价格" : "Provider / 倍率"}</span>
+            <SortableHeader sortKey="availability" currentSort={sortKey} onSort={setSortKey} className="border-l border-zinc-200/60">
               稳定性
             </SortableHeader>
-            <span className="border-l border-swiss-fg/30 px-4 py-2">接入状态</span>
-            <SortableHeader sortKey="updated" currentSort={sortKey} onSort={setSortKey} className="border-l border-swiss-fg/30">
+            <span className="border-l border-zinc-200/60 px-4 py-2.5">接入状态</span>
+            <SortableHeader sortKey="updated" currentSort={sortKey} onSort={setSortKey} className="border-l border-zinc-200/60">
               更新
             </SortableHeader>
-            <span className="border-l border-swiss-fg/30" />
+            <span className="border-l border-zinc-200/60" />
           </div>
 
-          <div className="divide-y-2 divide-swiss-fg">
+          <div className="divide-y divide-zinc-100">
             {pageRows.map((row) => (
               <RelaySiteListRow
                 key={row.record.__id}
@@ -306,16 +306,16 @@ export function RelaySitesExplorer({ records, performanceRecords, modelOffers, g
           </div>
 
           {pageRows.length === 0 && (
-            <div className="p-16 text-center font-mono text-sm uppercase tracking-widest text-swiss-fg/40">没有符合条件的站点</div>
+            <div className="p-16 text-center font-mono text-xs uppercase tracking-wider text-zinc-400">没有符合条件的站点</div>
           )}
 
           {pageCount > 1 && (
-            <footer className="flex items-center justify-between border-t-2 border-swiss-fg bg-swiss-muted px-4 py-3 font-mono text-sm uppercase tracking-widest">
+            <footer className="flex items-center justify-between border-t border-zinc-200/80 bg-zinc-50/80 px-4 py-3 font-mono text-xs text-zinc-500">
               <span>{safePage * PAGE_SIZE + 1}-{Math.min((safePage + 1) * PAGE_SIZE, filteredRows.length)} / {filteredRows.length}</span>
-              <div className="flex items-center border border-swiss-fg bg-swiss-bg">
-                <button type="button" onClick={() => setPage(Math.max(0, safePage - 1))} disabled={safePage === 0} className="flex h-11 w-11 items-center justify-center disabled:opacity-20 sm:h-8 sm:w-9" aria-label="上一页"><IconArrowLeft className="h-4 w-4" /></button>
-                <span className="border-x border-swiss-fg px-3 py-2 font-black">{safePage + 1} / {pageCount}</span>
-                <button type="button" onClick={() => setPage(Math.min(pageCount - 1, safePage + 1))} disabled={safePage >= pageCount - 1} className="flex h-11 w-11 items-center justify-center disabled:opacity-20 sm:h-8 sm:w-9" aria-label="下一页"><IconArrowRight className="h-4 w-4" /></button>
+              <div className="flex items-center rounded-lg border border-zinc-200 bg-white shadow-2xs overflow-hidden">
+                <button type="button" onClick={() => setPage(Math.max(0, safePage - 1))} disabled={safePage === 0} className="flex h-8 w-8 items-center justify-center disabled:opacity-20 hover:bg-zinc-50" aria-label="上一页"><IconArrowLeft className="h-3.5 w-3.5" /></button>
+                <span className="border-x border-zinc-200 px-3 py-1.5 font-bold text-zinc-800">{safePage + 1} / {pageCount}</span>
+                <button type="button" onClick={() => setPage(Math.min(pageCount - 1, safePage + 1))} disabled={safePage >= pageCount - 1} className="flex h-8 w-8 items-center justify-center disabled:opacity-20 hover:bg-zinc-50" aria-label="下一页"><IconArrowRight className="h-3.5 w-3.5" /></button>
               </div>
             </footer>
           )}

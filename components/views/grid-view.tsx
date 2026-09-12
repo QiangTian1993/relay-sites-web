@@ -73,22 +73,22 @@ export function GridView({
   ratePerProvider,
 }: Props) {
   return (
-    <div className="flex flex-col gap-10 bg-swiss-muted p-5 sm:p-6">
+    <div className="flex flex-col gap-8">
       {groups.map((group, gi) => (
         <section key={group.label + gi} className="flex flex-col gap-3">
-          {/* Group header —— 去掉编号 tag chip，只保留字段名文字 + count */}
-          <header className="flex items-center gap-3 border-b-2 border-swiss-fg bg-swiss-muted swiss-dots px-3 py-2 group/header">
-            <span className="text-lg font-black uppercase tracking-tight text-swiss-fg">
+          {/* Group header */}
+          <header className="flex items-center justify-between border-b border-zinc-200/80 pb-3 pt-2">
+            <span className="text-base font-bold tracking-tight text-zinc-900">
               {group.label}
             </span>
-            <span className="ml-auto inline-flex items-center gap-2 font-mono text-sm uppercase tracking-widest text-swiss-fg/60">
-              <IconCircleDot className="h-3 w-3 stroke-[2.5] text-swiss-success" />
-              <span className="font-black text-swiss-fg">{group.records.length}</span>
-              <span>{group.records.length === 1 ? "ITEM" : "ITEMS"}</span>
+            <span className="inline-flex items-center gap-2 rounded-full border border-zinc-200/70 bg-zinc-100/80 px-2.5 py-0.5 font-mono text-xs font-semibold text-zinc-600">
+              <IconCircleDot className="h-2.5 w-2.5 stroke-[2.5] text-emerald-500" />
+              <span>{group.records.length}</span>
+              <span className="font-normal text-zinc-400">{group.records.length === 1 ? "ITEM" : "ITEMS"}</span>
             </span>
           </header>
 
-          {/* Card grid —— 卡片在灰底上浮出（保持 3 列，不强求 4 列） */}
+          {/* Card grid */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {group.records.map((r, ri) => {
               const title = String(r[primaryField] ?? r.__id ?? "未命名");
@@ -115,10 +115,10 @@ export function GridView({
                 <Link
                   key={r.__id}
                   href={`${basePath}/${encodeURIComponent(r.__id)}`}
-                  className="group relative flex flex-col border-2 border-swiss-fg bg-swiss-bg transition-colors hover:bg-swiss-fg hover:text-swiss-bg"
+                  className="group relative flex flex-col overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-md"
                 >
-                  {/* HERO 区：编号 + 状态点 + 标题 + 副标（与 List 一致） */}
-                  <div className="flex items-start justify-between gap-3 border-b-2 border-swiss-fg p-4">
+                  {/* HERO 区：编号 + 状态点 + 标题 + 副标 */}
+                  <div className="flex items-start justify-between gap-3 border-b border-zinc-100 bg-zinc-50/40 p-4">
                     <div className="flex flex-col items-center gap-1 pt-1">
                       <RecordIndex rank={ri + 1} status={status} />
                     </div>
@@ -139,9 +139,9 @@ export function GridView({
                     />
                   </div>
 
-                  {/* SUPPORTING 区：字段行 + provider tags（与 List 一致） */}
-                  <div className="flex flex-1 flex-col gap-3 p-4">
-                    {/* 字段行（与 List 一致：所有字段 inline 布局） */}
+                  {/* SUPPORTING 区：字段行 + provider tags */}
+                  <div className="flex flex-1 flex-col justify-between gap-3 p-4">
+                    {/* 字段行 */}
                     {metaFields.length > 0 && (
                       <dl className="flex flex-col">
                         {metaFields.slice(0, 4).map((mf, mi) => {
@@ -165,8 +165,8 @@ export function GridView({
                       </dl>
                     )}
 
-                    {/* Provider tags（与 List 一致） */}
-                    <div className="flex">{renderProviderTags(r, "支持的 provider")}</div>
+                    {/* Provider tags */}
+                    <div className="flex pt-1">{renderProviderTags(r, "支持的 provider")}</div>
                   </div>
                 </Link>
               );
@@ -176,7 +176,7 @@ export function GridView({
       ))}
 
       {groups.length === 0 && (
-        <div className="border-2 border-swiss-fg bg-swiss-bg p-16 text-center font-mono text-sm uppercase tracking-ultra text-swiss-fg/40">
+        <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-16 text-center font-mono text-sm text-zinc-400">
           ∅ NO RECORDS
         </div>
       )}

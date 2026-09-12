@@ -17,3 +17,5 @@ tsconfig.tsbuildinfo
 __pycache__/
 *.pyc
 scripts/gpt56-detector/gpt56_vnext_runs/
+backups/
+bun.lock

@@ -170,67 +170,6 @@ function parseChangeDirection(value: unknown): ChangeDirection {
   const raw = Array.isArray(value) ? value[0] : value;
   return raw === "up" || raw === "down" ? raw : null;
 }
-interface ModelBaseline {
-  name: string;
-  inputRate: number;
-  outputRate: number | null;
-  occurrences: number;
-}
-
-function modeNumber(values: number[]): number | null {
-  if (values.length === 0) return null;
-  const counts = new Map<number, number>();
-  for (const value of values) counts.set(value, (counts.get(value) ?? 0) + 1);
-  return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0])[0][0];
-}
-
-function buildModelBaselines(
-  modelRateRecords: KeyedRecord[],
-  groupsBySite: Map<string, RelayV1Group[]>,
-): Map<string, ModelBaseline> {
-  const inputs = new Map<string, { name: string; input: number[]; output: number[] }>();
-  const add = (name: string, inputRate: number | null, outputRate: number | null) => {
-    if (!name || inputRate == null) return;
-    const key = name.toLocaleLowerCase();
-    const current = inputs.get(key) ?? { name, input: [], output: [] };
-    current.input.push(inputRate);
-    if (outputRate != null) current.output.push(outputRate);
-    inputs.set(key, current);
-  };
-
-  for (const record of modelRateRecords) {
-    add(String(record.model_name ?? "").trim(), numberOrNull(record.rate_input), numberOrNull(record.rate_output));
-  }
-  for (const groups of groupsBySite.values()) {
-    for (const group of groups) {
-      for (const relatedModel of group.relatedModels) {
-        const parsed = parseRelatedModel(relatedModel);
-        if (parsed) add(parsed.name, parsed.inputRate, null);
-      }
-    }
-  }
-
-  return new Map(
-    [...inputs.entries()]
-      .map(([key, value]) => [key, {
-        name: value.name,
-        inputRate: modeNumber(value.input) ?? 0,
-        outputRate: modeNumber(value.output),
-        occurrences: value.input.length,
-      }] as const)
-      .filter(([, baseline]) => baseline.inputRate > 0),
-  );
-}
-
-function isOpenAIGroup(name: string): boolean {
-  const normalized = name.toLocaleLowerCase();
-  if (/claude|anthropic|kiro|cc[-_ ]/.test(normalized)) return false;
-  return /codex|gpt|openai|chatgpt|(^|[^a-z])(pro|plus)([^a-z]|$)/.test(normalized);
-}
-
-function isOpenAIModel(name: string): boolean {
-  return /^(?:gpt-|o[1-4](?:[-.]|$)|codex|chatgpt-)/i.test(name);
-}
 
 export function assessRemarkRisk(remark: string): { level: RiskLevel; reason: string } {
   const normalized = remark.replace(/\s+/g, " ").trim();
@@ -283,7 +222,7 @@ export function buildRelayV1Data(
       ?? rawSiteId;
   };
 
-  const offersBySite = new Map<string, RelayV1Offer[]>();
+  const offersBySiteMap = new Map<string, Map<string, RelayV1Offer>>();
   for (const record of modelRateRecords) {
     const siteId = resolveModelRateSiteId(record);
     const modelName = String(record.model_name ?? "").trim();
@@ -303,9 +242,27 @@ export function buildRelayV1Data(
         .filter(Boolean),
       fetchedAt: String(record.fetched_at ?? ""),
     };
-    const current = offersBySite.get(siteId) ?? [];
-    current.push(offer);
-    offersBySite.set(siteId, current);
+    let siteMap = offersBySiteMap.get(siteId);
+    if (!siteMap) {
+      siteMap = new Map<string, RelayV1Offer>();
+      offersBySiteMap.set(siteId, siteMap);
+    }
+    const existing = siteMap.get(modelName);
+    if (!existing) {
+      siteMap.set(modelName, offer);
+    } else {
+      // Pick the newer fetchedAt
+      const existingTime = existing.fetchedAt ? Date.parse(existing.fetchedAt.replace(" ", "T")) : 0;
+      const newTime = offer.fetchedAt ? Date.parse(offer.fetchedAt.replace(" ", "T")) : 0;
+      if (newTime >= existingTime) {
+        siteMap.set(modelName, offer);
+      }
+    }
+  }
+
+  const offersBySite = new Map<string, RelayV1Offer[]>();
+  for (const [siteId, siteMap] of offersBySiteMap.entries()) {
+    offersBySite.set(siteId, Array.from(siteMap.values()));
   }
 
   const groupsBySite = new Map<string, RelayV1Group[]>();
@@ -316,7 +273,7 @@ export function buildRelayV1Data(
     const risk = assessRemarkRisk(remark);
     const group: RelayV1Group = {
       id: String(record.__id ?? ""),
-      name: String(record.group_name ?? "未命名分组"),
+      name: String(record.group_name ?? "未命名分组").trim(),
       rateValues: String(record.rate_values ?? ""),
       rateMin: numberOrNull(record.rate_min),
       rateMax: numberOrNull(record.rate_max),
@@ -332,10 +289,6 @@ export function buildRelayV1Data(
     current.push(group);
     groupsBySite.set(siteId, current);
   }
-  const modelBaselines = buildModelBaselines(modelRateRecords, groupsBySite);
-  const commonOpenAIModels = [...modelBaselines.values()]
-    .filter((baseline) => baseline.occurrences >= 5 && isOpenAIModel(baseline.name) && !/image/i.test(baseline.name));
-
   const exactModelsBySite = new Map<string, Set<string>>();
   for (const [siteId, offers] of offersBySite) {
     exactModelsBySite.set(siteId, new Set(offers.map((offer) => offer.modelName.toLocaleLowerCase())));
@@ -490,6 +443,8 @@ export interface OfficialModelBenchmark {
   standardBaseInput: number;
   officialUsdPer1M: number;
   description: string;
+  /** 基准来源；OFFICIAL_MODEL_BENCHMARKS 内的条目缺省视为 official */
+  source?: "official" | "inferred" | "generic";
 }
 
 export const OFFICIAL_MODEL_BENCHMARKS: Record<string, OfficialModelBenchmark> = {
@@ -538,28 +493,70 @@ export const OFFICIAL_MODEL_BENCHMARKS: Record<string, OfficialModelBenchmark> =
   "gemini-1.5-flash": { standardBaseInput: 0.075, officialUsdPer1M: 0.075, description: "官方基准 $0.075 / 1M" },
 };
 
-export function getOfficialModelBenchmark(modelName: string): OfficialModelBenchmark {
+export function getOfficialModelBenchmark(
+  modelName: string,
+  inferredBaselines?: Map<string, number>,
+): OfficialModelBenchmark {
   const norm = modelName.toLowerCase().trim();
   if (OFFICIAL_MODEL_BENCHMARKS[norm]) {
-    return OFFICIAL_MODEL_BENCHMARKS[norm];
+    return { ...OFFICIAL_MODEL_BENCHMARKS[norm], source: "official" };
   }
 
-  if (/^gpt-5\.6-sol/i.test(norm)) return { standardBaseInput: 2.5, officialUsdPer1M: 2.5, description: "官方基准 $2.5 / 1M" };
-  if (/^gpt-5\.6-terra/i.test(norm)) return { standardBaseInput: 1.0, officialUsdPer1M: 1.0, description: "官方基准 $1.0 / 1M" };
-  if (/^gpt-5\.6-luna/i.test(norm)) return { standardBaseInput: 0.15, officialUsdPer1M: 0.15, description: "官方基准 $0.15 / 1M" };
-  if (/^gpt-5\.6/i.test(norm)) return { standardBaseInput: 2.0, officialUsdPer1M: 2.0, description: "官方基准 $2.0 / 1M" };
-  if (/^gpt-5\.4/i.test(norm)) return { standardBaseInput: 2.0, officialUsdPer1M: 2.0, description: "官方基准 $2.0 / 1M" };
-  if (/^claude-3-7/i.test(norm)) return { standardBaseInput: 3.0, officialUsdPer1M: 3.0, description: "官方基准 $3.0 / 1M" };
-  if (/^claude-3-5-sonnet/i.test(norm)) return { standardBaseInput: 3.0, officialUsdPer1M: 3.0, description: "官方基准 $3.0 / 1M" };
-  if (/^claude-3-5-haiku/i.test(norm)) return { standardBaseInput: 0.8, officialUsdPer1M: 0.8, description: "官方基准 $0.8 / 1M" };
-  if (/^deepseek.*(r1|reasoner)/i.test(norm)) return { standardBaseInput: 0.55, officialUsdPer1M: 0.55, description: "官方基准 $0.55 / 1M" };
-  if (/^deepseek.*(v3|chat)/i.test(norm)) return { standardBaseInput: 0.14, officialUsdPer1M: 0.14, description: "官方基准 $0.14 / 1M" };
-  if (/^gemini-2\.0-flash/i.test(norm)) return { standardBaseInput: 0.10, officialUsdPer1M: 0.10, description: "官方基准 $0.10 / 1M" };
-  if (/^gemini-2\.0-pro/i.test(norm)) return { standardBaseInput: 1.0, officialUsdPer1M: 1.0, description: "官方基准 $1.0 / 1M" };
-  if (/^o1/i.test(norm)) return { standardBaseInput: 15.0, officialUsdPer1M: 15.0, description: "官方基准 $15.0 / 1M" };
-  if (/^o3/i.test(norm)) return { standardBaseInput: 1.1, officialUsdPer1M: 1.1, description: "官方基准 $1.1 / 1M" };
+  if (/^gpt-5\.6-sol/i.test(norm)) return { standardBaseInput: 2.5, officialUsdPer1M: 2.5, description: "官方基准 $2.5 / 1M", source: "official" };
+  if (/^gpt-5\.6-terra/i.test(norm)) return { standardBaseInput: 1.0, officialUsdPer1M: 1.0, description: "官方基准 $1.0 / 1M", source: "official" };
+  if (/^gpt-5\.6-luna/i.test(norm)) return { standardBaseInput: 0.15, officialUsdPer1M: 0.15, description: "官方基准 $0.15 / 1M", source: "official" };
+  if (/^gpt-5\.6/i.test(norm)) return { standardBaseInput: 2.0, officialUsdPer1M: 2.0, description: "官方基准 $2.0 / 1M", source: "official" };
+  if (/^gpt-5\.4/i.test(norm)) return { standardBaseInput: 2.0, officialUsdPer1M: 2.0, description: "官方基准 $2.0 / 1M", source: "official" };
+  if (/^claude-3-7/i.test(norm)) return { standardBaseInput: 3.0, officialUsdPer1M: 3.0, description: "官方基准 $3.0 / 1M", source: "official" };
+  if (/^claude-3-5-sonnet/i.test(norm)) return { standardBaseInput: 3.0, officialUsdPer1M: 3.0, description: "官方基准 $3.0 / 1M", source: "official" };
+  if (/^claude-3-5-haiku/i.test(norm)) return { standardBaseInput: 0.8, officialUsdPer1M: 0.8, description: "官方基准 $0.8 / 1M", source: "official" };
+  if (/^deepseek.*(r1|reasoner)/i.test(norm)) return { standardBaseInput: 0.55, officialUsdPer1M: 0.55, description: "官方基准 $0.55 / 1M", source: "official" };
+  if (/^deepseek.*(v3|chat)/i.test(norm)) return { standardBaseInput: 0.14, officialUsdPer1M: 0.14, description: "官方基准 $0.14 / 1M", source: "official" };
+  if (/^gemini-2\.0-flash/i.test(norm)) return { standardBaseInput: 0.10, officialUsdPer1M: 0.10, description: "官方基准 $0.10 / 1M", source: "official" };
+  if (/^gemini-2\.0-pro/i.test(norm)) return { standardBaseInput: 1.0, officialUsdPer1M: 1.0, description: "官方基准 $1.0 / 1M", source: "official" };
+  if (/^o1/i.test(norm)) return { standardBaseInput: 15.0, officialUsdPer1M: 15.0, description: "官方基准 $15.0 / 1M", source: "official" };
+  if (/^o3/i.test(norm)) return { standardBaseInput: 1.1, officialUsdPer1M: 1.1, description: "官方基准 $1.1 / 1M", source: "official" };
 
-  return { standardBaseInput: 1.0, officialUsdPer1M: 1.0, description: "通用 1.0× 基准" };
+  // 官方表未收录 → 全网众数推断兜底（覆盖 claude-4.x/5.x、grok、gemini-3.x 等新模型）
+  const inferredRate = inferredBaselines?.get(norm);
+  if (inferredRate && inferredRate > 0) {
+    return {
+      standardBaseInput: inferredRate,
+      officialUsdPer1M: inferredRate,
+      description: `全网众数推断基准 $${inferredRate} / 1M`,
+      source: "inferred",
+    };
+  }
+
+  return { standardBaseInput: 1.0, officialUsdPer1M: 1.0, description: "通用 1.0× 基准 (模型未收录)", source: "generic" };
+}
+
+/**
+ * 跨站点众数推断各模型的基准输入价，作为官方基准表缺失时的锚点。
+ * 仅统计报价站点数 ≥ minOccurrences 的模型，避免被长尾噪声带偏。
+ */
+export function buildInferredBenchmarks(sites: RelayV1Site[], minOccurrences = 5): Map<string, number> {
+  const ratesByName = new Map<string, number[]>();
+  for (const site of sites) {
+    for (const offer of site.offers) {
+      if (offer.modelType === "image") continue;
+      const rate = offer.inputRate ?? offer.outputRate;
+      if (rate == null || rate <= 0) continue;
+      const key = offer.modelName.trim().toLowerCase();
+      const list = ratesByName.get(key);
+      if (list) list.push(rate);
+      else ratesByName.set(key, [rate]);
+    }
+  }
+  const result = new Map<string, number>();
+  for (const [key, rates] of ratesByName) {
+    if (rates.length < minOccurrences) continue;
+    const counts = new Map<number, number>();
+    for (const rate of rates) counts.set(rate, (counts.get(rate) ?? 0) + 1);
+    const [mode] = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0])[0];
+    if (mode > 0) result.set(key, mode);
+  }
+  return result;
 }
 
 export interface PriceFormulaBreakdown {
@@ -574,11 +571,19 @@ export interface PriceFormulaBreakdown {
   pricingArchetype: "standard_group" | "flat_rate" | "points_scaled" | "custom_hybrid";
   archetypeLabel: string;
   officialBenchmarkBase: number;
+  /** 基准来源（official / inferred 全网众数 / generic 未收录兜底） */
+  benchmarkSource: "official" | "inferred" | "generic";
+  /** 疑似积分制等异构计价口径（报价 ≥ 基准 10×），不参与价格梯队与分布统计 */
+  suspectedPointsScale: boolean;
+  /** 申报 enable_groups 在站点分组表中全部未命中（已回退全量分组并标注） */
+  groupMatchFailed: boolean;
   formulaText: string;
   hasGroupDiscount: boolean;
   isDerivedSource: boolean;
   applicableGroupsCount: number;
   optimalGroupRemark?: string;
+  /** 实际命中的最优计价分组（用于风险范围对齐） */
+  optimalGroup?: RelayV1Group;
 }
 
 export interface FamilyModelSummary {
@@ -708,10 +713,12 @@ function isImageGenerationGroup(group: RelayV1Group): boolean {
 export function resolveOfferFormula(
   offer: RelayV1Offer,
   siteGroups: RelayV1Group[],
+  inferredBaselines?: Map<string, number>,
 ): PriceFormulaBreakdown {
   const isImage = offer.modelType === "image";
   const eligibleSiteGroups = isImage ? siteGroups : siteGroups.filter((group) => !isImageGenerationGroup(group));
-  const benchmark = getOfficialModelBenchmark(offer.modelName);
+  const benchmark = getOfficialModelBenchmark(offer.modelName, inferredBaselines);
+  const benchmarkSource = benchmark.source ?? "official";
   const basePrice = isImage
     ? (offer.perCallPrice ?? 0)
     : (offer.inputRate ?? offer.outputRate ?? 0);
@@ -727,6 +734,7 @@ export function resolveOfferFormula(
     const normalizedMultiplier = isImage
       ? rawEffectivePrice
       : (benchmark.standardBaseInput > 0 ? rawEffectivePrice / benchmark.standardBaseInput : rawEffectivePrice);
+    const suspectedPointsScale = !isImage && basePrice >= benchmark.standardBaseInput * 10;
 
     const estimatedRmb = isImage ? null : Number((normalizedMultiplier * benchmark.officialUsdPer1M * 7.2).toFixed(2));
     const formattedBase = isImage ? `¥${basePrice}` : `${basePrice}×`;
@@ -743,18 +751,32 @@ export function resolveOfferFormula(
       pricingArchetype: isImage ? "flat_rate" : (Math.abs(basePrice - benchmark.standardBaseInput) < 1e-4 ? "standard_group" : "flat_rate"),
       archetypeLabel: isImage ? "按次计费" : "一口价基准",
       officialBenchmarkBase: benchmark.standardBaseInput,
-      formulaText: `${formattedBase}`,
+      benchmarkSource,
+      suspectedPointsScale,
+      groupMatchFailed: false,
+      formulaText: `${formattedBase}${suspectedPointsScale ? "（口径存疑）" : ""}`,
       hasGroupDiscount: false,
       isDerivedSource: Boolean(offer.priceSource),
       applicableGroupsCount: 0,
     };
   }
 
-  // 文本模型先排除生图专用分组，再按报价显式绑定范围筛选。
-  const candidateGroups =
-    offer.enabledGroups && offer.enabledGroups.length > 0
-      ? eligibleSiteGroups.filter((g) => offer.enabledGroups.includes(g.name))
-      : eligibleSiteGroups;
+  // 文本模型先排除生图专用分组，再按报价显式绑定范围筛选（分组名归一化：trim + 大小写不敏感）
+  const groupLookup = new Map(eligibleSiteGroups.map((group) => [group.name.trim().toLowerCase(), group]));
+  let candidateGroups: RelayV1Group[];
+  if (offer.enabledGroups.length > 0) {
+    const matched = new Set<RelayV1Group>();
+    for (const raw of offer.enabledGroups) {
+      const group = groupLookup.get(raw.trim().toLowerCase());
+      if (group) matched.add(group);
+    }
+    candidateGroups = [...matched];
+  } else {
+    candidateGroups = eligibleSiteGroups;
+  }
+  // 绑定分组全部未命中时回退全量分组并打标，避免折扣被静默丢失
+  const groupMatchFailed = offer.enabledGroups.length > 0 && candidateGroups.length === 0;
+  if (groupMatchFailed) candidateGroups = eligibleSiteGroups;
 
   let optimalGroup: RelayV1Group | null = null;
   let minRate = Number.POSITIVE_INFINITY;
@@ -766,7 +788,7 @@ export function resolveOfferFormula(
     }
   }
 
-  // 未指定分组时优先 default（仍只在当前模型允许的分组范围内）。
+  // 兜底：无任何有效分组倍率时尝试 default 分组（仅在模型未声明绑定范围时）。
   if (!optimalGroup && (!offer.enabledGroups || offer.enabledGroups.length === 0)) {
     const defaultGroup = eligibleSiteGroups.find((g) => g.name.toLowerCase() === "default");
     if (defaultGroup && defaultGroup.rateMin != null && defaultGroup.rateMin > 0) {
@@ -792,18 +814,21 @@ export function resolveOfferFormula(
   let pricingArchetype: PriceFormulaBreakdown["pricingArchetype"] = "standard_group";
   let archetypeLabel = "标准官方倍率 + 分组折扣";
 
+  // 报价 ≥ 基准 10× 视为异构计价口径（积分制等），无法可靠换算，隔离出统一比价
+  const suspectedPointsScale = !isImage && basePrice >= benchmark.standardBaseInput * 10;
+
   if (isImage) {
     pricingArchetype = "flat_rate";
     archetypeLabel = "按次计费";
   } else if (Math.abs(basePrice - benchmark.standardBaseInput) < 1e-4) {
     pricingArchetype = "standard_group";
-    archetypeLabel = "标准官方倍率 + 分组折扣";
+    archetypeLabel = benchmarkSource === "official" ? "标准官方倍率 + 分组折扣" : `标准倍率 + 分组折扣 (${benchmark.description})`;
+  } else if (suspectedPointsScale) {
+    pricingArchetype = "points_scaled";
+    archetypeLabel = "疑似积分制 · 计价口径异常，不参与价格梯队";
   } else if (basePrice < benchmark.standardBaseInput && groupRate >= 0.99) {
     pricingArchetype = "flat_rate";
     archetypeLabel = "一口价直降 (折扣已内嵌)";
-  } else if (basePrice >= benchmark.standardBaseInput * 10) {
-    pricingArchetype = "points_scaled";
-    archetypeLabel = "积分放大制 (已消除汇率差)";
   } else {
     pricingArchetype = "custom_hybrid";
     archetypeLabel = "自定义基准 + 分组";
@@ -815,12 +840,15 @@ export function resolveOfferFormula(
   const normText = `${new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 4 }).format(normalizedMultiplier)}×`;
 
   let formulaText = `基准 ${baseText}`;
-  if (pricingArchetype === "flat_rate") {
+  if (suspectedPointsScale) {
+    formulaText = `疑似积分制 ${baseText} × [${groupName} ${rateText}]（口径存疑，未参与梯队）`;
+  } else if (pricingArchetype === "flat_rate") {
     formulaText = `一口价 ${baseText} (等效官方 ${normText})`;
-  } else if (pricingArchetype === "points_scaled") {
-    formulaText = `积分制 ${baseText} × [${groupName} ${rateText}] (等效官方 ${normText})`;
   } else if (hasGroupDiscount) {
     formulaText = `基准 ${baseText} × [${groupName} ${rateText}] = 等效官方 ${normText}`;
+  }
+  if (groupMatchFailed) {
+    formulaText += "（绑定分组未命中）";
   }
 
   return {
@@ -835,11 +863,15 @@ export function resolveOfferFormula(
     pricingArchetype,
     archetypeLabel,
     officialBenchmarkBase: benchmark.standardBaseInput,
+    benchmarkSource,
+    suspectedPointsScale,
+    groupMatchFailed,
     formulaText,
     hasGroupDiscount,
     isDerivedSource: Boolean(offer.priceSource),
     applicableGroupsCount: candidateGroups.length,
     optimalGroupRemark: optimalGroup?.remark,
+    optimalGroup: optimalGroup ?? undefined,
   };
 }
 
@@ -919,6 +951,7 @@ export function assignPriceTier(price: number, stats: PriceDistributionStats): P
 export function aggregateModelFamilies(
   sites: RelayV1Site[],
   families: ModelFamilyConfig[] = PRESET_MODEL_FAMILIES,
+  inferredBaselines?: Map<string, number>,
 ): ModelFamilyGroup[] {
   return families.map((family) => {
     const modelMap = new Map<
@@ -935,8 +968,9 @@ export function aggregateModelFamilies(
       for (const offer of site.offers) {
         if (!family.matcher(offer.modelName)) continue;
         siteIdSet.add(site.id);
-        const formula = resolveOfferFormula(offer, site.groups);
-        if (formula.effectivePrice <= 0) continue;
+        const formula = resolveOfferFormula(offer, site.groups, inferredBaselines);
+        // 积分制等异构口径不参与家族最低价/中位数统计
+        if (formula.effectivePrice <= 0 || formula.suspectedPointsScale) continue;
 
         const current = modelMap.get(offer.modelName) ?? { siteCount: 0, offers: [] };
         current.siteCount += 1;

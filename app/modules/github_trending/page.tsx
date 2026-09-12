@@ -46,7 +46,9 @@ export default async function GithubTrendingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
       />
-      <TrendingExplorer records={records} fetchedAt={latestSync ?? undefined} />
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-6">
+        <TrendingExplorer records={records} fetchedAt={latestSync ?? undefined} />
+      </div>
     </>
   );
 }

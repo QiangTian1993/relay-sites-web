@@ -20,18 +20,18 @@ export function renderCell(
 
   switch (field.type) {
     case "text":
-      return <span className="font-mono text-swiss-fg">{str || "—"}</span>;
+      return <span className="font-mono text-zinc-800">{str || "—"}</span>;
 
     case "longtext":
       return (
-        <span className="text-swiss-fg/80" title={str}>
+        <span className="text-zinc-600" title={str}>
           {truncate(str, 80) || "—"}
         </span>
       );
 
     case "number": {
       if (typeof value !== "number" || Number.isNaN(value)) {
-        return <span className="font-mono text-swiss-fg/30">—</span>;
+        return <span className="font-mono text-zinc-300">—</span>;
       }
       const formatted = (() => {
         switch (field.formatHint) {
@@ -48,20 +48,20 @@ export function renderCell(
         }
       })();
       return (
-        <span className="font-mono font-bold text-swiss-fg">
+        <span className="font-mono font-bold text-zinc-900">
           {formatted}
         </span>
       );
     }
 
     case "single-select": {
-      if (!str) return <span className="font-mono text-swiss-fg/30">—</span>;
+      if (!str) return <span className="font-mono text-zinc-300">—</span>;
       return <Tag variant="filled">{str}</Tag>;
     }
 
     case "multi-select": {
       const arr = toStringArray(value);
-      if (arr.length === 0) return <span className="font-mono text-swiss-fg/30">—</span>;
+      if (arr.length === 0) return <span className="font-mono text-zinc-300">—</span>;
       return (
         <div className="inline-flex flex-wrap gap-1.5">
           {arr.map((s) => (
@@ -75,13 +75,13 @@ export function renderCell(
 
     case "url": {
       const url = extractUrl(value);
-      if (!url) return <span className="font-mono text-swiss-fg/30">—</span>;
+      if (!url) return <span className="font-mono text-zinc-300">—</span>;
       return (
         <a
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 font-mono text-swiss-fg underline hover:text-swiss-accent"
+          className="inline-flex items-center gap-1 font-mono text-indigo-600 hover:text-indigo-700 hover:underline transition-colors"
         >
           <span className="truncate max-w-[200px]">{displayUrl(url)}</span>
           <IconExternal className="h-3 w-3 stroke-[2]" />
@@ -90,18 +90,18 @@ export function renderCell(
     }
 
     case "date": {
-      if (!str) return <span className="font-mono text-swiss-fg/30">—</span>;
+      if (!str) return <span className="font-mono text-zinc-300">—</span>;
       const d = new Date(str);
-      if (Number.isNaN(d.getTime())) return <span className="font-mono text-sm text-swiss-fg/50">{str}</span>;
+      if (Number.isNaN(d.getTime())) return <span className="font-mono text-xs text-zinc-400">{str}</span>;
       return (
-        <span className="font-mono text-sm text-swiss-fg/70">
+        <span className="font-mono text-xs text-zinc-500">
           {d.toLocaleDateString("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" })}
         </span>
       );
     }
 
     default:
-      return <span className="font-mono">{str || "—"}</span>;
+      return <span className="font-mono text-zinc-800">{str || "—"}</span>;
   }
 }
 

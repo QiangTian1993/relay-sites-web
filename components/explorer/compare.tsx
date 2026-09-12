@@ -30,25 +30,25 @@ export function CompareTray({
   onOpen: () => void;
 }) {
   return (
-    <aside className="fixed inset-x-0 bottom-0 z-40 border-t-4 border-swiss-fg bg-swiss-bg">
-      <div className="mx-auto flex max-w-[1600px] items-center gap-3 px-4 py-3 sm:px-6">
-        <div className="hidden font-mono text-sm font-black uppercase tracking-widest sm:block">候选站</div>
-        <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto">
+    <aside className="fixed inset-x-0 bottom-4 z-40 px-4 pointer-events-none">
+      <div className="pointer-events-auto mx-auto flex max-w-4xl items-center gap-3 rounded-2xl border border-zinc-200/80 bg-white/95 p-3 shadow-xl backdrop-blur-md">
+        <div className="hidden font-mono text-xs font-bold uppercase tracking-wider text-zinc-400 sm:block">对比候选</div>
+        <div className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto">
           {rows.map((row) => (
-            <span key={row.record.__id} className="inline-flex shrink-0 items-center gap-2 border border-swiss-fg bg-swiss-muted px-2 py-1.5 text-sm font-bold">
+            <span key={row.record.__id} className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-xs font-semibold text-zinc-800 shadow-2xs">
               {row.name}
-              <button type="button" onClick={() => onRemove(row.record.__id)} className="flex h-11 w-11 items-center justify-center sm:h-7 sm:w-7" aria-label={`移出对比 ${row.name}`} title="移出对比">
-                <IconClose className="h-3.5 w-3.5" />
+              <button type="button" onClick={() => onRemove(row.record.__id)} className="flex h-5 w-5 items-center justify-center rounded-full hover:bg-zinc-200 text-zinc-400 hover:text-zinc-700" aria-label={`移出对比 ${row.name}`} title="移出对比">
+                <IconClose className="h-3 w-3" />
               </button>
             </span>
           ))}
         </div>
-        <button type="button" onClick={onClear} className="min-h-11 shrink-0 font-mono text-sm font-black underline">清空</button>
+        <button type="button" onClick={onClear} className="shrink-0 font-mono text-xs font-semibold text-zinc-400 hover:text-zinc-700 px-2">清空</button>
         <button
           type="button"
           onClick={onOpen}
           disabled={rows.length < 2}
-          className="min-h-11 shrink-0 bg-swiss-fg px-4 py-2.5 text-sm font-black text-swiss-bg disabled:cursor-not-allowed disabled:opacity-30"
+          className="shrink-0 rounded-xl bg-zinc-900 px-4 py-2 font-mono text-xs font-bold text-white shadow-2xs disabled:cursor-not-allowed disabled:opacity-30 hover:bg-zinc-800 transition-colors"
         >
           对比 {rows.length} 个站
         </button>
@@ -87,25 +87,25 @@ export function ComparePanel({
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end bg-black/55 p-0 sm:items-center sm:p-6">
-      <section role="dialog" aria-modal="true" aria-label="候选站对比" className="mx-auto flex max-h-[92vh] w-full max-w-6xl flex-col border-2 border-swiss-fg bg-swiss-bg">
-        <header className="flex items-center border-b-2 border-swiss-fg bg-swiss-fg px-4 py-3 text-swiss-bg">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-zinc-900/40 p-0 sm:p-6 backdrop-blur-xs">
+      <section role="dialog" aria-modal="true" aria-label="候选站对比" className="mx-auto flex max-h-[90vh] w-full max-w-5xl flex-col rounded-3xl border border-zinc-200/80 bg-white shadow-2xl overflow-hidden">
+        <header className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/80 px-5 py-4">
           <div>
-            <div className="font-mono text-sm uppercase tracking-widest text-swiss-bg/55">候选对比</div>
-            <h2 className="text-lg font-black">{modelQuery || provider || "站点核心信息"}</h2>
+            <div className="font-mono text-xs font-semibold text-zinc-400 uppercase tracking-wider">候选站多维度对比</div>
+            <h2 className="text-base font-bold text-zinc-900 mt-0.5">{modelQuery || provider || "站点核心参数横向对比"}</h2>
           </div>
-          <button type="button" onClick={onClose} className="ml-auto flex h-11 w-11 items-center justify-center border border-swiss-bg sm:h-9 sm:w-9" aria-label="关闭对比" title="关闭">
-            <IconClose className="h-5 w-5" />
+          <button type="button" onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900 transition-colors" aria-label="关闭对比" title="关闭">
+            <IconClose className="h-4 w-4" />
           </button>
         </header>
 
         <div className="overflow-auto">
-          <div className="grid min-w-max" style={{ gridTemplateColumns: columns }}>
-            <div className="border-b-2 border-r-2 border-swiss-fg bg-swiss-muted p-3 font-mono text-sm font-black uppercase tracking-widest">站点</div>
+          <div className="grid min-w-max divide-y divide-zinc-100" style={{ gridTemplateColumns: columns }}>
+            <div className="bg-zinc-50/60 p-3.5 font-mono text-xs font-semibold text-zinc-400 uppercase tracking-wider border-r border-zinc-100">站点</div>
             {rows.map((row) => (
-              <div key={row.record.__id} className="border-b-2 border-r border-swiss-fg p-3 last:border-r-0">
-                <Link href={`/table/relay_sites_tracker/${encodeURIComponent(row.record.__id)}`} className="text-base font-black hover:text-swiss-accent">{row.name}</Link>
-                <div className="mt-1 truncate font-mono text-sm text-swiss-fg/50">{row.domain}</div>
+              <div key={row.record.__id} className="p-3.5 border-r border-zinc-100 last:border-r-0">
+                <Link href={`/table/relay_sites_tracker/${encodeURIComponent(row.record.__id)}`} className="text-sm font-bold text-zinc-900 hover:text-[#E03E1A] transition-colors">{row.name}</Link>
+                <div className="mt-0.5 truncate font-mono text-xs text-zinc-400">{row.domain}</div>
               </div>
             ))}
 
@@ -117,15 +117,15 @@ export function ComparePanel({
             {/* P3-1: 分组差异列 */}
             <CompareMetric label="分组差异" rows={rows} render={compareGroups} />
 
-            <div className="border-r-2 border-swiss-fg bg-swiss-muted p-3 font-mono text-sm font-black uppercase tracking-widest">下一步</div>
+            <div className="bg-zinc-50/60 p-3.5 font-mono text-xs font-semibold text-zinc-400 uppercase tracking-wider border-r border-zinc-100">下一步</div>
             {rows.map((row) => (
-              <div key={row.record.__id} className="flex flex-wrap gap-2 border-r border-swiss-fg p-3 last:border-r-0">
-                <Link href={`/table/relay_sites_tracker/${encodeURIComponent(row.record.__id)}`} className="inline-flex items-center gap-1 bg-swiss-fg px-3 py-2 text-sm font-black text-swiss-bg">
-                  查看详情 <IconArrowRight className="h-3.5 w-3.5" />
+              <div key={row.record.__id} className="flex flex-wrap gap-2 p-3.5 border-r border-zinc-100 last:border-r-0">
+                <Link href={`/table/relay_sites_tracker/${encodeURIComponent(row.record.__id)}`} className="inline-flex items-center gap-1 rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-bold text-white shadow-2xs hover:bg-zinc-800 transition-colors">
+                  查看详情 <IconArrowRight className="h-3 w-3" />
                 </Link>
                 {row.domain && (
-                  <a href={domainHref(row.domain)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 border border-swiss-fg px-3 py-2 text-sm font-black">
-                    访问站点 <IconExtLink className="h-3.5 w-3.5" />
+                  <a href={domainHref(row.domain)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 shadow-2xs transition-colors">
+                    访问站点 <IconExtLink className="h-3 w-3" />
                   </a>
                 )}
               </div>
@@ -150,9 +150,9 @@ function CompareMetric({
 }) {
   return (
     <>
-      <div className="border-b border-r-2 border-swiss-fg bg-swiss-muted p-3 font-mono text-sm font-black uppercase tracking-widest">{label}</div>
+      <div className="bg-zinc-50/60 p-3.5 font-mono text-xs font-semibold text-zinc-500 border-r border-zinc-100">{label}</div>
       {rows.map((row) => (
-        <div key={row.record.__id} className="border-b border-r border-swiss-fg p-3 text-sm leading-5 last:border-r-0">{render(row)}</div>
+        <div key={row.record.__id} className="p-3.5 text-xs leading-relaxed text-zinc-700 border-r border-zinc-100 last:border-r-0 whitespace-pre-line">{render(row)}</div>
       ))}
     </>
   );

@@ -19,33 +19,33 @@ export function DataDetail({ table, record }: Props) {
   const subtitleVal = table.subtitleField ? record[table.subtitleField] : undefined;
 
   return (
-    <div className="flex flex-col">
-      {/* ===== HERO HEADER: 大标题 + 编号 ===== */}
-      <header className="relative border-b-2 border-swiss-fg swiss-grid overflow-hidden">
-        <div className="border-b border-swiss-fg/20 bg-swiss-fg text-swiss-bg">
-          <div className="mx-auto flex max-w-[1600px] items-center gap-4 px-6 py-3 font-mono text-sm uppercase tracking-ultra">
-            <span className="bg-swiss-accent px-2 py-0.5 text-swiss-bg">D.01</span>
+    <div className="flex flex-col pb-20">
+      {/* ===== HERO HEADER ===== */}
+      <header className="border-b border-zinc-200/80 bg-white/70 backdrop-blur-md">
+        <div className="border-b border-zinc-100 bg-zinc-50/50">
+          <div className="mx-auto flex max-w-[1600px] items-center gap-3 px-4 py-2.5 font-mono text-xs text-zinc-500 sm:px-6">
+            <span className="rounded bg-zinc-900 px-1.5 py-0.5 text-[10px] text-white font-bold">D.01</span>
             <span>{table.id.toUpperCase()} / DETAIL</span>
             <Link
               href={`/table/${table.id}`}
-              className="ml-auto inline-flex items-center gap-1.5 border border-swiss-bg bg-swiss-bg px-2 py-0.5 text-sm font-black text-swiss-fg hover:bg-swiss-accent"
+              className="ml-auto inline-flex items-center gap-1 rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-xs font-semibold text-zinc-700 shadow-2xs hover:bg-zinc-50 transition-colors"
             >
-              <IconArrowLeft className="h-3 w-3 stroke-[2]" />
-              BACK TO LIST
+              <IconArrowLeft className="h-3 w-3" />
+              返回列表
             </Link>
           </div>
         </div>
 
-        <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-0 px-6 py-12 lg:grid-cols-[2fr_1fr]">
-          <div className="border-b-2 border-swiss-fg pb-8 lg:border-b-0 lg:border-r-2 lg:pr-12 lg:pb-0">
-            <div className="mb-3 flex items-center gap-3 font-mono text-sm uppercase tracking-ultra text-swiss-fg/60">
-              <span>D.01.A / PRIMARY</span>
+        <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-6 px-4 py-10 sm:px-6 lg:grid-cols-[2fr_1fr]">
+          <div>
+            <div className="mb-2 font-mono text-xs uppercase tracking-wider text-zinc-400">
+              PRIMARY INFO
             </div>
-            <h1 className="text-[clamp(2.25rem,7vw,5.5rem)] font-black leading-[0.9] tracking-tightest break-words">
+            <h1 className="text-3xl font-extrabold tracking-tight text-zinc-900 break-words sm:text-5xl">
               {title}
             </h1>
             {subtitleVal != null && (
-              <div className="mt-4 font-mono text-sm text-swiss-fg/70 break-all">
+              <div className="mt-3 font-mono text-xs text-zinc-500 break-all">
                 {renderCell(
                   { ...table.fields.find((f) => f.key === table.subtitleField)!, key: "_subtitle" } as never,
                   subtitleVal,
@@ -55,26 +55,26 @@ export function DataDetail({ table, record }: Props) {
             )}
           </div>
 
-          <div className="flex flex-col gap-0 pt-8 lg:pt-0 lg:pl-12">
-            <div className="mb-3 font-mono text-sm uppercase tracking-ultra text-swiss-fg/60">
-              D.01.B / METADATA
+          <div>
+            <div className="mb-2 font-mono text-xs uppercase tracking-wider text-zinc-400">
+              METADATA
             </div>
-            <dl className="grid grid-cols-2 gap-0 border-2 border-swiss-fg">
-              <div className="border-b-2 border-r-2 border-swiss-fg/0 p-3 odd:border-r-2 even:border-r-0">
-                <dt className="font-mono text-sm uppercase tracking-ultra text-swiss-fg/50">RECORD ID</dt>
-                <dd className="mt-1 break-all font-mono text-sm">{record.__id}</dd>
-              </div>
-              <div className="border-b-2 border-l-0 p-3">
-                <dt className="font-mono text-sm uppercase tracking-ultra text-swiss-fg/50">TABLE</dt>
-                <dd className="mt-1 font-mono text-sm uppercase">{table.id}</dd>
-              </div>
-              <div className="border-r-2 p-3">
-                <dt className="font-mono text-sm uppercase tracking-ultra text-swiss-fg/50">FIELDS</dt>
-                <dd className="mt-1 font-mono text-sm">{table.fields.length}</dd>
+            <dl className="grid grid-cols-2 rounded-2xl border border-zinc-200/80 bg-white shadow-sm overflow-hidden divide-x divide-y divide-zinc-100">
+              <div className="p-3">
+                <dt className="font-mono text-[10px] font-semibold uppercase tracking-wider text-zinc-400">RECORD ID</dt>
+                <dd className="mt-0.5 break-all font-mono text-xs font-medium text-zinc-800">{record.__id}</dd>
               </div>
               <div className="p-3">
-                <dt className="font-mono text-sm uppercase tracking-ultra text-swiss-fg/50">VERSION</dt>
-                <dd className="mt-1 font-mono text-sm">0.1.0</dd>
+                <dt className="font-mono text-[10px] font-semibold uppercase tracking-wider text-zinc-400">TABLE</dt>
+                <dd className="mt-0.5 font-mono text-xs font-semibold uppercase text-zinc-800">{table.id}</dd>
+              </div>
+              <div className="p-3">
+                <dt className="font-mono text-[10px] font-semibold uppercase tracking-wider text-zinc-400">FIELDS</dt>
+                <dd className="mt-0.5 font-mono text-xs font-bold text-zinc-800">{table.fields.length}</dd>
+              </div>
+              <div className="p-3">
+                <dt className="font-mono text-[10px] font-semibold uppercase tracking-wider text-zinc-400">VERSION</dt>
+                <dd className="mt-0.5 font-mono text-xs text-zinc-500">0.1.0</dd>
               </div>
             </dl>
           </div>
@@ -83,30 +83,28 @@ export function DataDetail({ table, record }: Props) {
 
       {/* ===== PRIMARY FIELDS ===== */}
       {primary.length > 0 && (
-        <section className="border-b-2 border-swiss-fg">
-          <div className="border-b border-swiss-fg/20 bg-swiss-muted swiss-dots">
-            <div className="mx-auto flex max-w-[1600px] items-center gap-4 px-6 py-3 font-mono text-sm uppercase tracking-ultra text-swiss-fg">
-              <span className="bg-swiss-accent px-2 py-0.5 text-swiss-bg">D.02</span>
-              <span>PRIMARY FIELDS</span>
-              <span className="ml-auto">{primary.length} KEYS</span>
-            </div>
+        <section className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6">
+          <div className="mb-3.5 flex items-center gap-2">
+            <span className="rounded bg-zinc-900 px-1.5 py-0.5 font-mono text-[10px] font-bold text-white">D.02</span>
+            <h2 className="text-base font-bold text-zinc-900">主要字段</h2>
+            <span className="ml-auto font-mono text-xs text-zinc-400">{primary.length} 项</span>
           </div>
-          <div className="mx-auto max-w-[1600px] px-6 py-8">
-            <dl className="border-2 border-swiss-fg divide-y-2 divide-swiss-fg/20">
+          <div className="rounded-2xl border border-zinc-200/80 bg-white shadow-sm overflow-hidden">
+            <dl className="divide-y divide-zinc-100">
               {primary.map((f, i) => {
                 const v = record[f.key];
                 return (
                   <div
                     key={f.key}
-                    className="grid grid-cols-1 gap-2 px-6 py-4 sm:grid-cols-[200px_1fr] sm:gap-8"
+                    className="grid grid-cols-1 gap-2 px-5 py-3.5 sm:grid-cols-[200px_1fr] sm:gap-6 hover:bg-zinc-50/50 transition-colors"
                   >
-                    <dt className="flex items-baseline gap-3 font-mono text-sm uppercase tracking-widest text-swiss-fg/60">
-                      <span className="font-mono text-sm text-swiss-fg/30">
+                    <dt className="flex items-baseline gap-2 font-mono text-xs text-zinc-400">
+                      <span className="text-[11px] font-semibold text-zinc-300">
                         {String(i + 1).padStart(2, "0")}
                       </span>
-                      <span className="font-black text-swiss-fg">{f.label}</span>
+                      <span className="font-semibold text-zinc-700">{f.label}</span>
                     </dt>
-                    <dd className="font-mono text-sm text-swiss-fg break-words">
+                    <dd className="font-mono text-xs text-zinc-900 break-words">
                       {renderCell(f, v, record)}
                     </dd>
                   </div>
@@ -119,39 +117,38 @@ export function DataDetail({ table, record }: Props) {
 
       {/* ===== SECONDARY FIELDS ===== */}
       {secondary.length > 0 && (
-        <section className="border-b-2 border-swiss-fg">
-          <details className="group" open>
-            <summary className="flex cursor-pointer list-none items-center gap-4 border-b border-swiss-fg/20 bg-swiss-muted swiss-diagonal px-6 py-3 font-mono text-sm uppercase tracking-ultra text-swiss-fg [&::-webkit-details-marker]:hidden">
-              <span className="bg-swiss-fg px-2 py-0.5 text-swiss-bg">D.03</span>
-              <span>SECONDARY FIELDS</span>
-              <span className="ml-auto">{secondary.length} KEYS</span>
-              <span className="inline-block transition-transform group-open:rotate-45">
-                <IconPlus className="h-4 w-4 stroke-[2]" />
+        <section className="mx-auto max-w-[1600px] px-4 pt-2 sm:px-6">
+          <details className="group rounded-2xl border border-zinc-200/80 bg-white shadow-sm overflow-hidden" open>
+            <summary className="flex cursor-pointer list-none items-center justify-between border-b border-zinc-100 bg-zinc-50/60 px-5 py-3.5 font-mono text-xs font-semibold text-zinc-700 [&::-webkit-details-marker]:hidden">
+              <div className="flex items-center gap-2">
+                <span className="rounded bg-zinc-200 px-1.5 py-0.5 text-[10px] text-zinc-700 font-bold">D.03</span>
+                <span>其他字段 ({secondary.length})</span>
+              </div>
+              <span className="text-zinc-400 transition-transform group-open:rotate-45">
+                <IconPlus className="h-3.5 w-3.5" />
               </span>
             </summary>
-            <div className="mx-auto max-w-[1600px] px-6 py-8">
-              <dl className="border-2 border-swiss-fg/40 divide-y-2 divide-swiss-fg/20">
-                {secondary.map((f, i) => {
-                  const v = record[f.key];
-                  return (
-                    <div
-                      key={f.key}
-                      className="grid grid-cols-1 gap-2 px-6 py-3 sm:grid-cols-[200px_1fr] sm:gap-8"
-                    >
-                      <dt className="flex items-baseline gap-3 font-mono text-sm uppercase tracking-widest text-swiss-fg/60">
-                        <span className="text-sm text-swiss-fg/30">
-                          {String(i + 1).padStart(2, "0")}
-                        </span>
-                        <span className="font-black text-swiss-fg">{f.label}</span>
-                      </dt>
-                      <dd className="font-mono text-sm text-swiss-fg break-words">
-                        {renderCell(f, v, record)}
-                      </dd>
-                    </div>
-                  );
-                })}
-              </dl>
-            </div>
+            <dl className="divide-y divide-zinc-100">
+              {secondary.map((f, i) => {
+                const v = record[f.key];
+                return (
+                  <div
+                    key={f.key}
+                    className="grid grid-cols-1 gap-2 px-5 py-3 sm:grid-cols-[200px_1fr] sm:gap-6 hover:bg-zinc-50/50 transition-colors"
+                  >
+                    <dt className="flex items-baseline gap-2 font-mono text-xs text-zinc-400">
+                      <span className="text-[11px] font-semibold text-zinc-300">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span className="font-semibold text-zinc-600">{f.label}</span>
+                    </dt>
+                    <dd className="font-mono text-xs text-zinc-800 break-words">
+                      {renderCell(f, v, record)}
+                    </dd>
+                  </div>
+                );
+              })}
+            </dl>
           </details>
         </section>
       )}

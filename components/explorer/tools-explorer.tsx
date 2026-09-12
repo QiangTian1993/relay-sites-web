@@ -121,9 +121,9 @@ export function ToolsExplorer({ records }: Props) {
   }
 
   return (
-    <div className={`flex flex-col gap-5 ${compareIds.length > 0 ? "pb-20" : ""}`}>
+    <div className={`flex flex-col gap-5 ${compareIds.length > 0 ? "pb-24" : ""}`}>
       {/* 场景 Quick Presets */}
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 font-mono text-xs">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 font-sans text-xs">
         {[
           { id: "all", label: "全量编程工具", desc: "查看 42 款全量工具列表" },
           { id: "gui", label: "GUI AI 桌面/IDE", desc: "Cursor, Trae, Windsurf 等" },
@@ -134,114 +134,152 @@ export function ToolsExplorer({ records }: Props) {
             key={item.id}
             type="button"
             onClick={() => setPreset(item.id as any)}
-            className={`border-2 p-3 text-left transition-colors ${
-              preset === item.id ? "border-swiss-fg bg-swiss-fg text-swiss-bg" : "border-swiss-fg/25 bg-white hover:border-swiss-fg"
+            className={`rounded-2xl border p-4 text-left transition-all shadow-xs ${
+              preset === item.id
+                ? "border-zinc-900 bg-zinc-900 text-white shadow-sm"
+                : "border-zinc-200/80 bg-white hover:border-zinc-300 text-zinc-800"
             }`}
           >
-            <div className="font-black uppercase">{item.label}</div>
-            <div className={`mt-1 text-[11px] ${preset === item.id ? "text-swiss-bg/70" : "text-swiss-fg/50"}`}>{item.desc}</div>
+            <div className="font-bold tracking-tight text-sm">{item.label}</div>
+            <div className={`mt-1 text-xs ${preset === item.id ? "text-zinc-300" : "text-zinc-400"}`}>{item.desc}</div>
           </button>
         ))}
       </div>
+
       {activityRows.length > 0 && (
-        <section className="border-2 border-swiss-accent bg-swiss-bg">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-swiss-accent bg-swiss-accent px-4 py-3 text-swiss-bg">
-            <span className="font-mono text-sm font-black uppercase tracking-widest">活动权益 / Membership Offers</span>
-            <span className="font-mono text-xs font-black">{activityRows.length} 条</span>
+        <section className="rounded-2xl border border-amber-200/80 bg-amber-50/40 p-4 shadow-xs">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-amber-200/60 pb-3 mb-3 text-amber-950">
+            <span className="font-mono text-xs font-bold uppercase tracking-wider text-amber-800">活动权益 / Membership Offers</span>
+            <span className="rounded-full bg-amber-100 border border-amber-200 px-2 py-0.5 font-mono text-xs font-semibold text-amber-800">{activityRows.length} 条</span>
           </div>
-          <div className="grid gap-px bg-swiss-accent sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2">
             {activityRows.map((row) => (
-              <Link key={row.id} href={`/table/vibe_coding_tracker/${encodeURIComponent(row.id)}`} className="bg-swiss-bg p-4 transition-colors hover:bg-swiss-muted">
+              <Link key={row.id} href={`/table/vibe_coding_tracker/${encodeURIComponent(row.id)}`} className="rounded-xl border border-amber-200/60 bg-white p-4 transition-all hover:shadow-xs hover:border-amber-300">
                 <div className="flex items-baseline justify-between gap-3">
-                  <strong className="font-black">{row.name}</strong>
-                  <span className="font-mono text-[10px] font-black uppercase tracking-widest text-swiss-accent">查看详情</span>
+                  <strong className="font-bold text-zinc-900">{row.name}</strong>
+                  <span className="font-mono text-xs font-semibold text-[#E03E1A]">查看详情 →</span>
                 </div>
-                <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-swiss-fg/70">{row.activityBenefit}</p>
-                {row.activityPeriod && <div className="mt-2 font-mono text-xs text-swiss-fg/45">{row.activityPeriod}</div>}
+                <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-zinc-600">{row.activityBenefit}</p>
+                {row.activityPeriod && <div className="mt-2 font-mono text-[11px] text-zinc-400">{row.activityPeriod}</div>}
               </Link>
             ))}
           </div>
         </section>
       )}
 
-
       {/* Filter Bar */}
-      <section className="border-2 border-swiss-fg bg-swiss-bg">
-        <div className="flex flex-wrap items-stretch border-b-2 border-swiss-fg bg-swiss-fg text-swiss-bg">
-          <div className="flex min-w-[220px] flex-1 items-center gap-3 px-4 py-2.5 font-mono text-sm font-black uppercase tracking-widest">
+      <section className="rounded-2xl border border-zinc-200/80 bg-white shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/60 px-4 py-3">
+          <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-700">
+            <span className="rounded-md bg-zinc-900 px-1.5 py-0.5 text-[10px] text-white">FILTER</span>
             <span>工具筛选</span>
-            <span className="ml-auto font-mono text-sm font-black text-swiss-bg/55">{filteredRows.length} / {rows.length}</span>
           </div>
+          <span className="font-mono text-xs text-zinc-400">
+            {filteredRows.length} / {rows.length} 款工具
+          </span>
         </div>
 
-        {/* Row 1: 搜索 + 评分门槛 + 排序 */}
-        <div className="grid grid-cols-1 border-b-2 border-swiss-fg sm:grid-cols-3">
-          <label className="flex min-w-0 items-center border-b-2 border-swiss-fg sm:col-span-2 sm:border-b-0 sm:border-r-2">
-            <span className="flex h-full w-12 shrink-0 items-center justify-center border-r border-swiss-fg bg-swiss-muted font-mono text-sm font-black">Q</span>
+        {/* Row 1: 搜索 + 排序 */}
+        <div className="grid grid-cols-1 border-b border-zinc-100 sm:grid-cols-3">
+          <label className="flex min-w-0 items-center border-b border-zinc-100 sm:col-span-2 sm:border-b-0 sm:border-r">
+            <span className="flex h-full w-10 shrink-0 items-center justify-center font-mono text-xs text-zinc-400">Q</span>
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="搜索名称 / 厂商 / 优势 / 备注"
-              className="min-w-0 flex-1 bg-swiss-bg px-3 py-3 font-mono text-sm outline-none focus:bg-swiss-muted"
+              placeholder="搜索名称 / 厂商 / 优势 / 备注..."
+              className="min-w-0 flex-1 bg-transparent px-2 py-3 text-xs outline-none placeholder:text-zinc-400"
             />
             {search && (
-              <button type="button" onClick={() => setSearch("")} className="h-full border-l border-swiss-fg px-3" aria-label="清空搜索">
-                <IconClose className="h-4 w-4" />
+              <button type="button" onClick={() => setSearch("")} className="h-full px-3 text-zinc-400 hover:text-zinc-600" aria-label="清空搜索">
+                <IconClose className="h-3.5 w-3.5" />
               </button>
             )}
           </label>
-          <label className="flex items-center">
-            <span className="px-3 font-mono text-sm font-black uppercase tracking-widest text-swiss-fg/55">排序</span>
-            <select value={sortKey} onChange={(e) => setSortKey(e.target.value as typeof sortKey)} className="min-w-0 flex-1 appearance-none bg-swiss-bg px-2 py-3 font-mono text-sm font-black outline-none">
+          <div className="flex items-center justify-between px-4 py-2">
+            <span className="font-mono text-xs font-medium text-zinc-400 uppercase tracking-wider">排序</span>
+            <select
+              value={sortKey}
+              onChange={(e) => setSortKey(e.target.value as typeof sortKey)}
+              className="rounded-lg border border-zinc-200 bg-white px-2.5 py-1 font-mono text-xs font-semibold text-zinc-800 outline-none shadow-2xs"
+            >
               <option value="score">评分 ↓</option>
               <option value="name">名称 A-Z</option>
               <option value="vendor">厂商 A-Z</option>
             </select>
-          </label>
+          </div>
         </div>
 
-        {/* Row 2: 评分门槛 + 我的状态（短项） */}
-        <div className="grid grid-cols-1 gap-px bg-swiss-fg sm:grid-cols-2">
-          <div className="bg-swiss-bg p-4">
-            <div className="flex items-baseline justify-between font-mono text-sm font-black uppercase tracking-widest text-swiss-fg/55">
+        {/* Row 2: 评分门槛 + 我的状态 */}
+        <div className="grid grid-cols-1 divide-y divide-zinc-100 sm:divide-y-0 sm:divide-x sm:grid-cols-2 border-b border-zinc-100">
+          <div className="p-4">
+            <div className="flex items-baseline justify-between font-mono text-xs font-semibold uppercase tracking-wider text-zinc-400">
               <span>评分门槛</span>
-              <span className="text-swiss-fg">≥ {scoreMin}</span>
+              <span className="text-zinc-900 font-bold">≥ {scoreMin} 星</span>
             </div>
-            <input type="range" min={0} max={5} step={1} value={scoreMin} onChange={(e) => setScoreMin(Number(e.target.value))} className="mt-3 w-full accent-swiss-fg" />
-            <div className="mt-1 flex justify-between font-mono text-sm text-swiss-fg/45">
-              <span>0</span><span>3</span><span>5</span>
+            <input
+              type="range"
+              min={0}
+              max={5}
+              step={1}
+              value={scoreMin}
+              onChange={(e) => setScoreMin(Number(e.target.value))}
+              className="mt-3 w-full accent-zinc-900"
+            />
+            <div className="mt-1 flex justify-between font-mono text-[11px] text-zinc-400">
+              <span>0 (不限)</span><span>3 星</span><span>5 星</span>
             </div>
           </div>
-          <div className="bg-swiss-bg p-4">
-            <div className="font-mono text-sm font-black uppercase tracking-widest text-swiss-fg/55">我的状态</div>
-            <div className="mt-3 flex flex-wrap gap-1">
-              <button type="button" onClick={() => setMyState("")} className={`border px-2 py-1 font-mono text-sm font-black ${myState === "" ? "border-swiss-fg bg-swiss-fg text-swiss-bg" : "border-swiss-fg/40 hover:border-swiss-fg"}`}>全部</button>
+          <div className="p-4">
+            <div className="font-mono text-xs font-semibold uppercase tracking-wider text-zinc-400">我的状态</div>
+            <div className="mt-2.5 flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                onClick={() => setMyState("")}
+                className={`rounded-full px-2.5 py-1 font-mono text-xs font-semibold transition-colors ${
+                  myState === ""
+                    ? "bg-zinc-900 text-white"
+                    : "border border-zinc-200 bg-zinc-50 text-zinc-600 hover:bg-zinc-100"
+                }`}
+              >
+                全部
+              </button>
               {allMyStates.map((s) => (
-                <button key={s} type="button" onClick={() => setMyState(s)} className={`border px-2 py-1 font-mono text-sm font-black ${myState === s ? "border-swiss-fg bg-swiss-fg text-swiss-bg" : "border-swiss-fg/40 hover:border-swiss-fg"}`}>{s}</button>
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setMyState(s)}
+                  className={`rounded-full px-2.5 py-1 font-mono text-xs font-semibold transition-colors ${
+                    myState === s
+                      ? "bg-zinc-900 text-white"
+                      : "border border-zinc-200 bg-zinc-50 text-zinc-600 hover:bg-zinc-100"
+                  }`}
+                >
+                  {s}
+                </button>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Row 3: 类型 + 平台（多选） */}
-        <div className="grid grid-cols-1 gap-px bg-swiss-fg sm:grid-cols-2">
+        {/* Row 3: 类型 + 平台 */}
+        <div className="grid grid-cols-1 divide-y divide-zinc-100 sm:divide-y-0 sm:divide-x sm:grid-cols-2">
           <MultiSelectField label="类型" options={allTypes} selected={types} onChange={setTypes} />
           <MultiSelectField label="平台" options={allPlatforms} selected={platforms} onChange={setPlatforms} />
         </div>
 
         {/* Row 4: 清除按钮 */}
         {hasActiveFilters && (
-          <div className="border-t-2 border-swiss-fg px-4 py-2 text-right">
-            <button type="button" onClick={clearFilters} className="font-mono text-sm font-black hover:text-swiss-accent">
-              清除筛选
+          <div className="border-t border-zinc-100 bg-zinc-50/50 px-4 py-2 text-right">
+            <button type="button" onClick={clearFilters} className="font-mono text-xs font-semibold text-[#E03E1A] hover:underline">
+              清除筛选条件
             </button>
           </div>
         )}
       </section>
 
       {/* 列表行 */}
-      <section className="border-2 border-swiss-fg bg-swiss-bg">
-        <div className="divide-y-2 divide-swiss-fg">
+      <section className="rounded-2xl border border-zinc-200/80 bg-white shadow-sm overflow-hidden">
+        <div className="divide-y divide-zinc-100">
           {pageRows.map((row) => (
             <ToolListRow
               key={row.id}
@@ -253,15 +291,31 @@ export function ToolsExplorer({ records }: Props) {
           ))}
         </div>
         {pageRows.length === 0 && (
-          <div className="p-16 text-center font-mono text-sm uppercase tracking-widest text-swiss-fg/40">没有符合条件的工具</div>
+          <div className="p-16 text-center font-mono text-xs uppercase tracking-wider text-zinc-400">没有符合条件的工具</div>
         )}
         {pageCount > 1 && (
-          <footer className="flex items-center justify-between border-t-2 border-swiss-fg bg-swiss-muted px-4 py-3 font-mono text-sm uppercase tracking-widest">
+          <footer className="flex items-center justify-between border-t border-zinc-100 bg-zinc-50/60 px-4 py-3 font-mono text-xs text-zinc-500">
             <span>{safePage * PAGE_SIZE + 1}-{Math.min((safePage + 1) * PAGE_SIZE, filteredRows.length)} / {filteredRows.length}</span>
-            <div className="flex items-center border border-swiss-fg bg-swiss-bg">
-              <button type="button" onClick={() => setPage(Math.max(0, safePage - 1))} disabled={safePage === 0} className="flex h-11 w-11 items-center justify-center disabled:opacity-20 sm:h-8 sm:w-9" aria-label="上一页"><IconArrowLeft className="h-4 w-4" /></button>
-              <span className="border-x border-swiss-fg px-3 py-2 font-black">{safePage + 1} / {pageCount}</span>
-              <button type="button" onClick={() => setPage(Math.min(pageCount - 1, safePage + 1))} disabled={safePage >= pageCount - 1} className="flex h-11 w-11 items-center justify-center disabled:opacity-20 sm:h-8 sm:w-9" aria-label="下一页"><IconArrowRight className="h-4 w-4" /></button>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setPage(Math.max(0, safePage - 1))}
+                disabled={safePage === 0}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-200 bg-white disabled:opacity-30 shadow-2xs hover:bg-zinc-50"
+                aria-label="上一页"
+              >
+                <IconArrowLeft className="h-3.5 w-3.5" />
+              </button>
+              <span className="px-2 font-semibold text-zinc-700">{safePage + 1} / {pageCount}</span>
+              <button
+                type="button"
+                onClick={() => setPage(Math.min(pageCount - 1, safePage + 1))}
+                disabled={safePage >= pageCount - 1}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-200 bg-white disabled:opacity-30 shadow-2xs hover:bg-zinc-50"
+                aria-label="下一页"
+              >
+                <IconArrowRight className="h-3.5 w-3.5" />
+              </button>
             </div>
           </footer>
         )}
@@ -296,29 +350,29 @@ function ToolListRow({ row, selected, compareDisabled, onToggleCompare }: {
   const isActive = row.myState === "在用";
   const tone = scoreTone(row.score);
   const scoreClasses =
-    tone === "high" ? "border-swiss-accent bg-swiss-accent text-swiss-bg"
-    : tone === "medium" ? "border-swiss-fg bg-swiss-fg text-swiss-bg"
-    : "border-swiss-fg/30 text-swiss-fg/40";
+    tone === "high" ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+    : tone === "medium" ? "border-zinc-200 bg-zinc-100 text-zinc-800"
+    : "border-zinc-200 bg-zinc-50 text-zinc-400";
   const stars = row.githubStars ?? row.stars;
 
   return (
-    <article className={`flex transition-colors hover:bg-swiss-muted ${selected ? "bg-swiss-muted" : ""}`}>
-      {/* Left accent rail — accent for 在用, invisible otherwise */}
-      <div className={`w-[3px] shrink-0 ${isActive ? "bg-swiss-accent" : ""}`} />
+    <article className={`flex transition-colors hover:bg-zinc-50/70 ${selected ? "bg-zinc-50/90" : ""}`}>
+      {/* Left accent rail */}
+      <div className={`w-1 shrink-0 ${isActive ? "bg-[#E03E1A]" : "bg-transparent"}`} />
 
       {/* Content zone */}
       <div className="min-w-0 flex-1 px-5 py-4">
         {/* Row 1: name + vendor + type tags */}
-        <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+        <div className="flex min-w-0 flex-wrap items-baseline gap-x-2.5 gap-y-1">
           <Link
             href={`/table/vibe_coding_tracker/${encodeURIComponent(row.id)}`}
-            className="text-lg font-black leading-tight hover:text-swiss-accent"
+            className="text-base font-bold text-zinc-900 hover:text-[#E03E1A] transition-colors"
           >
             {row.name}
           </Link>
-          <span className="font-mono text-sm text-swiss-fg/45">{row.vendor}</span>
+          <span className="font-mono text-xs text-zinc-400">{row.vendor}</span>
           {row.types.map((t) => (
-            <span key={t} className="border border-swiss-fg/25 px-1.5 py-0.5 font-mono text-xs font-bold">
+            <span key={t} className="rounded-md border border-zinc-200/70 bg-zinc-50 px-2 py-0.5 font-mono text-[11px] font-medium text-zinc-600 shadow-2xs">
               {t}
             </span>
           ))}
@@ -326,20 +380,19 @@ function ToolListRow({ row, selected, compareDisabled, onToggleCompare }: {
 
         {/* Row 2: advantages */}
         {row.advantages && (
-          <p className="mt-1.5 line-clamp-2 max-w-3xl text-sm leading-relaxed text-swiss-fg/55">
+          <p className="mt-1.5 line-clamp-2 max-w-3xl text-xs leading-relaxed text-zinc-500">
             {row.advantages}
           </p>
         )}
         {row.activityBenefit && (
-          <div className="mt-3 flex flex-wrap items-start gap-3 border-l-4 border-swiss-accent bg-swiss-muted px-3 py-2">
-            <span className="shrink-0 font-mono text-[10px] font-black uppercase tracking-widest text-swiss-accent">活动权益</span>
-            <span className="min-w-0 text-xs leading-relaxed text-swiss-fg/75">{row.activityBenefit}</span>
+          <div className="mt-2.5 flex flex-wrap items-start gap-2 rounded-lg border border-amber-200/80 bg-amber-50/40 px-3 py-2">
+            <span className="shrink-0 font-mono text-[10px] font-bold uppercase tracking-wider text-amber-800">活动权益</span>
+            <span className="min-w-0 text-xs leading-relaxed text-amber-950 font-medium">{row.activityBenefit}</span>
           </div>
         )}
 
-
         {/* Row 3: meta chips */}
-        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs text-swiss-fg/40">
+        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs text-zinc-400">
           {row.platforms.length > 0 && (
             <span>{row.platforms.slice(0, 3).join(" · ")}{row.platforms.length > 3 ? ` +${row.platforms.length - 3}` : ""}</span>
           )}
@@ -348,31 +401,31 @@ function ToolListRow({ row, selected, compareDisabled, onToggleCompare }: {
           )}
           {row.pricing && row.pricing !== "未标注" && <span>{row.pricing}</span>}
           {(row.multiAgent === "支持" || row.multiAgent === "是") && (
-            <span className="font-bold text-swiss-fg/60">Multi-Agent ✓</span>
+            <span className="font-semibold text-zinc-700">Multi-Agent ✓</span>
           )}
         </div>
       </div>
 
       {/* Right zone: score + state + compare */}
-      <div className="flex shrink-0 flex-col items-center justify-center gap-2 border-l border-swiss-fg/10 px-4 py-4 min-w-[96px]">
-        <div className={`border-2 px-2.5 py-1 font-mono text-sm font-black ${scoreClasses}`}>
+      <div className="flex shrink-0 flex-col items-center justify-center gap-2 border-l border-zinc-100 px-4 py-4 min-w-[96px]">
+        <div className={`rounded-full border px-2.5 py-0.5 font-mono text-xs font-bold ${scoreClasses}`}>
           {row.scoreLabel}
         </div>
         {isActive && (
-          <span className="font-mono text-[10px] font-black uppercase tracking-widest text-swiss-accent">在用</span>
+          <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-700">在用</span>
         )}
         {row.myState === "待调研" && (
-          <span className="font-mono text-[10px] uppercase tracking-widest text-swiss-fg/35">待调研</span>
+          <span className="font-mono text-[10px] text-zinc-400">待调研</span>
         )}
         {row.myState === "弃用" && (
-          <span className="font-mono text-[10px] uppercase tracking-widest text-swiss-fg/25 line-through">弃用</span>
+          <span className="font-mono text-[10px] text-zinc-400 line-through">弃用</span>
         )}
         <button
           type="button"
           onClick={onToggleCompare}
           disabled={compareDisabled}
-          className={`flex h-7 w-7 items-center justify-center border transition-colors disabled:cursor-not-allowed disabled:opacity-20 ${
-            selected ? "border-swiss-fg bg-swiss-fg text-swiss-bg" : "border-swiss-fg/40 hover:border-swiss-fg hover:bg-swiss-fg hover:text-swiss-bg"
+          className={`flex h-7 w-7 items-center justify-center rounded-lg border transition-colors shadow-2xs disabled:cursor-not-allowed disabled:opacity-20 ${
+            selected ? "border-zinc-900 bg-zinc-900 text-white" : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-100"
           }`}
           aria-label={selected ? `移出对比 ${row.name}` : `加入对比 ${row.name}`}
         >
@@ -391,14 +444,14 @@ function MultiSelectField({ label, options, selected, onChange }: {
   selected: string[];
   onChange: (next: string[]) => void;
 }) {
-  if (options.length === 0) return <div className="bg-swiss-bg p-4"><div className="font-mono text-sm font-black uppercase tracking-widest text-swiss-fg/55">{label}</div><div className="mt-2 font-mono text-sm text-swiss-fg/45">--</div></div>;
+  if (options.length === 0) return <div className="p-4"><div className="font-mono text-xs font-semibold uppercase tracking-wider text-zinc-400">{label}</div><div className="mt-2 font-mono text-xs text-zinc-400">--</div></div>;
   return (
-    <div className="bg-swiss-bg p-4">
-      <div className="flex items-baseline justify-between font-mono text-sm font-black uppercase tracking-widest text-swiss-fg/55">
+    <div className="p-4">
+      <div className="flex items-baseline justify-between font-mono text-xs font-semibold uppercase tracking-wider text-zinc-400">
         <span>{label}</span>
-        {selected.length > 0 && <button type="button" onClick={() => onChange([])} className="font-mono text-sm text-swiss-fg/55 hover:text-swiss-accent">× 清</button>}
+        {selected.length > 0 && <button type="button" onClick={() => onChange([])} className="font-mono text-xs text-[#E03E1A] hover:underline">× 清空</button>}
       </div>
-      <div className="mt-2 flex flex-wrap gap-1">
+      <div className="mt-2.5 flex flex-wrap gap-1.5">
         {options.map((opt) => {
           const isSelected = selected.includes(opt);
           return (
@@ -409,7 +462,11 @@ function MultiSelectField({ label, options, selected, onChange }: {
                 const next = isSelected ? selected.filter((x) => x !== opt) : [...selected, opt];
                 onChange(next);
               }}
-              className={`border px-2 py-1 font-mono text-sm font-black ${isSelected ? "border-swiss-fg bg-swiss-fg text-swiss-bg" : "border-swiss-fg/40 hover:border-swiss-fg"}`}
+              className={`rounded-lg px-2.5 py-1 font-mono text-xs font-medium transition-colors ${
+                isSelected
+                  ? "bg-zinc-900 text-white font-semibold"
+                  : "border border-zinc-200 bg-zinc-50 text-zinc-600 hover:bg-zinc-100"
+              }`}
             >
               {opt}
             </button>
@@ -429,20 +486,27 @@ function CompareTray({ rows, onRemove, onClear, onOpen }: {
   onOpen: () => void;
 }) {
   return (
-    <aside className="fixed inset-x-0 bottom-0 z-40 border-t-4 border-swiss-fg bg-swiss-bg">
-      <div className="mx-auto flex max-w-[1600px] items-center gap-3 px-4 py-3 sm:px-6">
-        <div className="hidden font-mono text-sm font-black uppercase tracking-widest sm:block">候选工具</div>
-        <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto">
+    <aside className="fixed bottom-6 inset-x-0 z-40 flex justify-center px-4 pointer-events-none">
+      <div className="pointer-events-auto flex max-w-2xl items-center gap-3 rounded-2xl border border-zinc-200/80 bg-white/95 px-4 py-3 shadow-xl backdrop-blur-md">
+        <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-400">已选</span>
+        <div className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto">
           {rows.map((row) => (
-            <span key={row.id} className="inline-flex shrink-0 items-center gap-2 border border-swiss-fg bg-swiss-muted px-2 py-1.5 text-sm font-bold">
+            <span key={row.id} className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-xs font-medium text-zinc-700">
               {row.name}
-              <button type="button" onClick={() => onRemove(row.id)} className="flex h-11 w-11 items-center justify-center sm:h-7 sm:w-7" aria-label={`移出对比 ${row.name}`}><IconClose className="h-3.5 w-3.5" /></button>
+              <button type="button" onClick={() => onRemove(row.id)} className="text-zinc-400 hover:text-zinc-700">
+                <IconClose className="h-3 w-3" />
+              </button>
             </span>
           ))}
         </div>
-        <button type="button" onClick={onClear} className="min-h-11 shrink-0 font-mono text-sm font-black underline">清空</button>
-        <button type="button" onClick={onOpen} disabled={rows.length < 2} className="min-h-11 shrink-0 bg-swiss-fg px-4 py-2.5 text-sm font-black text-swiss-bg disabled:cursor-not-allowed disabled:opacity-30">
-          对比 {rows.length} 个工具
+        <button type="button" onClick={onClear} className="font-mono text-xs text-zinc-400 hover:text-zinc-700">清空</button>
+        <button
+          type="button"
+          onClick={onOpen}
+          disabled={rows.length < 2}
+          className="rounded-xl bg-zinc-900 px-3.5 py-1.5 font-mono text-xs font-bold text-white shadow-xs hover:bg-zinc-800 disabled:opacity-40"
+        >
+          对比 ({rows.length})
         </button>
       </div>
     </aside>
@@ -463,29 +527,31 @@ function ComparePanel({ rows, onClose }: { rows: ToolRow[]; onClose: () => void 
   }, [onClose]);
   const columns = `120px repeat(${rows.length}, minmax(200px, 1fr))`;
   return (
-    <div className="fixed inset-0 z-50 flex items-end bg-black/55 p-0 sm:items-center sm:p-6">
-      <section role="dialog" aria-modal="true" aria-label="工具对比" className="mx-auto flex max-h-[92vh] w-full max-w-6xl flex-col border-2 border-swiss-fg bg-swiss-bg">
-        <header className="flex items-center border-b-2 border-swiss-fg bg-swiss-fg px-4 py-3 text-swiss-bg">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
+      <section role="dialog" aria-modal="true" aria-label="工具对比" className="mx-auto flex max-h-[90vh] w-full max-w-5xl flex-col rounded-3xl border border-zinc-200/80 bg-white shadow-2xl overflow-hidden">
+        <header className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/70 px-5 py-4">
           <div>
-            <div className="font-mono text-sm font-black uppercase tracking-widest text-swiss-bg/55">候选对比</div>
-            <h2 className="text-lg font-black">AI 编程工具</h2>
+            <div className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-400">候选对比</div>
+            <h2 className="text-base font-bold text-zinc-900">AI 编程工具对比</h2>
           </div>
-          <button type="button" onClick={onClose} className="ml-auto flex h-11 w-11 items-center justify-center border border-swiss-bg sm:h-9 sm:w-9" aria-label="关闭"><IconClose className="h-5 w-5" /></button>
+          <button type="button" onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-500 hover:bg-zinc-100" aria-label="关闭">
+            <IconClose className="h-4 w-4" />
+          </button>
         </header>
-        <div className="overflow-auto">
-          <div className="grid min-w-max" style={{ gridTemplateColumns: columns }}>
-            <div className="border-b-2 border-r-2 border-swiss-fg bg-swiss-muted p-3 font-mono text-sm font-black uppercase tracking-widest">工具</div>
+        <div className="overflow-auto p-4">
+          <div className="grid min-w-max rounded-xl border border-zinc-200/80 overflow-hidden divide-y divide-zinc-100" style={{ gridTemplateColumns: columns }}>
+            <div className="bg-zinc-50/80 p-3 font-mono text-xs font-bold uppercase tracking-wider text-zinc-500 border-r border-zinc-100">工具</div>
             {rows.map((row) => (
-              <div key={row.id} className="border-b-2 border-r border-swiss-fg p-3 last:border-r-0">
-                <Link href={`/table/vibe_coding_tracker/${encodeURIComponent(row.id)}`} className="text-base font-black hover:text-swiss-accent">{row.name}</Link>
-                <div className="mt-1 truncate font-mono text-sm text-swiss-fg/50">{row.vendor}</div>
+              <div key={row.id} className="p-3 border-r border-zinc-100 last:border-r-0 bg-white">
+                <Link href={`/table/vibe_coding_tracker/${encodeURIComponent(row.id)}`} className="text-sm font-bold text-zinc-900 hover:text-[#E03E1A] transition-colors">{row.name}</Link>
+                <div className="mt-0.5 truncate font-mono text-[11px] text-zinc-400">{row.vendor}</div>
               </div>
             ))}
             <Cmp label="评分" rows={rows} render={(r) => r.scoreLabel} />
             <Cmp label="厂商" rows={rows} render={(r) => r.vendor} />
             <Cmp label="类型" rows={rows} render={(r) => r.types.join(" · ")} />
             <Cmp label="平台" rows={rows} render={(r) => r.platforms.join(" · ")} />
-            <Cmp label="我的状态" rows={rows} render={(r) => r.myState} />
+            <Cmp label="我的状态" rows={rows} render={(r) => r.myState || "--"} />
             <Cmp label="支持模型" rows={rows} render={(r) => r.supportedModels.join(" · ")} />
             <Cmp label="定价" rows={rows} render={(r) => r.pricing} />
           </div>
@@ -498,9 +564,9 @@ function ComparePanel({ rows, onClose }: { rows: ToolRow[]; onClose: () => void 
 function Cmp({ label, rows, render }: { label: string; rows: ToolRow[]; render: (r: ToolRow) => string }) {
   return (
     <>
-      <div className="border-b border-r-2 border-swiss-fg bg-swiss-muted p-3 font-mono text-sm font-black uppercase tracking-widest">{label}</div>
+      <div className="bg-zinc-50/50 p-3 font-mono text-xs font-semibold text-zinc-500 border-r border-zinc-100">{label}</div>
       {rows.map((row) => (
-        <div key={row.id} className="border-b border-r border-swiss-fg p-3 text-sm leading-5 last:border-r-0">{render(row)}</div>
+        <div key={row.id} className="p-3 text-xs leading-relaxed text-zinc-700 border-r border-zinc-100 last:border-r-0 bg-white">{render(row)}</div>
       ))}
     </>
   );

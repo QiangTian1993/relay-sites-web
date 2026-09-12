@@ -13,7 +13,7 @@ const SITE_RECORD_ID = "recvqn3NGSHUux";
 const SITE_NAME = "CCTQ AI API 中转站";
 
 function runLark(args: string[]) {
-  const cmd = ["lark-cli", ...args, "--base-token", KB_TOKEN, "--format", "json"];
+  const cmd = ["lark-cli", ...args, "--as", "bot", "--base-token", KB_TOKEN, "--format", "json"];
   return execFileSync(cmd[0], cmd.slice(1), { encoding: "utf-8" });
 }
 

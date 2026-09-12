@@ -105,21 +105,21 @@ export function rateTier(rate: number | null): {
   weight: string;
 } {
   if (rate == null) {
-    return { label: "—", classes: "text-swiss-fg/15", weight: "font-normal" };
+    return { label: "—", classes: "text-zinc-300", weight: "font-normal" };
   }
   if (rate < 0.1) {
-    return { label: formatRate(rate), classes: "bg-swiss-accent text-swiss-bg", weight: "font-black" };
+    return { label: formatRate(rate), classes: "text-emerald-700 bg-emerald-50 border border-emerald-200/60 rounded px-1.5 py-0.5 font-bold", weight: "font-bold" };
   }
   if (rate < 0.3) {
-    return { label: formatRate(rate), classes: "bg-swiss-fg text-swiss-bg", weight: "font-black" };
+    return { label: formatRate(rate), classes: "text-indigo-700 bg-indigo-50 border border-indigo-200/60 rounded px-1.5 py-0.5 font-bold", weight: "font-bold" };
   }
   if (rate < 0.6) {
-    return { label: formatRate(rate), classes: "text-swiss-fg", weight: "font-bold" };
+    return { label: formatRate(rate), classes: "text-zinc-800 bg-zinc-100 rounded px-1.5 py-0.5 font-semibold", weight: "font-medium" };
   }
   if (rate < 1) {
-    return { label: formatRate(rate), classes: "text-swiss-fg/80", weight: "font-mono" };
+    return { label: formatRate(rate), classes: "text-zinc-600 font-medium", weight: "font-mono" };
   }
-  return { label: formatRate(rate), classes: "text-swiss-fg/50", weight: "font-mono" };
+  return { label: formatRate(rate), classes: "text-zinc-400", weight: "font-mono" };
 }
 /** 从 "OpenAI 0.07x | Claude 0.055x | Gemini 1x" 提取特定 provider 的倍率
  * 找不到该 provider 或格式不匹配 → null

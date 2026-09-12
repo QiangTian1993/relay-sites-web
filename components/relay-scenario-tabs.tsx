@@ -18,7 +18,7 @@ export function RelayScenarioTabs({ activePreset, onSelectPreset }: RelayScenari
   ];
 
   return (
-    <div className="mb-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="mb-6 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
       {presets.map((item) => {
         const Icon = item.icon;
         const isActive = activePreset === item.id;
@@ -27,22 +27,24 @@ export function RelayScenarioTabs({ activePreset, onSelectPreset }: RelayScenari
             key={item.id}
             type="button"
             onClick={() => onSelectPreset(item.id)}
-            className={`flex items-start gap-3 border-2 p-3 text-left transition-all ${
+            className={`group relative flex items-start gap-3 rounded-xl border p-3.5 text-left transition-all duration-150 ${
               isActive
-                ? "border-black bg-black text-white shadow-[2px_2px_0px_0px_rgba(255,0,0,1)]"
-                : "border-black/20 bg-white text-black hover:border-black hover:bg-[#f8f8f5]"
+                ? "border-zinc-900 bg-zinc-900 text-white shadow-sm ring-1 ring-zinc-900"
+                : "border-zinc-200/80 bg-white text-zinc-800 hover:border-zinc-300 hover:bg-zinc-50/80 shadow-xs"
             }`}
           >
             <div
-              className={`flex h-7 w-7 shrink-0 items-center justify-center border ${
-                isActive ? "border-white bg-swiss-accent text-white" : "border-black/20 bg-black/5 text-black"
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                isActive
+                  ? "bg-zinc-800 text-white"
+                  : "border border-zinc-200/80 bg-zinc-50 text-zinc-600 group-hover:bg-zinc-100"
               }`}
             >
-              <Icon className="h-3.5 w-3.5" />
+              <Icon className="h-4 w-4" />
             </div>
-            <div>
-              <div className="font-mono text-xs font-black uppercase tracking-wider">{item.label}</div>
-              <div className={`mt-0.5 font-mono text-[10px] ${isActive ? "text-white/70" : "text-black/50"}`}>
+            <div className="min-w-0">
+              <div className="font-mono text-xs font-semibold tracking-tight truncate">{item.label}</div>
+              <div className={`mt-0.5 text-[11px] leading-tight ${isActive ? "text-zinc-300" : "text-zinc-500"}`}>
                 {item.desc}
               </div>
             </div>

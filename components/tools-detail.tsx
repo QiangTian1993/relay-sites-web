@@ -1,9 +1,5 @@
-// AI 编程工具详情页 —— Swiss 风格
+// AI 编程工具详情页 —— 现代精致开发者工具风格
 // 结构：Hero / 4 卡指标 / 定价 + 中文 + stars / 评测(sticky TOC + 4 卡片) / 01-04 细节 section
-//
-// Phase 2 新增：评测 section 用 sticky TOC 导航 + 4 张大卡片展示 KB 里新填的
-// 4 字段（产品定位 / 目标用户 / 使用建议 / 竞品对比）。老的 01-04 section
-// 保留作为细节补充，不进 TOC。
 
 "use client";
 
@@ -21,7 +17,12 @@ const REVIEW_SECTIONS = [
 ];
 
 export function ToolsDetail({ row }: { row: ToolRow }) {
-  const scoreToneClass = row.scoreTone === "high" ? "bg-swiss-accent text-swiss-bg" : row.scoreTone === "medium" ? "bg-swiss-fg text-swiss-bg" : "bg-swiss-fg/15 text-swiss-fg/40";
+  const scoreToneClass =
+    row.scoreTone === "high"
+      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+      : row.scoreTone === "medium"
+      ? "bg-zinc-100 text-zinc-800 border-zinc-200"
+      : "bg-zinc-50 text-zinc-400 border-zinc-200";
   const allPlatforms = row.platforms.length > 0 ? row.platforms.join(" · ") : "未知";
   const allTypes = row.types.length > 0 ? row.types.join(" · ") : "未知";
   const allModels = row.supportedModels.length > 0 ? row.supportedModels.join(" · ") : "未知";
@@ -30,13 +31,12 @@ export function ToolsDetail({ row }: { row: ToolRow }) {
   const [activeReviewId, setActiveReviewId] = useState<string>(REVIEW_SECTIONS[0].id);
   useEffect(() => {
     const handler = () => {
-      const offset = 120; // hero + 一些 breathing room
+      const offset = 120; // hero + breathing room
       let current = REVIEW_SECTIONS[0].id;
       for (const s of REVIEW_SECTIONS) {
         const el = document.getElementById(s.id);
         if (!el) continue;
         const rect = el.getBoundingClientRect();
-        // 顶部已经滑过 offset 的最后一个 section 算 active
         if (rect.top - offset <= 0) {
           current = s.id;
         }
@@ -51,40 +51,67 @@ export function ToolsDetail({ row }: { row: ToolRow }) {
   return (
     <div className="pb-20">
       {/* Hero */}
-      <header className="border-b-2 border-swiss-fg swiss-grid">
-        <div className="mx-auto max-w-[1600px] px-5 py-6 sm:px-6 sm:py-8">
-          <Link href="/table/vibe_coding_tracker" className="inline-flex min-h-11 items-center gap-2 font-mono text-sm font-black uppercase tracking-widest hover:text-swiss-accent">
+      <header className="border-b border-zinc-200/80 bg-white/70 backdrop-blur-md">
+        <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 sm:py-8">
+          <Link
+            href="/table/vibe_coding_tracker"
+            className="inline-flex items-center gap-2 font-mono text-xs font-semibold text-zinc-500 hover:text-[#E03E1A] transition-colors"
+          >
             <IconArrowLeft className="h-4 w-4" /> 返回工具列表
           </Link>
-          <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+          <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
             <div className="min-w-0">
-              <div className="font-mono text-sm uppercase tracking-widest text-swiss-fg/50">工具详情</div>
-              <h1 className="mt-2 break-words text-5xl font-black leading-none tracking-tighter sm:text-7xl">{row.name}</h1>
-              <div className="mt-3 font-mono text-base text-swiss-fg/65">{row.vendor}</div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <span className={`inline-block border-2 px-3 py-1 font-mono text-base font-black ${scoreToneClass}`}>
+              <div className="font-mono text-xs uppercase tracking-wider text-zinc-400">工具情报与评测</div>
+              <h1 className="mt-2 break-words text-3xl font-extrabold text-zinc-900 tracking-tight sm:text-5xl">
+                {row.name}
+              </h1>
+              <div className="mt-2 text-sm font-medium text-zinc-500">{row.vendor}</div>
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <span className={`inline-block rounded-full border px-3 py-0.5 font-mono text-xs font-bold ${scoreToneClass}`}>
                   {row.scoreLabel}
                 </span>
-                <span className="inline-flex items-center gap-0.5 border border-swiss-fg px-2 py-1 font-mono text-sm font-black">
+                <span className="inline-flex items-center gap-0.5 rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 font-mono text-xs shadow-2xs">
                   {Array.from({ length: 5 }).map((_, i) => (
-                    <IconStar key={i} className={`h-4 w-4 ${i < row.score ? "text-swiss-fg" : "text-swiss-fg/15"}`} />
+                    <IconStar key={i} className={`h-3.5 w-3.5 ${i < row.score ? "text-amber-500 fill-amber-500" : "text-zinc-200"}`} />
                   ))}
                 </span>
                 {row.stars != null && row.stars > 0 && (
-                  <a href={row.githubUrl ?? "#"} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 border border-swiss-fg bg-swiss-bg px-3 py-1 font-mono text-sm font-black hover:bg-swiss-fg hover:text-swiss-bg">
-                    <IconStar className="h-4 w-4 fill-swiss-fg" />
+                  <a
+                    href={row.githubUrl ?? "#"}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1 font-mono text-xs font-semibold text-zinc-700 shadow-2xs hover:border-zinc-300 transition-colors"
+                  >
+                    <IconStar className="h-3.5 w-3.5 fill-zinc-700 text-zinc-700" />
                     {formatStars(row.stars)} stars
-                    <IconExternal className="h-3.5 w-3.5" />
+                    <IconExternal className="h-3 w-3 text-zinc-400" />
                   </a>
                 )}
-                {row.myState === "在用" && <span className="inline-flex items-center gap-1 border border-swiss-accent bg-swiss-accent px-2 py-1 font-mono text-sm font-black text-swiss-bg"><IconCircleCheck className="h-4 w-4" />在用</span>}
-                {row.myState === "待调研" && <span className="inline-flex items-center gap-1 border border-swiss-fg/40 px-2 py-1 font-mono text-sm font-black">待调研</span>}
-                {row.myState === "弃用" && <span className="inline-flex items-center gap-1 border border-swiss-fg/40 px-2 py-1 font-mono text-sm font-black text-swiss-fg/55">弃用</span>}
+                {row.myState === "在用" && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 font-mono text-xs font-semibold text-emerald-700">
+                    <IconCircleCheck className="h-3.5 w-3.5" />在用
+                  </span>
+                )}
+                {row.myState === "待调研" && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 font-mono text-xs font-semibold text-amber-700">
+                    待调研
+                  </span>
+                )}
+                {row.myState === "弃用" && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-zinc-100 px-2.5 py-1 font-mono text-xs font-semibold text-zinc-500">
+                    弃用
+                  </span>
+                )}
               </div>
             </div>
             {row.url && extractUrl(row.url) && (
-              <a href={extractUrl(row.url)!} target="_blank" rel="noreferrer" className="inline-flex h-12 items-center justify-center gap-2 bg-swiss-fg px-5 text-base font-black text-swiss-bg transition-colors hover:bg-swiss-accent">
-                访问工具 <IconArrowRight className="h-4 w-4" />
+              <a
+                href={extractUrl(row.url)!}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 text-sm font-bold text-white shadow-sm transition-all hover:bg-zinc-800"
+              >
+                访问官网 <IconArrowRight className="h-4 w-4" />
               </a>
             )}
           </div>
@@ -92,8 +119,8 @@ export function ToolsDetail({ row }: { row: ToolRow }) {
       </header>
 
       {/* 4 卡指标 */}
-      <section className="border-b-2 border-swiss-fg">
-        <div className="mx-auto grid max-w-[1600px] grid-cols-2 px-5 sm:px-6 lg:grid-cols-4">
+      <section className="mx-auto max-w-[1600px] px-4 pt-6 sm:px-6">
+        <div className="grid grid-cols-2 rounded-2xl border border-zinc-200/80 bg-white shadow-sm overflow-hidden divide-y divide-zinc-100 sm:divide-y-0 sm:divide-x lg:grid-cols-4">
           <Metric label="类型" value={allTypes} />
           <Metric label="平台" value={allPlatforms} />
           <Metric label="支持模型" value={allModels} />
@@ -102,76 +129,80 @@ export function ToolsDetail({ row }: { row: ToolRow }) {
       </section>
 
       {/* 定价 + 中文支持 + GitHub stars（附加信息） */}
-      <section className="border-b-2 border-swiss-fg">
-        <div className="mx-auto grid max-w-[1600px] grid-cols-2 px-5 py-6 sm:px-6 sm:py-8 lg:grid-cols-4">
+      <section className="mx-auto max-w-[1600px] px-4 pt-4 sm:px-6">
+        <div className="grid grid-cols-2 rounded-2xl border border-zinc-200/80 bg-white shadow-sm overflow-hidden divide-y divide-zinc-100 sm:divide-y-0 sm:divide-x lg:grid-cols-4">
           <Attribute label="定价机制" value={row.pricing} />
           <Attribute label="中文体验" value={row.chinese} />
           <Attribute label="GitHub Stars" value={row.stars != null ? formatStars(row.stars) : "非开源 / 未标注"} />
           <Attribute label="团队协作/DevBox" value={row.types.some(t => /IDE|Agent/i.test(t)) ? "支持远程环境" : "单机客户端"} />
         </div>
       </section>
+
+      {/* 活动权益 */}
       {row.activityBenefit && (
-        <section className="border-b-2 border-swiss-fg bg-swiss-muted/40">
-          <div className="mx-auto max-w-[1600px] px-5 py-6 sm:px-6 sm:py-8">
-            <div className="border-l-4 border-swiss-accent bg-white p-4 sm:p-5">
-              <div className="font-mono text-xs font-black uppercase tracking-widest text-swiss-accent">活动权益</div>
-              <p className="mt-2 font-mono text-sm leading-6 text-swiss-fg/80">{row.activityBenefit}</p>
-              <div className="mt-3 flex flex-wrap gap-4 font-mono text-xs text-swiss-fg/50">
-                {row.activityPeriod && <span>期限：{row.activityPeriod}</span>}
-                {row.activityUrl && (
-                  <a href={row.activityUrl} target="_blank" rel="noreferrer" className="font-black text-swiss-fg underline decoration-swiss-accent decoration-2 underline-offset-4 hover:text-swiss-accent">
-                    查看活动说明 <IconExternal className="ml-1 inline h-3.5 w-3.5" />
-                  </a>
-                )}
-              </div>
+        <section className="mx-auto max-w-[1600px] px-4 pt-4 sm:px-6">
+          <div className="rounded-2xl border border-amber-200/80 bg-amber-50/50 p-5 sm:p-6 shadow-xs">
+            <div className="font-mono text-xs font-bold uppercase tracking-wider text-amber-800">活动权益</div>
+            <p className="mt-2 font-sans text-sm leading-relaxed text-amber-950 font-medium">{row.activityBenefit}</p>
+            <div className="mt-3 flex flex-wrap gap-4 font-mono text-xs text-amber-700">
+              {row.activityPeriod && <span>期限：{row.activityPeriod}</span>}
+              {row.activityUrl && (
+                <a
+                  href={row.activityUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-bold underline underline-offset-4 hover:text-amber-900"
+                >
+                  查看活动说明 <IconExternal className="ml-1 inline h-3.5 w-3.5" />
+                </a>
+              )}
             </div>
           </div>
         </section>
       )}
 
-
       {/* 选型决策情报与对比看板 */}
-      <section className="border-b-2 border-swiss-fg bg-swiss-bg">
-        <div className="mx-auto max-w-[1600px] px-5 py-8 sm:px-6 sm:py-10">
-          <div className="mb-4 font-mono text-xs font-black uppercase tracking-widest text-swiss-accent">
+      <section className="mx-auto max-w-[1600px] px-4 pt-6 sm:px-6">
+        <div className="mb-3.5 flex items-center gap-2">
+          <span className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-400">
             🛠️ 开发者落地与选型决议
+          </span>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3 font-sans text-xs">
+          <div className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-sm">
+            <div className="font-bold text-xs text-zinc-900 uppercase tracking-wider mb-2">🎯 最佳推荐场景</div>
+            <p className="text-zinc-600 leading-relaxed text-xs">
+              {row.targetUsers ? row.targetUsers : (row.useCases.length > 0 ? row.useCases.join(" · ") : "适合日常全栈开发辅助、自动化代码生成与复杂工程调试。")}
+            </p>
           </div>
-          <div className="grid gap-4 md:grid-cols-3 font-mono text-xs">
-            <div className="border-2 border-swiss-fg bg-white p-4">
-              <div className="font-black text-sm text-swiss-fg uppercase tracking-wider mb-2">🎯 最佳推荐场景</div>
-              <p className="text-swiss-fg/80 leading-relaxed text-xs">
-                {row.targetUsers ? row.targetUsers : (row.useCases.length > 0 ? row.useCases.join(" · ") : "适合日常全栈开发辅助、自动化代码生成与复杂工程调试。")}
-              </p>
-            </div>
 
-            <div className="border-2 border-swiss-fg bg-white p-4">
-              <div className="font-black text-sm text-swiss-fg uppercase tracking-wider mb-2">⚖️ 核心避坑/注意要点</div>
-              <p className="text-swiss-fg/80 leading-relaxed text-xs">
-                {row.disadvantages ? row.disadvantages : "整体体验平稳，建议优先使用官方默认推荐模型或按需绑定自定义 API Key 以保障并发。"}
-              </p>
-            </div>
+          <div className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-sm">
+            <div className="font-bold text-xs text-zinc-900 uppercase tracking-wider mb-2">⚖️ 核心避坑/注意要点</div>
+            <p className="text-zinc-600 leading-relaxed text-xs">
+              {row.disadvantages ? row.disadvantages : "整体体验平稳，建议优先使用官方默认推荐模型或按需绑定自定义 API Key 以保障并发。"}
+            </p>
+          </div>
 
-            <div className="border-2 border-swiss-fg bg-white p-4">
-              <div className="font-black text-sm text-swiss-fg uppercase tracking-wider mb-2">📊 竞品替代与部署建议</div>
-              <p className="text-swiss-fg/80 leading-relaxed text-xs">
-                {row.competitor ? row.competitor : `可横向对比 ${row.name} 同类产品的免费额度、上下文窗口深度及多 Agent 协作流畅度表现。`}
-              </p>
-            </div>
+          <div className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-sm">
+            <div className="font-bold text-xs text-zinc-900 uppercase tracking-wider mb-2">📊 竞品替代与部署建议</div>
+            <p className="text-zinc-600 leading-relaxed text-xs">
+              {row.competitor ? row.competitor : `可横向对比 ${row.name} 同类产品的免费额度、上下文窗口深度及多 Agent 协作流畅度表现。`}
+            </p>
           </div>
         </div>
       </section>
 
       {/* 快速终端/拓展接入命令 */}
-      <section className="border-b-2 border-swiss-fg bg-swiss-bg p-5 sm:p-8">
-        <div className="mx-auto max-w-[1600px]">
-          <div className="font-mono text-xs font-black uppercase tracking-widest text-swiss-accent mb-2">⚡ 快速安装 & 启动方式</div>
-          <div className="flex flex-wrap items-center justify-between gap-4 border-2 border-swiss-fg bg-swiss-muted/60 p-4 font-mono text-sm">
-            <div className="min-w-0 flex-1 font-bold text-swiss-fg select-all break-all">
-              {getInstallCmd(row.name)}
-            </div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-swiss-fg/50 border border-swiss-fg/20 bg-white px-2 py-1">
-              Terminal / Setup
+      <section className="mx-auto max-w-[1600px] px-4 pt-4 sm:px-6">
+        <div className="rounded-2xl border border-zinc-200/80 bg-zinc-900 p-5 text-white shadow-sm sm:p-6">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <span className="font-mono text-xs font-semibold uppercase tracking-wider text-zinc-400">⚡ 快速安装 & 启动方式</span>
+            <span className="rounded bg-zinc-800 px-2 py-0.5 font-mono text-[10px] font-semibold text-zinc-300">
+              Terminal Setup
             </span>
+          </div>
+          <div className="font-mono text-xs sm:text-sm font-medium text-emerald-400 select-all break-all pt-1">
+            {getInstallCmd(row.name)}
           </div>
         </div>
       </section>
@@ -182,14 +213,14 @@ export function ToolsDetail({ row }: { row: ToolRow }) {
       {/* 01 核心优势 */}
       {row.advantages && (
         <DetailSection number="01" title="核心优势">
-          <p className="font-mono text-base leading-7 text-swiss-fg/85">{row.advantages}</p>
+          <p className="font-sans text-sm leading-relaxed text-zinc-700">{row.advantages}</p>
         </DetailSection>
       )}
 
       {/* 02 主要劣势 */}
       {row.disadvantages && (
         <DetailSection number="02" title="主要劣势">
-          <p className="border-l-4 border-swiss-warning pl-4 font-mono text-base leading-7 text-swiss-fg/85">{row.disadvantages}</p>
+          <p className="font-sans text-sm leading-relaxed text-amber-900 bg-amber-50/50 p-4 rounded-xl border border-amber-200/60">{row.disadvantages}</p>
         </DetailSection>
       )}
 
@@ -198,7 +229,7 @@ export function ToolsDetail({ row }: { row: ToolRow }) {
         <DetailSection number="03" title="适用场景">
           <div className="flex flex-wrap gap-2">
             {row.useCases.map((uc) => (
-              <span key={uc} className="border-2 border-swiss-fg bg-swiss-bg px-3 py-2 font-mono text-base font-black">
+              <span key={uc} className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 font-mono text-xs font-semibold text-zinc-700 shadow-2xs">
                 {uc}
               </span>
             ))}
@@ -209,7 +240,7 @@ export function ToolsDetail({ row }: { row: ToolRow }) {
       {/* 04 备注 / 补充 */}
       {row.note && (
         <DetailSection number="04" title="补充说明">
-          <p className="whitespace-pre-line font-mono text-base leading-7 text-swiss-fg/75">{row.note}</p>
+          <p className="whitespace-pre-line font-sans text-sm leading-relaxed text-zinc-600">{row.note}</p>
         </DetailSection>
       )}
     </div>
@@ -223,64 +254,62 @@ function ReviewSection({ row, activeId }: { row: ToolRow; activeId: string }) {
   if (visibleSections.length === 0) return null;
 
   return (
-    <section className="border-b-2 border-swiss-fg bg-swiss-muted/40">
-      <div className="mx-auto max-w-[1600px] px-5 py-8 sm:px-6 sm:py-10">
-        <div className="mb-6 flex items-baseline gap-3">
-          <span className="bg-swiss-fg px-2 py-1 font-mono text-sm font-black text-swiss-bg">REVIEW</span>
-          <h2 className="text-2xl font-black tracking-tighter sm:text-3xl">评测内容</h2>
-          <span className="font-mono text-xs uppercase tracking-widest text-swiss-fg/50">
-            {visibleSections.length} 个维度
-          </span>
-        </div>
+    <section className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 sm:py-8">
+      <div className="mb-4 flex items-center gap-2.5">
+        <span className="rounded-md bg-zinc-900 px-2 py-0.5 font-mono text-xs font-bold text-white shadow-2xs">REVIEW</span>
+        <h2 className="text-base font-bold text-zinc-900 tracking-tight sm:text-lg">深度评测维度</h2>
+        <span className="font-mono text-xs text-zinc-400">
+          ({visibleSections.length} 个维度)
+        </span>
+      </div>
 
-        <div className="grid gap-6 lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-10">
-          {/* Sticky TOC：桌面端 fixed-width 左栏，移动端横滑 pills */}
-          <nav aria-label="评测目录" className="lg:sticky lg:top-6 lg:h-fit">
-            <div className="mb-2 hidden font-mono text-xs uppercase tracking-widest text-swiss-fg/50 lg:block lg:px-3">
-              目录 · JUMP
-            </div>
-            <ul className="flex gap-0 overflow-x-auto pb-1 lg:flex-col lg:gap-0 lg:overflow-visible lg:border-l-2 lg:border-swiss-fg">
-              {visibleSections.map((s) => {
-                const isActive = activeId === s.id;
-                return (
-                  <li key={s.id} className="shrink-0">
-                    <a
-                      href={`#${s.id}`}
-                      className={`group flex items-center gap-2 whitespace-nowrap px-3 py-2 font-mono text-sm font-bold uppercase tracking-wider transition-colors lg:whitespace-normal lg:border-l-2 lg:-ml-[2px] lg:py-3 ${
-                        isActive
-                          ? "border-swiss-fg bg-swiss-fg text-swiss-bg"
-                          : "border-transparent text-swiss-fg/55 hover:bg-swiss-muted hover:text-swiss-fg lg:hover:bg-swiss-muted"
-                      }`}
-                    >
-                      <span className={`font-black ${isActive ? "opacity-100" : "opacity-70"}`}>{s.number}</span>
-                      <span>{s.title}</span>
-                    </a>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
-
-          {/* 卡片 */}
-          <div className="space-y-5">
-            {visibleSections.map((s) => (
-              <article
-                key={s.id}
-                id={s.id}
-                className="border-2 border-swiss-fg bg-swiss-bg p-5 scroll-mt-24 transition-shadow hover:shadow-[4px_4px_0_0_#000] sm:p-6"
-              >
-                <div className="mb-3 flex items-baseline gap-3">
-                  <span className="bg-swiss-fg px-2 py-1 font-mono text-sm font-black text-swiss-bg">
-                    {s.number}
-                  </span>
-                  <h3 className="text-xl font-black tracking-tight">{s.title}</h3>
-                </div>
-                <p className="whitespace-pre-line font-mono text-base leading-7 text-swiss-fg/85">
-                  {row[s.field]}
-                </p>
-              </article>
-            ))}
+      <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-8">
+        {/* Sticky TOC */}
+        <nav aria-label="评测目录" className="lg:sticky lg:top-20 lg:h-fit">
+          <div className="mb-2 hidden font-mono text-xs uppercase tracking-wider text-zinc-400 lg:block lg:px-2">
+            目录导航
           </div>
+          <ul className="flex gap-1.5 overflow-x-auto pb-1 lg:flex-col lg:gap-1 lg:overflow-visible rounded-xl border border-zinc-200/80 bg-white p-2 shadow-sm">
+            {visibleSections.map((s) => {
+              const isActive = activeId === s.id;
+              return (
+                <li key={s.id} className="shrink-0">
+                  <a
+                    href={`#${s.id}`}
+                    className={`group flex items-center gap-2 rounded-lg px-3 py-2 font-mono text-xs font-medium transition-colors ${
+                      isActive
+                        ? "bg-zinc-900 text-white font-semibold shadow-2xs"
+                        : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+                    }`}
+                  >
+                    <span className={isActive ? "text-zinc-300" : "text-zinc-400"}>{s.number}</span>
+                    <span>{s.title}</span>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        {/* 卡片 */}
+        <div className="space-y-4">
+          {visibleSections.map((s) => (
+            <article
+              key={s.id}
+              id={s.id}
+              className="rounded-2xl border border-zinc-200/80 bg-white p-6 scroll-mt-24 shadow-sm hover:border-zinc-300 transition-all"
+            >
+              <div className="mb-3 flex items-center gap-2">
+                <span className="rounded bg-zinc-100 px-2 py-0.5 font-mono text-xs font-bold text-zinc-700">
+                  {s.number}
+                </span>
+                <h3 className="text-base font-bold text-zinc-900 tracking-tight">{s.title}</h3>
+              </div>
+              <p className="whitespace-pre-line font-sans text-sm leading-relaxed text-zinc-700">
+                {row[s.field]}
+              </p>
+            </article>
+          ))}
         </div>
       </div>
     </section>
@@ -291,30 +320,30 @@ function ReviewSection({ row, activeId }: { row: ToolRow; activeId: string }) {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="min-h-[112px] border-b border-r border-swiss-fg p-4 even:border-r-0 lg:border-b-0 lg:even:border-r lg:last:border-r-0">
-      <div className="font-mono text-sm uppercase tracking-widest text-swiss-fg/50">{label}</div>
-      <div className="mt-2 font-mono text-base font-black leading-snug">{value}</div>
+    <div className="p-4 sm:p-5">
+      <div className="font-mono text-xs uppercase tracking-wider text-zinc-400">{label}</div>
+      <div className="mt-1.5 font-mono text-sm font-bold text-zinc-900 leading-snug">{value}</div>
     </div>
   );
 }
 
 function Attribute({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border-b border-r border-swiss-fg p-4 last:border-b-0 last:border-r-0 sm:border-b-2 sm:even:border-r-0 lg:border-b-0 lg:even:border-r-2 lg:last:border-r-0">
-      <div className="font-mono text-sm uppercase tracking-widest text-swiss-fg/55">{label}</div>
-      <div className="mt-1 font-mono text-base font-bold">{value}</div>
+    <div className="p-4 sm:p-5">
+      <div className="font-mono text-xs uppercase tracking-wider text-zinc-400">{label}</div>
+      <div className="mt-1.5 font-mono text-sm font-semibold text-zinc-800">{value}</div>
     </div>
   );
 }
 
 function DetailSection({ number, title, children }: { number: string; title: string; children: React.ReactNode }) {
   return (
-    <section className="border-b-2 border-swiss-fg">
-      <div className="mx-auto max-w-[1600px] px-5 py-8 sm:px-6 sm:py-10">
-        <div className="mb-5 flex items-baseline gap-3">
-          <span className="bg-swiss-fg px-2 py-1 font-mono text-sm font-black text-swiss-bg">{number}</span>
-          <h2 className="text-2xl font-black tracking-tighter sm:text-3xl">{title}</h2>
-        </div>
+    <section className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 sm:py-7">
+      <div className="mb-4 flex items-center gap-2.5">
+        <span className="rounded-md bg-zinc-900 px-2 py-0.5 font-mono text-xs font-bold text-white shadow-2xs">{number}</span>
+        <h2 className="text-base font-bold text-zinc-900 tracking-tight sm:text-lg">{title}</h2>
+      </div>
+      <div className="rounded-2xl border border-zinc-200/80 bg-white p-5 sm:p-6 shadow-sm">
         {children}
       </div>
     </section>

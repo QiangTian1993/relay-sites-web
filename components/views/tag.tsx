@@ -38,28 +38,27 @@ interface Props {
 }
 
 const VARIANT_CLASSES: Record<TagVariant, string> = {
-  default: "border-swiss-fg/40 text-swiss-fg group-hover:border-swiss-bg/40 group-hover:text-swiss-bg",
-  success: "border-swiss-success text-swiss-fg group-hover:border-swiss-bg/40 group-hover:text-swiss-bg",
-  warning: "border-swiss-warning text-swiss-fg group-hover:border-swiss-bg/40 group-hover:text-swiss-bg",
-  accent: "border-swiss-accent bg-swiss-accent text-swiss-bg group-hover:bg-swiss-bg group-hover:text-swiss-accent",
-  mono: "border-swiss-fg/40 font-mono tracking-normal text-sm text-swiss-fg/70 group-hover:text-swiss-bg/70",
-  // 带背景变体（详情页 D.01 / hel paio 风格）
-  filled: "border-swiss-fg bg-swiss-fg text-swiss-bg group-hover:bg-swiss-bg group-hover:text-swiss-fg",
-  "filled-success": "border-swiss-success bg-swiss-successBg text-swiss-fg group-hover:bg-swiss-bg/20",
-  "filled-warning": "border-swiss-warning bg-swiss-warningBg text-swiss-fg group-hover:bg-swiss-bg/20",
-  "filled-info": "border-swiss-info bg-swiss-infoBg text-swiss-fg group-hover:bg-swiss-bg/20",
+  default: "border border-zinc-200/80 bg-zinc-50 text-zinc-700 shadow-2xs",
+  success: "border border-emerald-200 bg-emerald-50 text-emerald-700",
+  warning: "border border-amber-200 bg-amber-50 text-amber-700",
+  accent: "border border-rose-200 bg-rose-50 text-[#E03E1A]",
+  mono: "border border-zinc-200 bg-zinc-50 font-mono text-zinc-600",
+  filled: "bg-zinc-900 text-white shadow-2xs",
+  "filled-success": "border border-emerald-200 bg-emerald-50 text-emerald-700",
+  "filled-warning": "border border-amber-200 bg-amber-50 text-amber-700",
+  "filled-info": "border border-blue-200 bg-blue-50 text-blue-700",
 };
 
 const DOT_CLASSES: Record<TagVariant, string> = {
-  default: "bg-swiss-fg group-hover:bg-swiss-bg",
-  success: "bg-swiss-success",
-  warning: "bg-swiss-warning",
-  accent: "bg-swiss-bg group-hover:bg-swiss-accent",
-  mono: "bg-swiss-fg/50 group-hover:bg-swiss-bg/50",
-  filled: "bg-swiss-bg group-hover:bg-swiss-fg",
-  "filled-success": "bg-swiss-success",
-  "filled-warning": "bg-swiss-warning",
-  "filled-info": "bg-swiss-info",
+  default: "bg-zinc-400",
+  success: "bg-emerald-500",
+  warning: "bg-amber-500",
+  accent: "bg-[#E03E1A]",
+  mono: "bg-zinc-400",
+  filled: "bg-white",
+  "filled-success": "bg-emerald-500",
+  "filled-warning": "bg-amber-500",
+  "filled-info": "bg-blue-500",
 };
 
 export function Tag({ children, variant = "default", dot = false, className = "" }: Props) {
@@ -68,9 +67,9 @@ export function Tag({ children, variant = "default", dot = false, className = ""
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 border px-2 py-1 font-mono text-sm font-bold tracking-normal ${variantClasses} ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 font-mono text-xs font-semibold ${variantClasses} ${className}`}
     >
-      {dot && <span className={`h-1.5 w-1.5 ${dotClass}`} />}
+      {dot && <span className={`h-1.5 w-1.5 rounded-full ${dotClass}`} />}
       <span>{children}</span>
     </span>
   );

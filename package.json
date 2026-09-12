@@ -7,15 +7,19 @@
     "build": "next build",
     "start": "next start",
     "fetch": "tsx scripts/fetch-data.ts",
+    "fetch:direct": "tsx scripts/fetch-direct-site-data.ts",
     "trending": "tsx scripts/fetch-github-trending.ts",
+    "qc:backup": "tsx scripts/sync-qc-backup.ts",
+    "qc:restore": "tsx scripts/sync-qc-backup.ts --restore",
     "lint": "next lint"
   },
   "dependencies": {
-    "lucide-react": "^1.26.0",
+    "lucide-react": "^1.33.0",
     "next": "14.2.18",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "server-only": "^0.0.1"
+    "server-only": "^0.0.1",
+    "undici": "^6.28.0"
   },
   "devDependencies": {
     "@types/node": "20.11.0",

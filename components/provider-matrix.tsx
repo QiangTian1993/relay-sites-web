@@ -22,22 +22,22 @@ export function ProviderMatrix({ records, basePath = "/table/relay_sites_tracker
   }
 
   return (
-    <div className="flex flex-col gap-6 bg-swiss-muted p-5 sm:p-6">
+    <div className="flex flex-col gap-6 p-4 sm:p-6">
       {/* Header */}
-      <header className="flex items-center gap-3 border-b-2 border-swiss-fg bg-swiss-muted swiss-dots px-3 py-2">
-        <span className="bg-swiss-accent px-2 py-1 font-mono text-sm font-black uppercase tracking-ultra text-swiss-bg">
-          04.
-        </span>
-        <span className="text-lg font-black uppercase tracking-tight text-swiss-fg">
-          MATRIX / PROVIDER × SITE
-        </span>
-        <span className="ml-auto inline-flex items-center gap-2 font-mono text-sm uppercase tracking-widest text-swiss-fg/60">
-          <span className="bg-swiss-fg px-2 py-1 font-black text-swiss-bg">
-            ∑
+      <header className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-zinc-200/80 bg-white p-4 shadow-sm">
+        <div className="flex items-center gap-2.5">
+          <span className="rounded-md bg-zinc-900 px-2 py-0.5 font-mono text-xs font-bold text-white shadow-2xs">
+            04
           </span>
-          <span className="font-black text-swiss-fg">{records.length}</span>
-          <span>SITES</span>
-        </span>
+          <span className="text-base font-bold text-zinc-900 tracking-tight">
+            PROVIDER × SITE 矩阵全览
+          </span>
+        </div>
+        <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200/80 bg-zinc-50 px-3 py-1 font-mono text-xs text-zinc-600">
+          <span>共支持</span>
+          <span className="font-bold text-zinc-900">{records.length}</span>
+          <span>站点</span>
+        </div>
       </header>
 
       {/* Provider 分块（每块 3 个 provider，每个 provider 一列） */}
@@ -45,17 +45,17 @@ export function ProviderMatrix({ records, basePath = "/table/relay_sites_tracker
         {chunked.map((chunk, ci) => (
           <section key={ci} className="flex flex-col gap-3">
             {/* 块标题（块编号 + provider 列表） */}
-            <div className="flex items-center gap-2 border-b border-swiss-fg/30 pb-2 font-mono text-sm uppercase tracking-widest text-swiss-fg/50">
-              <span className="bg-swiss-fg px-2 py-0.5 text-sm font-black text-swiss-bg">
+            <div className="flex items-center gap-2.5 px-1 font-mono text-xs uppercase tracking-wider text-zinc-400">
+              <span className="rounded bg-zinc-200/80 px-1.5 py-0.5 font-bold text-zinc-700 text-[11px]">
                 BLOCK {String(ci + 1).padStart(2, "0")}
               </span>
-              <span className="font-black text-swiss-fg">
-                {chunk.map((b) => b.provider).join(" / ")}
+              <span className="font-semibold text-zinc-600">
+                {chunk.map((b) => b.provider).join(" · ")}
               </span>
             </div>
 
             {/* 3 列卡片网格 */}
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               {chunk.map((block) => (
                 <ProviderColumn
                   key={block.provider}
@@ -74,45 +74,45 @@ export function ProviderMatrix({ records, basePath = "/table/relay_sites_tracker
 /** 单个 provider 列卡 */
 function ProviderColumn({ block, basePath }: { block: ProviderBlock; basePath: string }) {
   return (
-    <div className="flex flex-col border-2 border-swiss-fg bg-swiss-bg">
+    <div className="flex flex-col rounded-2xl border border-zinc-200/80 bg-white shadow-sm overflow-hidden transition-all hover:border-zinc-300">
       {/* Provider header */}
-      <div className="flex items-center justify-between gap-2 border-b-2 border-swiss-fg bg-swiss-fg px-3 py-2 font-mono text-sm uppercase tracking-ultra text-swiss-bg">
-        <span className="font-black">{block.provider}</span>
-        <span className="bg-swiss-bg px-1.5 py-0.5 text-sm font-black text-swiss-fg">
-          {block.count} 有倍率
+      <div className="flex items-center justify-between gap-2 border-b border-zinc-100 bg-zinc-50/70 px-4 py-3">
+        <span className="font-bold text-sm text-zinc-900 tracking-tight">{block.provider}</span>
+        <span className="rounded-full border border-zinc-200/80 bg-white px-2 py-0.5 font-mono text-xs font-semibold text-zinc-600 shadow-2xs">
+          {block.count} 站支持
         </span>
       </div>
 
       {/* 站点列表（按倍率升序） */}
-      <ul className="flex flex-col">
+      <ul className="flex flex-col divide-y divide-zinc-100">
         {block.rows.length === 0 ? (
-          <li className="px-3 py-4 text-center font-mono text-sm uppercase tracking-ultra text-swiss-fg/40">
-            ∅ NO SITES
+          <li className="px-4 py-8 text-center font-mono text-xs text-zinc-400">
+            暂无站点支持
           </li>
         ) : (
           block.rows.slice(0, 7).map((row, ri) => {
             const tier = rateTier(row.rate);
-            const isBest = ri === 0;
+            const isBest = ri === 0 && row.rate != null;
             return (
               <li
                 key={row.siteId}
-                className="group border-b border-swiss-fg/15 last:border-b-0"
+                className="group transition-colors hover:bg-zinc-50/80"
               >
                 <Link
                   href={`${basePath}/${encodeURIComponent(row.siteId)}`}
-                  className="flex items-center gap-2 px-3 py-2 transition-colors hover:bg-swiss-fg hover:text-swiss-bg"
+                  className="flex items-center gap-2.5 px-4 py-2.5 text-xs"
                 >
                   {/* 排名 */}
-                  <span className="font-mono text-sm uppercase tracking-widest text-swiss-fg/40 group-hover:text-swiss-bg/40">
+                  <span className={`w-5 font-mono text-[11px] font-semibold ${isBest ? "text-[#E03E1A]" : "text-zinc-400"}`}>
                     {String(ri + 1).padStart(2, "0")}
                   </span>
                   {/* 站点名 */}
-                  <span className="flex-1 truncate font-mono text-sm font-bold text-swiss-fg group-hover:text-swiss-bg">
+                  <span className="flex-1 truncate font-medium text-zinc-900 group-hover:text-[#E03E1A] transition-colors">
                     {row.siteName}
                   </span>
-                  {/* 倍率（rateTier 颜色 + isBest 高亮） */}
+                  {/* 倍率 */}
                   <span
-                    className={`font-mono text-base font-black leading-none tracking-tighter ${tier.classes} ${isBest ? "ring-2 ring-swiss-accent ring-inset px-1.5" : ""}`}
+                    className={`font-mono text-xs ${tier.classes} ${isBest ? "ring-1 ring-[#E03E1A]/40" : ""}`}
                   >
                     {tier.label}
                   </span>
@@ -125,8 +125,8 @@ function ProviderColumn({ block, basePath }: { block: ProviderBlock; basePath: s
 
       {/* 块底部：显示更多（如果有 > 7 行） */}
       {block.rows.length > 7 && (
-        <div className="border-t border-swiss-fg/20 bg-swiss-muted/40 px-3 py-1.5 text-center font-mono text-sm uppercase tracking-widest text-swiss-fg/50">
-          + {block.rows.length - 7} MORE
+        <div className="mt-auto border-t border-zinc-100 bg-zinc-50/50 px-4 py-2 text-center font-mono text-[11px] text-zinc-400">
+          + {block.rows.length - 7} MORE SITES
         </div>
       )}
     </div>

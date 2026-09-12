@@ -105,28 +105,28 @@ export function RelaySiteDetail({ record, performance, groups, modelOffers, qcRe
 
   return (
     <div className="pb-20">
-      <header className="border-b-2 border-swiss-fg swiss-grid">
-        <div className="mx-auto max-w-[1600px] px-5 py-6 sm:px-6 sm:py-8">
-          <Link href="/table/relay_sites_tracker" className="inline-flex min-h-11 items-center gap-2 font-mono text-sm font-black uppercase tracking-widest hover:text-swiss-accent">
+      <header className="border-b border-zinc-200/80 bg-white/70 backdrop-blur-md">
+        <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 sm:py-8">
+          <Link href="/table/relay_sites_tracker" className="inline-flex items-center gap-2 font-mono text-xs font-semibold text-zinc-500 hover:text-[#E03E1A] transition-colors">
             <IconArrowLeft className="h-4 w-4" /> 返回选站大盘
           </Link>
 
-          <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+          <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
             <div className="min-w-0">
-              <div className="flex items-center gap-2 font-mono text-sm uppercase tracking-widest text-swiss-fg/50">
+              <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-zinc-400">
                 <span>站点决策硬核情报单</span>
-                <span className="bg-black/10 px-1.5 py-0.5 text-[11px] font-black text-black">{frameworkName} 架构</span>
+                <span className="rounded bg-zinc-100 px-2 py-0.5 text-[11px] font-semibold text-zinc-700 border border-zinc-200/60">{frameworkName} 架构</span>
               </div>
-              <h1 className="mt-2 break-words text-4xl font-black leading-none sm:text-6xl">{name}</h1>
+              <h1 className="mt-2.5 break-words text-3xl font-extrabold text-zinc-900 tracking-tight sm:text-5xl">{name}</h1>
               {domain && (
                 <div className="mt-3 flex flex-wrap items-center gap-3">
-                  <a href={domainHref(domain)} target="_blank" rel="noreferrer" className="inline-flex max-w-full items-center gap-1.5 font-mono text-sm text-swiss-fg/60 hover:text-swiss-accent">
-                    <span className="truncate">{domainDisplay(domain)}</span><IconExtLink className="h-4 w-4 shrink-0" />
+                  <a href={domainHref(domain)} target="_blank" rel="noreferrer" className="inline-flex max-w-full items-center gap-1.5 font-mono text-xs text-zinc-500 hover:text-[#E03E1A] transition-colors">
+                    <span className="truncate">{domainDisplay(domain)}</span><IconExtLink className="h-3.5 w-3.5 shrink-0" />
                   </a>
                   <button
                     type="button"
                     onClick={() => copyText(domainDisplay(domain))}
-                    className="inline-flex items-center gap-1 border border-black/20 bg-white px-2 py-0.5 font-mono text-xs font-bold text-black/70 hover:bg-black hover:text-white transition-colors"
+                    className="inline-flex items-center gap-1 rounded-md border border-zinc-200 bg-zinc-50 px-2 py-0.5 font-mono text-xs font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 transition-colors shadow-2xs"
                   >
                     {copiedDomain ? "✓ 已复制" : "复制域名"}
                   </button>
@@ -134,12 +134,12 @@ export function RelaySiteDetail({ record, performance, groups, modelOffers, qcRe
               )}
               <div className="mt-4 flex flex-wrap gap-2">
                 <AccessTags access={access} />
-                {hasInvoice && <span className="border border-blue-600 bg-blue-50 px-2 py-0.5 font-mono text-xs font-bold text-blue-700">可开发票</span>}
-                {hasRefund && <span className="border border-emerald-600 bg-emerald-50 px-2 py-0.5 font-mono text-xs font-bold text-emerald-700">退款保障</span>}
-                {isPurePro && <span className="border border-purple-600 bg-purple-50 px-2 py-0.5 font-mono text-xs font-bold text-purple-700">官网纯血Pro</span>}
-                {noVerify && <span className="border border-amber-600 bg-amber-50 px-2 py-0.5 font-mono text-xs font-bold text-amber-700">免验证注册</span>}
+                {hasInvoice && <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 font-mono text-xs font-semibold text-blue-700">可开发票</span>}
+                {hasRefund && <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 font-mono text-xs font-semibold text-emerald-700">退款保障</span>}
+                {isPurePro && <span className="rounded-full border border-purple-200 bg-purple-50 px-2.5 py-0.5 font-mono text-xs font-semibold text-purple-700">官网纯血Pro</span>}
+                {noVerify && <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 font-mono text-xs font-semibold text-amber-700">免验证注册</span>}
                 {modelCheck && (
-                  <span className="border border-emerald-600 bg-emerald-50 px-2 py-0.5 font-mono text-xs font-bold text-emerald-700">
+                  <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 font-mono text-xs font-semibold text-emerald-700">
                     {modelCheck.includes("通过") && !modelCheck.includes("不足") ? "模型检测·通过" : "模型检测·见详情"}
                   </span>
                 )}
@@ -151,7 +151,7 @@ export function RelaySiteDetail({ record, performance, groups, modelOffers, qcRe
             </div>
 
             {domain && (
-              <a href={domainHref(domain)} target="_blank" rel="noreferrer" className="inline-flex h-12 items-center justify-center gap-2 bg-swiss-fg px-5 text-sm font-black text-swiss-bg transition-colors hover:bg-swiss-accent">
+              <a href={domainHref(domain)} target="_blank" rel="noreferrer" className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-zinc-900 px-5 text-sm font-bold text-white shadow-sm transition-all hover:bg-zinc-800">
                 访问站点注册/充值 <IconExtLink className="h-4 w-4" />
               </a>
             )}
@@ -160,8 +160,8 @@ export function RelaySiteDetail({ record, performance, groups, modelOffers, qcRe
       </header>
 
       {/* 高信息密度指标看板 */}
-      <section className="border-b-2 border-swiss-fg">
-        <div className="mx-auto grid max-w-[1600px] grid-cols-2 px-5 sm:px-6 lg:grid-cols-5">
+      <section className="mx-auto max-w-[1600px] px-4 pt-6 sm:px-6">
+        <div className="grid grid-cols-2 rounded-2xl border border-zinc-200/80 bg-white shadow-sm overflow-hidden divide-y divide-zinc-100 lg:divide-y-0 lg:divide-x lg:grid-cols-5">
           <Metric label="全站最低倍率" value={formatRate(toNumber(record["最低倍率"]))} note="基础折算参考" />
           <Metric label="包含模型总数" value={modelOffers.length > 0 ? `${modelOffers.length} 个` : "--"} note="覆盖模型大表" />
           <Metric label="计费分组" value={groups.length > 0 ? `${groups.length} 个` : "--"} note="分组计费梯度" />
@@ -172,10 +172,10 @@ export function RelaySiteDetail({ record, performance, groups, modelOffers, qcRe
 
       {/* 01 综合硬核决策与服务条款网格 */}
       <DetailSection number="01" title="综合选型决策与服务保障">
-        <div className="grid gap-4 md:grid-cols-3 font-mono text-xs">
-          <div className="border-2 border-swiss-fg bg-white p-4">
-            <div className="font-black text-sm text-swiss-fg uppercase tracking-wider mb-2">🎯 综合买家选型建议</div>
-            <p className="text-swiss-fg/80 leading-relaxed text-xs whitespace-pre-line">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 font-mono text-xs">
+          <div className="rounded-xl border border-zinc-200/80 bg-white p-4 shadow-2xs">
+            <div className="font-bold text-xs text-zinc-900 uppercase tracking-wider mb-2">🎯 综合买家选型建议</div>
+            <p className="text-zinc-600 leading-relaxed text-xs whitespace-pre-line">
               {(() => {
                 // 1. 清理探针机械前缀与自动化系统日志
                 const lines = note
@@ -242,97 +242,97 @@ export function RelaySiteDetail({ record, performance, groups, modelOffers, qcRe
             </p>
           </div>
 
-          <div className="border-2 border-swiss-fg bg-white p-4">
-            <div className="font-black text-sm text-swiss-fg uppercase tracking-wider mb-2">🛡️ 站点服务保障</div>
-            <ul className="space-y-1.5 text-swiss-fg/80">
-              <li className="flex items-center justify-between border-b border-swiss-fg/10 pb-1">
+          <div className="rounded-xl border border-zinc-200/80 bg-white p-4 shadow-2xs">
+            <div className="font-bold text-xs text-zinc-900 uppercase tracking-wider mb-2">🛡️ 站点服务保障</div>
+            <ul className="space-y-1.5 text-zinc-600">
+              <li className="flex items-center justify-between border-b border-zinc-100 pb-1">
                 <span>发票报销:</span>
-                <span className="font-bold">{hasInvoice ? "支持开票" : "未标注支持"}</span>
+                <span className="font-semibold text-zinc-900">{hasInvoice ? "支持开票" : "未标注支持"}</span>
               </li>
-              <li className="flex items-center justify-between border-b border-swiss-fg/10 pb-1">
+              <li className="flex items-center justify-between border-b border-zinc-100 pb-1">
                 <span>退款政策:</span>
-                <span className="font-bold">{hasRefund ? "支持无手续费退款" : "参考站点细则"}</span>
+                <span className="font-semibold text-zinc-900">{hasRefund ? "支持无手续费退款" : "参考站点细则"}</span>
               </li>
               <li className="flex items-center justify-between">
                 <span>注册要求:</span>
-                <span className="font-bold">{noVerify ? "无需手机/邮箱验证" : "常规注册"}</span>
+                <span className="font-semibold text-zinc-900">{noVerify ? "无需手机/邮箱验证" : "常规注册"}</span>
               </li>
             </ul>
           </div>
 
-          <div className="border-2 border-swiss-fg bg-white p-4">
-            <div className="font-black text-sm text-swiss-fg uppercase tracking-wider mb-2">⚡ 网络健康度快照</div>
-            <ul className="space-y-1.5 text-swiss-fg/80">
-              <li className="flex items-center justify-between border-b border-swiss-fg/10 pb-1">
+          <div className="rounded-xl border border-zinc-200/80 bg-white p-4 shadow-2xs">
+            <div className="font-bold text-xs text-zinc-900 uppercase tracking-wider mb-2">⚡ 网络健康度快照</div>
+            <ul className="space-y-1.5 text-zinc-600">
+              <li className="flex items-center justify-between border-b border-zinc-100 pb-1">
                 <span>24h 可用率:</span>
-                <span className="font-bold">{formatPercent(toNumber(performance?.availability_24h), false)}</span>
+                <span className="font-semibold text-zinc-900">{formatPercent(toNumber(performance?.availability_24h), false)}</span>
               </li>
-              <li className="flex items-center justify-between border-b border-swiss-fg/10 pb-1">
+              <li className="flex items-center justify-between border-b border-zinc-100 pb-1">
                 <span>最后打点时间:</span>
-                <span className="font-bold">{performance?.last_probe_at ? String(performance.last_probe_at).slice(0, 16) : "暂无打点"}</span>
+                <span className="font-semibold text-zinc-900">{performance?.last_probe_at ? String(performance.last_probe_at).slice(0, 16) : "暂无打点"}</span>
               </li>
               <li className="flex items-center justify-between">
                 <span>连续失败数:</span>
-                <span className="font-bold text-emerald-700">{String(performance?.consecutive_failures ?? 0)} 次</span>
+                <span className="font-semibold text-emerald-700">{String(performance?.consecutive_failures ?? 0)} 次</span>
               </li>
             </ul>
           </div>
 
-          <div className="border-2 border-swiss-fg bg-white p-4">
-            <div className="flex items-center justify-between border-b border-black/10 pb-2 mb-3">
-              <div className="font-black text-sm text-swiss-fg uppercase tracking-wider flex items-center gap-2">
-                🔬 模型真实性与混用质检
+          <div className="rounded-xl border border-zinc-200/80 bg-white p-4 shadow-2xs">
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-2 mb-3">
+              <div className="font-bold text-xs text-zinc-900 uppercase tracking-wider flex items-center gap-1.5">
+                🔬 模型真实性与质检
               </div>
               <Link
                 href={`/detector?siteId=${encodeURIComponent(String(record["站点ID"] ?? ""))}`}
-                className="font-mono text-[11px] font-bold text-white bg-black px-2.5 py-1 hover:bg-swiss-accent transition-colors flex items-center gap-1"
+                className="font-mono text-[11px] font-semibold text-white bg-zinc-900 px-2 py-0.5 rounded-lg hover:bg-[#E03E1A] transition-colors flex items-center gap-1 shadow-2xs"
               >
-                ⚡ 在线探针质检 →
+                ⚡ 在线质检 →
               </Link>
             </div>
 
             {qcRecord ? (
               <div className="space-y-2 font-mono text-xs">
-                <div className="flex items-center justify-between border-b border-black/10 pb-1.5">
-                  <span className="text-black/60">质检状态:</span>
-                  <span className={`font-bold border px-2 py-0.5 ${
-                    qcRecord.score >= 90 ? "border-emerald-800 bg-emerald-100 text-emerald-950" :
-                    qcRecord.score >= 75 ? "border-blue-800 bg-blue-100 text-blue-950" :
-                    "border-amber-800 bg-amber-100 text-amber-950"
+                <div className="flex items-center justify-between border-b border-zinc-100 pb-1.5">
+                  <span className="text-zinc-500">质检状态:</span>
+                  <span className={`font-semibold rounded-full border px-2 py-0.5 text-[11px] ${
+                    qcRecord.verdict === "PASS" ? "border-emerald-200 bg-emerald-50 text-emerald-800" :
+                    qcRecord.verdict === "FAIL" ? "border-rose-200 bg-rose-50 text-rose-800" :
+                    "border-amber-200 bg-amber-50 text-amber-800"
                   }`}>
-                    {qcRecord.score >= 90 ? "✅" : "⚠️"} {qcRecord.score}分 · {qcRecord.score >= 90 ? "验证通过" : "存在降级风险"}
+                    {qcRecord.verdict === "PASS" ? "✅" : qcRecord.verdict === "FAIL" ? "❌" : "⚠️"} {qcRecord.score}分 · {qcRecord.verdict === "PASS" ? "验证通过" : qcRecord.verdict === "FAIL" ? "质检不合格" : "存在风险"}
                   </span>
                 </div>
-                <div className="flex items-center justify-between border-b border-black/10 pb-1.5">
-                  <span className="text-black/60">Juice 思考段:</span>
-                  <span className="font-bold text-black">{qcRecord.juiceVerdict || "已完成检测"}</span>
+                <div className="flex items-center justify-between border-b border-zinc-100 pb-1.5">
+                  <span className="text-zinc-500">Juice 思考段:</span>
+                  <span className="font-semibold text-zinc-900">{qcRecord.juiceVerdict || "已完成检测"}</span>
                 </div>
-                <div className="flex items-center justify-between border-b border-black/10 pb-1.5">
-                  <span className="text-black/60">行为分布:</span>
-                  <span className="font-bold text-black">
+                <div className="flex items-center justify-between border-b border-zinc-100 pb-1.5">
+                  <span className="text-zinc-500">行为分布:</span>
+                  <span className="font-semibold text-zinc-900">
                     Sol {qcRecord.probabilities?.sol ?? "--"}% | Terra {qcRecord.probabilities?.terra ?? "--"}%
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-black/60">篡改/覆盖:</span>
-                  <span className={`font-bold ${qcRecord.tamperDetected ? "text-red-700" : "text-emerald-800"}`}>
+                  <span className="text-zinc-500">篡改/覆盖:</span>
+                  <span className={`font-semibold ${qcRecord.tamperDetected ? "text-rose-600" : "text-emerald-700"}`}>
                     {qcRecord.tamperDetected ? "⚠️ 检测到篡改" : "无改写 / Prompt正常"}
                   </span>
                 </div>
               </div>
             ) : modelCheck ? (
-              <p className="text-swiss-fg/80 leading-relaxed text-xs whitespace-pre-line mb-3">
+              <p className="text-zinc-600 leading-relaxed text-xs whitespace-pre-line mb-3">
                 {modelCheck}
               </p>
             ) : (
-              <div className="space-y-2 font-mono text-xs text-black/60 py-2">
-                <div className="flex items-center justify-between border-b border-black/10 pb-1.5">
+              <div className="space-y-2 font-mono text-xs text-zinc-500 py-1">
+                <div className="flex items-center justify-between border-b border-zinc-100 pb-1.5">
                   <span>质检状态:</span>
-                  <span className="font-bold text-black/50 border border-black/20 bg-black/5 px-2 py-0.5">
+                  <span className="font-medium text-zinc-400 rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[11px]">
                     未测试
                   </span>
                 </div>
-                <p className="text-[11px] leading-relaxed text-black/50 pt-1">
+                <p className="text-[11px] leading-relaxed text-zinc-400 pt-1">
                   该站点尚未在质检中心记录测试数据。点击右上角即可发起模型真伪与混用检测。
                 </p>
               </div>
@@ -344,26 +344,26 @@ export function RelaySiteDetail({ record, performance, groups, modelOffers, qcRe
       {/* 02 架构与 Provider 部署 */}
       <DetailSection number="02" title="架构与 Provider 渠道明细">
         <div className="mb-4 flex flex-wrap gap-2">
-          <span className="border-2 border-black bg-black px-3 py-1 font-mono text-xs font-black text-white">
+          <span className="rounded-md bg-zinc-900 px-3 py-1 font-mono text-xs font-semibold text-white shadow-2xs">
             架构系统: {frameworkName}
           </span>
           {providersList.map(p => (
-            <span key={p} className="border border-black/30 bg-white px-2.5 py-1 font-mono text-xs font-bold text-black">
+            <span key={p} className="rounded-md border border-zinc-200 bg-zinc-50 px-2.5 py-1 font-mono text-xs font-medium text-zinc-700 shadow-2xs">
               Provider: {p}
             </span>
           ))}
         </div>
 
         {providerRates.length > 0 ? (
-          <div className="grid border-l-2 border-t-2 border-swiss-fg sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid rounded-xl border border-zinc-200/80 bg-white overflow-hidden divide-y sm:divide-y-0 sm:divide-x divide-zinc-100 sm:grid-cols-2 lg:grid-cols-3">
             {providerRates.map((rate) => (
-              <div key={rate} className="border-b-2 border-r-2 border-swiss-fg bg-swiss-bg px-4 py-3 font-mono text-sm font-black">{rate}</div>
+              <div key={rate} className="bg-white px-4 py-3 font-mono text-xs font-semibold text-zinc-800">{rate}</div>
             ))}
           </div>
         ) : (
           <EmptyState text="暂无 Provider 倍率明细" />
         )}
-        <p className="mt-3 text-xs leading-5 text-swiss-fg/55">全站最低倍率可能来自特殊分组或非目标模型，具体决策请以下方模型和分组明细为准。</p>
+        <p className="mt-3 text-xs leading-5 text-zinc-500">全站最低倍率可能来自特殊分组或非目标模型，具体决策请以下方模型和分组明细为准。</p>
       </DetailSection>
 
       <DetailSection number="03" title={`全量模型覆盖清单（${modelOffers.length} 个模型）`}>
@@ -373,14 +373,14 @@ export function RelaySiteDetail({ record, performance, groups, modelOffers, qcRe
             const typeLabel = cov.imageCount > 0 ? `${cov.textCount} 文本 · ${cov.imageCount} 图像` : "全部文本模型";
             return (
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-px bg-swiss-fg sm:grid-cols-4">
+                <div className="grid grid-cols-2 rounded-xl border border-zinc-200/80 bg-white overflow-hidden divide-y sm:divide-y-0 sm:divide-x divide-zinc-100 sm:grid-cols-4">
                   <CoverageCard label="模型总数" value={cov.total.toString()} sub="支持的模型" />
                   <CoverageCard label="最低倍率" value={cov.lowestRate != null ? formatRate(cov.lowestRate) : "--"} sub="站内最便宜" tone="accent" />
                   <CoverageCard label="覆盖厂商" value={cov.providers.length.toString()} sub={cov.providers.slice(0, 3).join(" · ") || "未知"} />
                   <CoverageCard label="类型分布" value={cov.imageCount > 0 ? `${cov.textCount}T + ${cov.imageCount}I` : "100% T"} sub={typeLabel} />
                 </div>
-                <p className="border-l-4 border-swiss-accent pl-4 font-mono text-sm leading-6 text-swiss-fg/65">
-                  跨站比价（"GPT-5.6 在所有站多少钱"）见 <Link href="/" className="border-b border-swiss-accent font-black text-swiss-accent hover:text-swiss-fg">首页 → 按模型查 →</Link>。
+                <p className="rounded-xl border border-amber-200/60 bg-amber-50/40 p-3 font-mono text-xs leading-relaxed text-amber-900">
+                  跨站比价（"GPT-5.6 在所有站多少钱"）见 <Link href="/relay" className="font-bold underline text-[#E03E1A] hover:text-zinc-900">按模型查 (Relay Pricing Observatory) →</Link>。
                 </p>
               </div>
             );
@@ -388,32 +388,32 @@ export function RelaySiteDetail({ record, performance, groups, modelOffers, qcRe
         ) : <EmptyState text="暂无模型明细" />}
       </DetailSection>
 
-      <DetailSection number="03" title="网络性能打点看板">
+      <DetailSection number="04" title="网络性能打点看板">
         {performance ? (
-          <div className="opacity-80">
+          <div>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs font-bold uppercase tracking-widest text-swiss-fg/45">测试窗口</span>
-                <div className="flex border border-swiss-fg/40">
+                <span className="font-mono text-xs font-semibold uppercase tracking-wider text-zinc-400">测试窗口</span>
+                <div className="inline-flex rounded-lg border border-zinc-200 bg-zinc-50 p-0.5">
                   <button
                     type="button"
                     onClick={() => setPerfWindow("24h")}
-                    className={`px-2.5 py-1 font-mono text-xs font-bold uppercase tracking-widest transition-colors ${perfWindow === "24h" ? "bg-swiss-fg text-swiss-bg" : "text-swiss-fg/60 hover:bg-swiss-fg/10"}`}
+                    className={`rounded-md px-2.5 py-1 font-mono text-xs font-medium transition-colors ${perfWindow === "24h" ? "bg-white text-zinc-900 shadow-2xs font-semibold" : "text-zinc-500 hover:text-zinc-900"}`}
                   >
                     24 小时
                   </button>
                   <button
                     type="button"
                     onClick={() => setPerfWindow("7d")}
-                    className={`border-l border-swiss-fg/40 px-2.5 py-1 font-mono text-xs font-bold uppercase tracking-widest transition-colors ${perfWindow === "7d" ? "bg-swiss-fg text-swiss-bg" : "text-swiss-fg/60 hover:bg-swiss-fg/10"}`}
+                    className={`rounded-md px-2.5 py-1 font-mono text-xs font-medium transition-colors ${perfWindow === "7d" ? "bg-white text-zinc-900 shadow-2xs font-semibold" : "text-zinc-500 hover:text-zinc-900"}`}
                   >
                     7 日
                   </button>
                 </div>
               </div>
-              <span className="font-mono text-xs text-swiss-fg/45">* 探针数据来自第三方测试，仅供参考</span>
+              <span className="font-mono text-xs text-zinc-400">* 探针数据来自第三方测试，仅供参考</span>
             </div>
-            <div className="grid grid-cols-2 border-l border-t border-swiss-fg/30 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-2 rounded-xl border border-zinc-200/80 bg-white overflow-hidden divide-y divide-zinc-100 sm:grid-cols-3 lg:grid-cols-4">
               <EvidenceMetric label="最近探针成功率" value={formatPercent(toNumber(performance.success_rate), true)} />
               <EvidenceMetric
                 label={perfWindow === "24h" ? "24 小时可用率" : "7 日可用率"}
@@ -433,7 +433,7 @@ export function RelaySiteDetail({ record, performance, groups, modelOffers, qcRe
         ) : <EmptyState text="暂无第三方探针数据" />}
       </DetailSection>
 
-      <DetailSection number="04" title={`站点分组与倍率梯度（${groups.length} 个分组）`}>
+      <DetailSection number="05" title={`站点分组与倍率梯度（${groups.length} 个分组）`}>
         {groups.length > 0 ? (
           <>
             <div className="mb-4 flex items-center gap-2">
@@ -444,7 +444,7 @@ export function RelaySiteDetail({ record, performance, groups, modelOffers, qcRe
                   try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...next])); } catch {}
                   setCollapsedGroups(next);
                 }}
-                className="border-2 border-swiss-fg px-3 py-1.5 font-mono text-sm font-black uppercase tracking-widest hover:bg-swiss-fg hover:text-swiss-bg"
+                className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 font-mono text-xs font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors shadow-2xs"
               >
                 全部展开
               </button>
@@ -455,20 +455,20 @@ export function RelaySiteDetail({ record, performance, groups, modelOffers, qcRe
                   try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...next])); } catch {}
                   setCollapsedGroups(next);
                 }}
-                className="border-2 border-swiss-fg bg-swiss-fg px-3 py-1.5 font-mono text-sm font-black uppercase tracking-widest text-swiss-bg hover:bg-swiss-accent"
+                className="rounded-lg bg-zinc-900 px-3 py-1.5 font-mono text-xs font-semibold text-white hover:bg-zinc-800 transition-colors shadow-2xs"
               >
                 全部折叠
               </button>
-              <span className="ml-auto font-mono text-sm text-swiss-fg/55">{collapsedGroups.size} / {groups.length} 已折叠</span>
+              <span className="ml-auto font-mono text-xs text-zinc-400">{collapsedGroups.size} / {groups.length} 已折叠</span>
             </div>
-            <div className="divide-y-2 divide-swiss-fg border-2 border-swiss-fg">
+            <div className="rounded-xl border border-zinc-200/80 bg-white overflow-hidden divide-y divide-zinc-100">
               {visibleGroups.map((group) => {
                 const dir = String(group.change_direction ?? "").toLowerCase();
                 const delta = Math.abs(toNumber(group.change_delta) ?? 0);
                 const groupId = String(group.__id);
                 const isCollapsed = collapsedGroups.has(groupId);
                 return (
-                  <div key={group.__id} className={`px-4 py-3 ${isCollapsed ? "bg-swiss-muted/40" : ""}`}>
+                  <div key={group.__id} className={`p-4 transition-colors ${isCollapsed ? "bg-zinc-50/50" : ""}`}>
                     {/* F.04: 折叠 header 行（可点击） */}
                     <button
                       type="button"
@@ -477,8 +477,8 @@ export function RelaySiteDetail({ record, performance, groups, modelOffers, qcRe
                     >
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className={`font-mono text-base transition-transform inline-block ${isCollapsed ? "" : "rotate-90"}`}>▸</span>
-                          <span className="text-base font-black">{String(group.group_name ?? "未命名分组")}</span>
+                          <span className={`font-mono text-xs text-zinc-400 transition-transform inline-block ${isCollapsed ? "" : "rotate-90"}`}>▸</span>
+                          <span className="text-sm font-bold text-zinc-900">{String(group.group_name ?? "未命名分组")}</span>
                           {(dir === "up" || dir === "down") && delta > 0 && (
                             <ChangeBadge
                               direction={dir as "up" | "down"}
@@ -487,13 +487,13 @@ export function RelaySiteDetail({ record, performance, groups, modelOffers, qcRe
                             />
                           )}
                         </div>
-                        <div className="mt-1 truncate font-mono text-sm text-swiss-fg/45">{formatGroupSource(group.rate_source)}</div>
+                        <div className="mt-1 truncate font-mono text-xs text-zinc-400">{formatGroupSource(group.rate_source)}</div>
                       </div>
-                      <div className="font-mono text-base font-black whitespace-nowrap">{formatGroupRate(group)}</div>
+                      <div className="font-mono text-sm font-bold text-zinc-900 whitespace-nowrap">{formatGroupRate(group)}</div>
                     </button>
                     {/* F.04: 展开内容 */}
                     {!isCollapsed && (
-                      <div className="mt-3 border-l-4 border-swiss-accent pl-4 font-mono text-sm leading-6 text-swiss-fg/65">
+                      <div className="mt-3 rounded-lg bg-zinc-50 p-3 font-mono text-xs leading-relaxed text-zinc-600 border border-zinc-100">
                         {String(group.remark ?? "无额外限制说明")}
                       </div>
                     )}
@@ -502,7 +502,7 @@ export function RelaySiteDetail({ record, performance, groups, modelOffers, qcRe
               })}
             </div>
             {groups.length > 12 && (
-              <button type="button" onClick={() => setShowAllGroups((value) => !value)} className="mt-3 min-h-11 border-b border-swiss-fg font-mono text-sm font-black">
+              <button type="button" onClick={() => setShowAllGroups((value) => !value)} className="mt-3 text-xs font-semibold text-zinc-600 hover:text-zinc-900 underline">
                 {showAllGroups ? "收起分组" : `查看全部 ${groups.length} 个分组`}
               </button>
             )}
@@ -510,78 +510,78 @@ export function RelaySiteDetail({ record, performance, groups, modelOffers, qcRe
         ) : <EmptyState text="暂无分组和限制明细" />}
       </DetailSection>
 
-      {/* 05 真实性与防混用质检档案 */}
-      <DetailSection number="05" title="模型真实性与防混用质检实测档案">
+      {/* 06 真实性与防混用质检档案 */}
+      <DetailSection number="06" title="模型真实性与防混用质检实测档案">
         {qcRecord ? (
-          <div className="border-2 border-black bg-white p-6">
-            <div className="flex flex-wrap items-center justify-between border-b-2 border-black pb-4 mb-5 gap-3">
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between border-b border-zinc-100 pb-4 gap-3">
               <div className="flex items-center gap-3">
-                <div className="border-2 border-black bg-black px-3 py-1 text-white font-mono font-black text-xl">
+                <div className="rounded-xl bg-zinc-900 px-3.5 py-1.5 text-white font-mono font-bold text-lg shadow-sm">
                   {qcRecord.score} 分
                 </div>
                 <div>
-                  <div className="font-mono text-xs font-black uppercase text-swiss-accent">
-                    多轮加权评级: {qcRecord.score >= 90 ? "S 级 · 极高保真" : qcRecord.score >= 75 ? "A 级 · 良好达标" : qcRecord.score >= 60 ? "B 级 · 存在混用风险" : "F 级 · 严重降级/掺水"}
+                  <div className="font-mono text-xs font-bold text-[#E03E1A]">
+                    多轮加权评级: {qcRecord.outcomeCode === "insufficient_evidence" ? "证据不足 · 建议复测" : qcRecord.verdict === "FAIL" ? "F 级 · 检出欺诈改写" : qcRecord.score >= 90 ? "S 级 · 极高保真" : qcRecord.score >= 75 ? "A 级 · 良好达标" : qcRecord.score >= 60 ? "B 级 · 存在风险" : "F 级 · 严重降级/掺水"}
                   </div>
-                  <div className="text-sm font-bold text-black mt-0.5">
+                  <div className="text-sm font-bold text-zinc-900 mt-0.5">
                     {qcRecord.verdictText || "综合质检测试结论"}
                   </div>
                 </div>
               </div>
               <Link
                 href={`/detector?siteId=${encodeURIComponent(String(record["站点ID"] || record.__id))}&model=gpt-5.6-sol`}
-                className="inline-flex items-center gap-2 border-2 border-black bg-black px-4 py-2 font-mono text-xs font-black text-white hover:bg-swiss-accent hover:border-swiss-accent transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-zinc-900 px-4 py-2 font-mono text-xs font-semibold text-white hover:bg-[#E03E1A] transition-colors shadow-2xs"
               >
                 ⚡ 发起在线复测
               </Link>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 font-mono text-xs mb-4">
-              <div className="border border-black/20 p-3 bg-[#fafaf8]">
-                <div className="text-black/45 text-[10px] font-bold uppercase">单次最新得分</div>
-                <div className="text-lg font-black text-black mt-1">{qcRecord.currentScore ?? qcRecord.score} 分</div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 font-mono text-xs">
+              <div className="rounded-xl border border-zinc-100 bg-zinc-50/70 p-3">
+                <div className="text-zinc-400 text-[10px] font-semibold uppercase">单次最新得分</div>
+                <div className="text-base font-bold text-zinc-900 mt-1">{qcRecord.currentScore ?? qcRecord.score} 分</div>
               </div>
-              <div className="border border-black/20 p-3 bg-[#fafaf8]">
-                <div className="text-black/45 text-[10px] font-bold uppercase">累计测试轮次</div>
-                <div className="text-lg font-black text-black mt-1">{qcRecord.historicalRounds || 1} 轮</div>
+              <div className="rounded-xl border border-zinc-100 bg-zinc-50/70 p-3">
+                <div className="text-zinc-400 text-[10px] font-semibold uppercase">累计测试轮次</div>
+                <div className="text-base font-bold text-zinc-900 mt-1">{qcRecord.historicalRounds || 1} 轮</div>
               </div>
-              <div className="border border-black/20 p-3 bg-[#fafaf8]">
-                <div className="text-black/45 text-[10px] font-bold uppercase">历史通过率</div>
-                <div className="text-lg font-black text-black mt-1">{qcRecord.passRate != null ? `${qcRecord.passRate}%` : "--"}</div>
+              <div className="rounded-xl border border-zinc-100 bg-zinc-50/70 p-3">
+                <div className="text-zinc-400 text-[10px] font-semibold uppercase">历史通过率</div>
+                <div className="text-base font-bold text-zinc-900 mt-1">{qcRecord.passRate != null ? `${qcRecord.passRate}%` : "--"}</div>
               </div>
-              <div className="border border-black/20 p-3 bg-[#fafaf8]">
-                <div className="text-black/45 text-[10px] font-bold uppercase">历史波动区间</div>
-                <div className="text-lg font-black text-black mt-1">
+              <div className="rounded-xl border border-zinc-100 bg-zinc-50/70 p-3">
+                <div className="text-zinc-400 text-[10px] font-semibold uppercase">历史波动区间</div>
+                <div className="text-base font-bold text-zinc-900 mt-1">
                   {qcRecord.scoreMin != null && qcRecord.scoreMax != null ? `${qcRecord.scoreMin} ~ ${qcRecord.scoreMax} 分` : "--"}
                 </div>
               </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4 font-mono text-xs">
-              <div className="border border-black/20 p-3">
-                <span className="font-bold text-black block mb-1">行为指纹概率分布:</span>
-                <span className="text-black/70">
-                  Sol: {qcRecord.probabilities?.sol != null ? `${(qcRecord.probabilities.sol * 100).toFixed(1)}%` : "--"} · 
-                  Terra: {qcRecord.probabilities?.terra != null ? `${(qcRecord.probabilities.terra * 100).toFixed(1)}%` : "--"} · 
+            <div className="grid md:grid-cols-2 gap-3 font-mono text-xs">
+              <div className="rounded-xl border border-zinc-100 bg-zinc-50/50 p-3">
+                <span className="font-semibold text-zinc-900 block mb-1">行为指纹概率分布:</span>
+                <span className="text-zinc-600">
+                  Sol: {qcRecord.probabilities?.sol != null ? `${Math.round(qcRecord.probabilities.sol)}%` : "--"} · 
+                  Terra: {qcRecord.probabilities?.terra != null ? `${Math.round(qcRecord.probabilities.terra)}%` : "--"} · 
                   防篡改: {qcRecord.tamperDetected ? "⚠️ 检测到篡改" : "✅ 正常"}
                 </span>
               </div>
-              <div className="border border-black/20 p-3">
-                <span className="font-bold text-black block mb-1">测试时间与状态码:</span>
-                <span className="text-black/70">
+              <div className="rounded-xl border border-zinc-100 bg-zinc-50/50 p-3">
+                <span className="font-semibold text-zinc-900 block mb-1">测试时间与状态码:</span>
+                <span className="text-zinc-600">
                   {formatDateTime(qcRecord.testedAt)} · 状态: {qcRecord.outcomeCode || qcRecord.verdict}
                 </span>
               </div>
             </div>
           </div>
         ) : (
-          <div className="border-2 border-dashed border-black/30 bg-white p-6 text-center">
-            <p className="font-mono text-sm text-black/60 mb-4">
+          <div className="rounded-xl border border-dashed border-zinc-200 bg-zinc-50/50 p-6 text-center">
+            <p className="font-sans text-xs text-zinc-500 mb-3">
               该站点尚未在本地质检中心记录测试数据。您可以使用双引擎流水线对该站发起模型真伪与混用检测。
             </p>
             <Link
               href={`/detector?siteId=${encodeURIComponent(String(record["站点ID"] || record.__id))}&model=gpt-5.6-sol`}
-              className="inline-flex items-center gap-2 border-2 border-black bg-black px-5 py-2.5 font-mono text-xs font-black text-white hover:bg-swiss-accent hover:border-swiss-accent transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-zinc-900 px-4 py-2 font-mono text-xs font-semibold text-white hover:bg-[#E03E1A] transition-colors shadow-2xs"
             >
               ⚡ 立即前往质检中心检测该站点
             </Link>
@@ -589,30 +589,30 @@ export function RelaySiteDetail({ record, performance, groups, modelOffers, qcRe
         )}
       </DetailSection>
 
-      <DetailSection number="06" title="一键客户端接入与环境配置">
+      <DetailSection number="07" title="一键客户端接入与环境配置">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 font-mono text-xs">
-          <div className="border border-swiss-fg/20 p-4 bg-white">
-            <div className="font-bold text-swiss-fg uppercase tracking-wider mb-1">Standard OpenAI / OneAPI Base</div>
-            <div className="p-2 bg-swiss-fg/5 border border-swiss-fg/10 font-bold select-all text-swiss-accent break-all">
+          <div className="rounded-xl border border-zinc-200/80 bg-zinc-50/50 p-4">
+            <div className="font-semibold text-zinc-900 uppercase tracking-wider mb-1 text-xs">Standard OpenAI / OneAPI Base</div>
+            <div className="p-2.5 bg-zinc-900 text-emerald-400 rounded-lg font-mono font-medium select-all break-all text-xs">
               https://{domainDisplay(domain)}/v1
             </div>
-            <div className="mt-2 text-swiss-fg/50 text-[11px]">适用于 NextChat / LobeChat / CherryStudio 等支持自定义 Base 的客户端</div>
+            <div className="mt-2 text-zinc-400 text-[11px]">适用于 NextChat / LobeChat / CherryStudio 等支持自定义 Base 的客户端</div>
           </div>
 
-          <div className="border border-swiss-fg/20 p-4 bg-white">
-            <div className="font-bold text-swiss-fg uppercase tracking-wider mb-1">Claude Code (Terminal CLI)</div>
-            <div className="p-2 bg-swiss-fg/5 border border-swiss-fg/10 font-bold select-all text-swiss-accent break-all">
+          <div className="rounded-xl border border-zinc-200/80 bg-zinc-50/50 p-4">
+            <div className="font-semibold text-zinc-900 uppercase tracking-wider mb-1 text-xs">Claude Code (Terminal CLI)</div>
+            <div className="p-2.5 bg-zinc-900 text-emerald-400 rounded-lg font-mono font-medium select-all break-all text-xs">
               export ANTHROPIC_BASE_URL=https://{domainDisplay(domain)}
             </div>
-            <div className="mt-2 text-swiss-fg/50 text-[11px]">在命令行终端执行上述命令即可直接接入该中转站</div>
+            <div className="mt-2 text-zinc-400 text-[11px]">在命令行终端执行上述命令即可直接接入该中转站</div>
           </div>
 
-          <div className="border border-swiss-fg/20 p-4 bg-white">
-            <div className="font-bold text-swiss-fg uppercase tracking-wider mb-1">Cursor IDE (OpenAI Key)</div>
-            <div className="p-2 bg-swiss-fg/5 border border-swiss-fg/10 font-bold select-all text-swiss-accent break-all">
+          <div className="rounded-xl border border-zinc-200/80 bg-zinc-50/50 p-4">
+            <div className="font-semibold text-zinc-900 uppercase tracking-wider mb-1 text-xs">Cursor IDE (OpenAI Key)</div>
+            <div className="p-2.5 bg-zinc-900 text-emerald-400 rounded-lg font-mono font-medium select-all break-all text-xs">
               https://{domainDisplay(domain)}/v1
             </div>
-            <div className="mt-2 text-swiss-fg/50 text-[11px]">在 Cursor -&gt; Models -&gt; Override OpenAI Base URL 中填入</div>
+            <div className="mt-2 text-zinc-400 text-[11px]">在 Cursor -&gt; Models -&gt; Override OpenAI Base URL 中填入</div>
           </div>
         </div>
       </DetailSection>
@@ -622,12 +622,12 @@ export function RelaySiteDetail({ record, performance, groups, modelOffers, qcRe
 
 function DetailSection({ number, title, children }: { number: string; title: string; children: React.ReactNode }) {
   return (
-    <section className="border-b-2 border-swiss-fg">
-      <div className="mx-auto max-w-[1600px] px-5 py-8 sm:px-6 sm:py-10">
-        <div className="mb-5 flex items-baseline gap-3">
-          <span className="bg-swiss-fg px-2 py-1 font-mono text-sm font-black text-swiss-bg">{number}</span>
-          <h2 className="text-xl font-black sm:text-2xl">{title}</h2>
-        </div>
+    <section className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 sm:py-7">
+      <div className="mb-4 flex items-center gap-2.5">
+        <span className="rounded-md bg-zinc-900 px-2 py-0.5 font-mono text-xs font-bold text-white shadow-2xs">{number}</span>
+        <h2 className="text-base font-bold text-zinc-900 tracking-tight sm:text-lg">{title}</h2>
+      </div>
+      <div className="rounded-2xl border border-zinc-200/80 bg-white p-5 sm:p-6 shadow-sm">
         {children}
       </div>
     </section>
@@ -635,32 +635,32 @@ function DetailSection({ number, title, children }: { number: string; title: str
 }
 
 function CoverageCard({ label, value, sub, tone }: { label: string; value: string; sub: string; tone?: "accent" }) {
-  const toneClass = tone === "accent" ? "text-swiss-accent" : "";
+  const toneClass = tone === "accent" ? "text-[#E03E1A]" : "text-zinc-900";
   return (
-    <div className="min-h-[96px] bg-swiss-bg p-4">
-      <div className="font-mono text-sm font-black uppercase tracking-widest text-swiss-fg/55">{label}</div>
-      <div className={`mt-2 font-mono text-2xl font-black leading-none tracking-tighter ${toneClass}`}>{value}</div>
-      <div className="mt-1 truncate font-mono text-sm text-swiss-fg/45" title={sub}>{sub}</div>
+    <div className="min-h-[90px] bg-zinc-50/40 p-4">
+      <div className="font-mono text-xs font-semibold uppercase tracking-wider text-zinc-400">{label}</div>
+      <div className={`mt-1.5 font-mono text-2xl font-extrabold leading-none tracking-tight ${toneClass}`}>{value}</div>
+      <div className="mt-1 truncate font-mono text-xs text-zinc-400" title={sub}>{sub}</div>
     </div>
   );
 }
 
 function Metric({ label, value, note }: { label: string; value: string; note: string }) {
   return (
-    <div className="min-h-[112px] border-b border-r border-swiss-fg p-4 even:border-r-0 lg:border-b-0 lg:even:border-r lg:last:border-r-0">
-      <div className="font-mono text-sm uppercase tracking-widest text-swiss-fg/50">{label}</div>
-      <div className="mt-2 text-2xl font-black sm:text-3xl">{value}</div>
-      <div className="mt-1 font-mono text-sm text-swiss-fg/45">{note}</div>
+    <div className="min-h-[96px] p-4 sm:p-5">
+      <div className="font-mono text-xs uppercase tracking-wider text-zinc-400">{label}</div>
+      <div className="mt-1.5 text-2xl font-extrabold text-zinc-900 tracking-tight sm:text-3xl">{value}</div>
+      <div className="mt-1 font-mono text-xs text-zinc-400">{note}</div>
     </div>
   );
 }
 
 function EvidenceMetric({ label, value, note }: { label: string; value: string; note?: string }) {
   return (
-    <div className="min-h-[92px] border-b-2 border-r-2 border-swiss-fg p-3">
-      <div className="font-mono text-sm uppercase tracking-widest text-swiss-fg/45">{label}</div>
-      <div className="mt-2 font-mono text-lg font-black">{value}</div>
-      {note && <div className="mt-1 font-mono text-sm text-swiss-fg/55">{note}</div>}
+    <div className="p-4 bg-white">
+      <div className="font-mono text-xs uppercase tracking-wider text-zinc-400">{label}</div>
+      <div className="mt-1.5 font-mono text-base font-bold text-zinc-900">{value}</div>
+      {note && <div className="mt-0.5 font-mono text-xs text-zinc-400">{note}</div>}
     </div>
   );
 }
@@ -680,19 +680,19 @@ function AccessTags({ access }: { access: ReturnType<typeof parseAccessSignals> 
 
 function EvidenceTag({ available, label }: { available: boolean; label: string }) {
   return (
-    <span className={`inline-flex items-center gap-1.5 border px-2 py-1 font-mono text-sm font-black ${available ? "border-swiss-success bg-swiss-successBg" : "border-swiss-fg/30"}`}>
-      {available ? <IconCircleCheck className="h-3.5 w-3.5" /> : <IconCircleDot className="h-3.5 w-3.5" />}{label}
+    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 font-mono text-xs font-semibold ${available ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-zinc-200 bg-zinc-50 text-zinc-500"}`}>
+      {available ? <IconCircleCheck className="h-3.5 w-3.5 text-emerald-600" /> : <IconCircleDot className="h-3.5 w-3.5 text-zinc-400" />}{label}
     </span>
   );
 }
 
 function Tag({ label, tone = "default" }: { label: string; tone?: "default" | "success" | "warning" | "info" }) {
-  const classes = tone === "success" ? "border-swiss-success bg-swiss-successBg" : tone === "warning" ? "border-swiss-warning bg-swiss-warningBg" : tone === "info" ? "border-swiss-info bg-swiss-infoBg" : "border-swiss-fg/30";
-  return <span className={`border px-2 py-1 font-mono text-sm font-black ${classes}`}>{label}</span>;
+  const classes = tone === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : tone === "warning" ? "border-amber-200 bg-amber-50 text-amber-700" : tone === "info" ? "border-blue-200 bg-blue-50 text-blue-700" : "border-zinc-200 bg-zinc-50 text-zinc-600";
+  return <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 font-mono text-xs font-semibold ${classes}`}>{label}</span>;
 }
 
 function EmptyState({ text }: { text: string }) {
-  return <div className="border-2 border-swiss-fg/25 p-8 text-center font-mono text-sm text-swiss-fg/45">{text}</div>;
+  return <div className="rounded-xl border border-dashed border-zinc-200 bg-zinc-50/50 p-8 text-center font-mono text-xs text-zinc-400">{text}</div>;
 }
 
 function domainHref(domain: string) {
