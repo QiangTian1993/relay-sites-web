@@ -69,11 +69,6 @@ const SLUG_MAP: Record<string, { slug: string; category: string; tags: string[] 
     category: "商业化与调研",
     tags: ["流媒体音乐", "资源汇总", "版权边界", "情报整理"],
   },
-  "专题文章写作规范.md": {
-    slug: "article-writing-specifications",
-    category: "规范与方法论",
-    tags: ["写作规范", "核验标准", "知识库沉淀", "方法论"],
-  },
 };
 
 export interface TocItem {
@@ -216,7 +211,7 @@ async function main() {
 
   const files = fs
     .readdirSync(VAULT_DIR)
-    .filter((f) => f.endsWith(".md") && f !== "index.md");
+    .filter((f) => f.endsWith(".md") && f !== "index.md" && !f.includes("写作规范"));
 
   console.log(`扫描到 ${files.length} 篇专题文章候选。\n`);
 
@@ -239,6 +234,7 @@ async function main() {
     const rawContent = fs.readFileSync(fullPath, "utf-8");
     const parsed = matter(rawContent);
     const data = parsed.data || {};
+    if (data.type === "reference") continue;
 
     // 提取正文首个 # 一级标题作为文章名
     const h1Match = parsed.content.match(/^#\s+(.+)$/m);

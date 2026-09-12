@@ -299,7 +299,7 @@ export default function ArticleReader({
                 href="/articles"
                 className="w-full text-center block rounded-xl bg-zinc-100 hover:bg-zinc-950 hover:text-white text-zinc-700 font-bold py-2 transition-colors"
               >
-                查看全部 {12} 篇专题
+                查看全部专题文章
               </Link>
             </div>
           </div>
