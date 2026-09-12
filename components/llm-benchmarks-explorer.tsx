@@ -98,8 +98,15 @@ export default function LlmBenchmarksExplorer({ records }: Props) {
           valA = (a[sortKey] as number) ?? 0;
           valB = (b[sortKey] as number) ?? 0;
         }
-        if (sortAsc) return valA > valB ? 1 : -1;
-        return valA < valB ? 1 : -1;
+        if (valA !== valB) {
+          if (sortAsc) return valA > valB ? 1 : -1;
+          return valA < valB ? 1 : -1;
+        }
+        // 二级决胜仲裁：按代码工程能力 SWE-bench 降序，再按 LMSYS Elo 降序
+        const sweA = a.SWE_bench_Verified || 0;
+        const sweB = b.SWE_bench_Verified || 0;
+        if (sweA !== sweB) return sweB - sweA;
+        return (b.LMSYS总榜Elo || 0) - (a.LMSYS总榜Elo || 0);
       });
   }, [records, selectedFamily, selectedPositioning, searchQuery, sortKey, sortAsc]);
 

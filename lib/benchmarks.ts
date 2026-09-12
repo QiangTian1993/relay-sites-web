@@ -586,23 +586,45 @@ export function getModelComprehensiveVerdict(model: ModelBenchmarkRecord): Model
   const normName = model.模型名称.trim();
   const matched = MODEL_VERDICTS[normName];
 
-  // 综合指数评分算法 (0 - 100)
-  // SWE-bench (35%) + AIME 数学 (25%) + LMSYS Elo (25%) + 价格效能比 (15%)
-  const swe = Math.min(100, Math.max(20, model.SWE_bench_Verified || 35));
-  const math = Math.min(100, Math.max(30, model.AIME_2024 || model.MATH_500 || 60));
-  const elo = Math.min(100, Math.max(40, (((model.LMSYS总榜Elo || 1350) - 1200) / (1500 - 1200)) * 60 + 40));
-  
-  // 价格效能评分: 价格越低/适中，效能越高
-  let priceScore = 70;
-  if (model.输入价格_美元 <= 0) priceScore = 96;
-  else if (model.输入价格_美元 < 0.3) priceScore = 94;
-  else if (model.输入价格_美元 < 1.5) priceScore = 90;
-  else if (model.输入价格_美元 < 4.0) priceScore = 85;
-  else if (model.输入价格_美元 < 8.0) priceScore = 78;
-  else priceScore = 65;
+  // 综合指数评分算法 (70.0 - 99.4)
+  // 1. 代码工程 (权重 30%): SWE-bench Verified (基准上限 80)
+  const swe = model.SWE_bench_Verified || 35;
+  const sweScore = 55 + (swe / 80) * 44; 
 
-  const rawScore = swe * 0.35 + math * 0.25 + elo * 0.25 + priceScore * 0.15;
-  const score = Number(Math.min(99.4, Math.max(82.0, rawScore)).toFixed(1));
+  // 2. 深度数理与科学逻辑 (权重 30%): AIME 2024 / GPQA / MATH-500
+  const aime = model.AIME_2024 || 0;
+  const gpqa = model.GPQA_Diamond || 50;
+  const math500 = model.MATH_500 || 60;
+  let logicScore = 55;
+  if (aime >= 50) {
+    logicScore = 78 + ((aime - 50) / 45) * 21; 
+  } else if (aime > 0) {
+    logicScore = 58 + (aime / 50) * 18; 
+  } else {
+    logicScore = 55 + (math500 / 100) * 30;
+  }
+  // GPQA 博士级科学加成
+  if (gpqa >= 80) logicScore = Math.min(99, logicScore + 3);
+  else if (gpqa >= 70) logicScore = Math.min(99, logicScore + 1.5);
+
+  // 3. 人类盲测 Elo (权重 25%): 取总榜与代码榜有效高者
+  const rawElo = Math.max(model.LMSYS总榜Elo || 0, (model.LMSYS代码Elo || 0) + 10);
+  const elo = Math.max(1200, Math.min(1500, rawElo || 1350));
+  const eloScore = 60 + ((elo - 1200) / (1490 - 1200)) * 38;
+
+  // 4. 价格效能与生产实用度 (权重 15%)
+  let priceScore = 78;
+  if (model.输入价格_美元 <= 0) priceScore = 98;
+  else if (model.输入价格_美元 < 0.2) priceScore = 96;
+  else if (model.输入价格_美元 < 0.6) priceScore = 93;
+  else if (model.输入价格_美元 < 1.5) priceScore = 90;
+  else if (model.输入价格_美元 < 3.5) priceScore = 87;
+  else if (model.输入价格_美元 < 6.0) priceScore = 82;
+  else if (model.输入价格_美元 < 12.0) priceScore = 75;
+  else priceScore = 68;
+
+  const rawScore = sweScore * 0.30 + logicScore * 0.30 + eloScore * 0.25 + priceScore * 0.15;
+  const score = Number(Math.min(99.4, Math.max(70.0, rawScore)).toFixed(1));
 
   if (matched) {
     return {
