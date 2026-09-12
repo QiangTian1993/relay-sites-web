@@ -20,15 +20,22 @@ import {
   ExternalLink,
   SlidersHorizontal,
   ChevronDown,
-  Info
+  ChevronUp,
+  Info,
+  Star,
+  Award,
+  ShieldCheck,
+  TrendingUp
 } from "lucide-react";
 import type { ModelBenchmarkRecord } from "@/lib/benchmarks";
+import { getModelComprehensiveVerdict } from "@/lib/benchmarks";
 
 interface Props {
   records: ModelBenchmarkRecord[];
 }
 
 type SortKey =
+  | "综合评分"
   | "LMSYS总榜Elo"
   | "SWE_bench_Verified"
   | "AIME_2024"
@@ -40,11 +47,12 @@ export default function LlmBenchmarksExplorer({ records }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFamily, setSelectedFamily] = useState<string>("全部");
   const [selectedPositioning, setSelectedPositioning] = useState<string>("全部");
-  const [sortKey, setSortKey] = useState<SortKey>("LMSYS总榜Elo");
+  const [sortKey, setSortKey] = useState<SortKey>("综合评分");
   const [sortAsc, setSortAsc] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [compareList, setCompareList] = useState<string[]>([]);
   const [showCompareModal, setShowCompareModal] = useState<boolean>(false);
+  const [showVerdictGuide, setShowVerdictGuide] = useState<boolean>(true);
 
   // 所有家族选项
   const families = useMemo(() => {
@@ -80,8 +88,15 @@ export default function LlmBenchmarksExplorer({ records }: Props) {
         );
       })
       .sort((a, b) => {
-        const valA = a[sortKey] ?? 0;
-        const valB = b[sortKey] ?? 0;
+        let valA: number = 0;
+        let valB: number = 0;
+        if (sortKey === "综合评分") {
+          valA = getModelComprehensiveVerdict(a).score;
+          valB = getModelComprehensiveVerdict(b).score;
+        } else {
+          valA = (a[sortKey] as number) ?? 0;
+          valB = (b[sortKey] as number) ?? 0;
+        }
         if (sortAsc) return valA > valB ? 1 : -1;
         return valA < valB ? 1 : -1;
       });
@@ -195,6 +210,156 @@ export default function LlmBenchmarksExplorer({ records }: Props) {
         </div>
       </section>
 
+      {/* ── 掌柜综合研判与选型断言看板 ──────────────────────────── */}
+      <section className="rounded-3xl border border-zinc-200/90 bg-gradient-to-br from-amber-50/40 via-white to-orange-50/20 p-5 sm:p-7 shadow-xs">
+        <div className="flex items-center justify-between gap-3 border-b border-zinc-100 pb-4 mb-5">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-8 w-8 items-center justify-center rounded-2xl bg-gradient-to-tr from-[#E03E1A] to-amber-500 text-white shadow-2xs">
+              <Sparkles className="h-4 w-4" />
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base sm:text-lg font-black text-zinc-950 tracking-tight">
+                  掌柜综合研判 · 2026 选型客观评价
+                </h2>
+                <span className="rounded-md bg-amber-100 text-amber-900 border border-amber-300/60 px-2 py-0.5 font-mono text-[10px] font-black">
+                  VERDICT & BUYING GUIDE
+                </span>
+              </div>
+              <p className="text-xs text-zinc-500 mt-0.5">
+                抛开营销滤镜，结合真实盲测、GitHub 实战缺陷修复与中转站实操避坑经验的定性断言
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setShowVerdictGuide(!showVerdictGuide)}
+            className="flex items-center gap-1 text-xs font-mono text-zinc-500 hover:text-zinc-900 px-2.5 py-1 rounded-xl border border-zinc-200/80 bg-white shadow-2xs transition-all"
+          >
+            <span>{showVerdictGuide ? "收起指南" : "展开研判"}</span>
+            {showVerdictGuide ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+          </button>
+        </div>
+
+        {showVerdictGuide && (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 font-mono text-xs">
+            {/* 1. 代码工程 */}
+            <div className="rounded-2xl border border-orange-200/70 bg-white/90 p-4 shadow-2xs space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1.5 font-bold text-orange-800">
+                  <span className="text-sm">💻</span>
+                  <span>代码工程与 Agent 桂冠</span>
+                </span>
+                <span className="px-2 py-0.5 rounded bg-orange-50 text-orange-700 text-[10px] font-bold border border-orange-200">
+                  SWE 77%+
+                </span>
+              </div>
+              <div className="text-zinc-900 font-bold text-sm font-sans">
+                Claude Fable 5 & Claude Opus 4.6
+              </div>
+              <p className="text-zinc-600 font-sans text-[11.5px] leading-relaxed">
+                在多文件联动重构、全栈开发与长流程 Agent 自动化中表现断崖领先。若预算有限或日常敏捷编码，首推 <strong>Claude 3.7 Sonnet (Thinking)</strong>（真实解决率 70.3%）。
+              </p>
+            </div>
+
+            {/* 2. 超算数理与奥赛 */}
+            <div className="rounded-2xl border border-emerald-200/70 bg-white/90 p-4 shadow-2xs space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1.5 font-bold text-emerald-800">
+                  <span className="text-sm">🧮</span>
+                  <span>超算推理与数理奥赛天花板</span>
+                </span>
+                <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">
+                  AIME 92.4%
+                </span>
+              </div>
+              <div className="text-zinc-900 font-bold text-sm font-sans">
+                GPT-6 Astra & OpenAI o3-mini
+              </div>
+              <p className="text-zinc-600 font-sans text-[11.5px] leading-relaxed">
+                <strong>GPT-6 Astra</strong> 在极其严谨的逻辑推导与自纠错上登顶；而 <strong>o3-mini</strong> 凭借亲民价格与 87.3% 的 AIME 成绩，成为纯算法/数学题的平民首选。
+              </p>
+            </div>
+
+            {/* 3. 200万超长长文本 */}
+            <div className="rounded-2xl border border-blue-200/70 bg-white/90 p-4 shadow-2xs space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1.5 font-bold text-blue-800">
+                  <span className="text-sm">📚</span>
+                  <span>全模态与 200万 超长文本</span>
+                </span>
+                <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-[10px] font-bold border border-blue-200">
+                  2M 上下文
+                </span>
+              </div>
+              <div className="text-zinc-900 font-bold text-sm font-sans">
+                Google Gemini 3.0 Pro & 2.5 Pro
+              </div>
+              <p className="text-zinc-600 font-sans text-[11.5px] leading-relaxed">
+                200 万 token 针大海捞针命中率仍超 99.5%，音频、视频与全量仓库代码整库跨模块分析的绝对王者，召回稳定性显著优于传统分片 RAG。
+              </p>
+            </div>
+
+            {/* 4. 性价比屠夫 */}
+            <div className="rounded-2xl border border-cyan-200/70 bg-white/90 p-4 shadow-2xs space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1.5 font-bold text-cyan-800">
+                  <span className="text-sm">💰</span>
+                  <span>高并发高吞吐性价比屠夫</span>
+                </span>
+                <span className="px-2 py-0.5 rounded bg-cyan-50 text-cyan-700 text-[10px] font-bold border border-cyan-200">
+                  $0.14 起
+                </span>
+              </div>
+              <div className="text-zinc-900 font-bold text-sm font-sans">
+                DeepSeek-V3 / R1 & Gemini 2.0 Flash
+              </div>
+              <p className="text-zinc-600 font-sans text-[11.5px] leading-relaxed">
+                <strong>DeepSeek-V3</strong> 以 $0.14 单价抗击万物；<strong>R1 满血版</strong>以 $0.55 实现顶级推理；<strong>Gemini 2.0 Flash</strong> 毫秒级 TTFT 适合高频实时对话。
+              </p>
+            </div>
+
+            {/* 5. 国产政企推理 */}
+            <div className="rounded-2xl border border-purple-200/70 bg-white/90 p-4 shadow-2xs space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1.5 font-bold text-purple-800">
+                  <span className="text-sm">🇨🇳</span>
+                  <span>国产深层逻辑与政企合规</span>
+                </span>
+                <span className="px-2 py-0.5 rounded bg-purple-50 text-purple-700 text-[10px] font-bold border border-purple-200">
+                  国产首选
+                </span>
+              </div>
+              <div className="text-zinc-900 font-bold text-sm font-sans">
+                智谱 GLM-5.2 & Qwen 2.5 Max
+              </div>
+              <p className="text-zinc-600 font-sans text-[11.5px] leading-relaxed">
+                中文复杂政策、金融研报剖析与国内合规场景最强两巨头。本地离线私有化则首推 <strong>Qwen 2.5 Coder 32B</strong>。
+              </p>
+            </div>
+
+            {/* 6. 中转站避坑金律 */}
+            <div className="rounded-2xl border border-rose-200/70 bg-rose-50/30 p-4 shadow-2xs space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1.5 font-bold text-rose-800">
+                  <span className="text-sm">🛡️</span>
+                  <span>中转站实测避坑金律</span>
+                </span>
+                <span className="px-2 py-0.5 rounded bg-rose-100 text-rose-800 text-[10px] font-bold border border-rose-200">
+                  验真必看
+                </span>
+              </div>
+              <div className="text-zinc-900 font-bold text-sm font-sans">
+                警惕 GPT-5.6 偷换 & Fable 假路由
+              </div>
+              <p className="text-zinc-600 font-sans text-[11.5px] leading-relaxed">
+                中转站标称 <strong>GPT-5.6 Sol</strong> 极易被偷换为低成本的 Terra 甚至 Luna（建议进 Module 05 验货台测 Juice 指纹）；高倍率 <strong>Fable 5</strong> 需核验思考深度。
+              </p>
+            </div>
+          </div>
+        )}
+      </section>
+
       {/* ── 筛选、检索与视图控制栏 ────────────────────────────────── */}
       <section className="rounded-2xl border border-zinc-200/80 bg-white p-4 sm:p-5 shadow-2xs space-y-4">
         {/* 家族分类选项卡 */}
@@ -272,6 +437,7 @@ export default function LlmBenchmarksExplorer({ records }: Props) {
               }}
               className="rounded-xl border border-zinc-200 bg-zinc-50/60 px-3 py-1.5 text-zinc-700 text-xs focus:outline-none focus:border-[#E03E1A]"
             >
+              <option value="综合评分">排位: 掌柜综合实力指数 (推荐)</option>
               <option value="LMSYS总榜Elo">排位: LMSYS 竞技场 Elo</option>
               <option value="SWE_bench_Verified">排位: SWE-bench 代码缺陷率</option>
               <option value="AIME_2024">排位: AIME 数学奥赛能力</option>
@@ -336,6 +502,7 @@ export default function LlmBenchmarksExplorer({ records }: Props) {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredRecords.map((model) => {
             const isCompared = compareList.includes(model.模型名称);
+            const verdict = getModelComprehensiveVerdict(model);
 
             return (
               <article
@@ -345,7 +512,7 @@ export default function LlmBenchmarksExplorer({ records }: Props) {
                 }`}
               >
                 <div>
-                  {/* Card Header: 家族 + 梯队 + 厂商 */}
+                  {/* Card Header: 家族 + 梯队 + 综合评分 + 厂商 */}
                   <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-zinc-100">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className={`px-2 py-0.5 rounded-md font-mono text-[10.5px] font-bold border ${getFamilyBadge(model.家族系列)}`}>
@@ -353,6 +520,10 @@ export default function LlmBenchmarksExplorer({ records }: Props) {
                       </span>
                       <span className={`px-2 py-0.5 rounded-md font-mono text-[10.5px] font-bold border ${getTierBadge(model.梯队评级)}`}>
                         {model.梯队评级}
+                      </span>
+                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-md font-mono text-[10.5px] font-bold bg-amber-500/10 text-amber-800 border border-amber-500/25">
+                        <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                        <span>综合 {verdict.score}</span>
                       </span>
                     </div>
                     <span className="font-mono text-xs text-zinc-400">
@@ -401,6 +572,18 @@ export default function LlmBenchmarksExplorer({ records }: Props) {
                         {model.GPQA_Diamond ? `GPQA ${model.GPQA_Diamond}%` : ""}
                       </div>
                     </div>
+                  </div>
+
+                  {/* 掌柜综合评价与研判断言 */}
+                  <div className="mt-3.5 rounded-2xl border border-amber-200/60 bg-gradient-to-r from-amber-50/50 via-white to-orange-50/30 p-3 shadow-2xs">
+                    <div className="flex items-center gap-1.5 text-[11px] font-bold text-zinc-900">
+                      <Sparkles className="h-3.5 w-3.5 text-[#E03E1A] shrink-0" />
+                      <span>综合断言:</span>
+                      <span className="text-[#E03E1A] font-black">{verdict.tagline}</span>
+                    </div>
+                    <p className="mt-1 text-xs text-zinc-600 leading-relaxed font-sans">
+                      {verdict.summary}
+                    </p>
                   </div>
 
                   {/* Strengths & Caveats */}
@@ -468,6 +651,8 @@ export default function LlmBenchmarksExplorer({ records }: Props) {
                 <th className="p-3.5 pl-5 font-bold">模型名称</th>
                 <th className="p-3.5 font-bold">厂商/系列</th>
                 <th className="p-3.5 font-bold">定位与梯队</th>
+                <th className="p-3.5 font-bold text-center">综合评分</th>
+                <th className="p-3.5 font-bold min-w-[240px]">掌柜综合断言</th>
                 <th className="p-3.5 font-bold text-right">Arena 总分</th>
                 <th className="p-3.5 font-bold text-right">代码 Elo</th>
                 <th className="p-3.5 font-bold text-right">SWE-bench</th>
@@ -483,6 +668,7 @@ export default function LlmBenchmarksExplorer({ records }: Props) {
             <tbody className="divide-y divide-zinc-100">
               {filteredRecords.map((m) => {
                 const isCompared = compareList.includes(m.模型名称);
+                const verdict = getModelComprehensiveVerdict(m);
                 return (
                   <tr key={m.模型名称} className="hover:bg-zinc-50/60 transition-colors">
                     <td className="p-3.5 pl-5 font-bold text-zinc-900">
@@ -500,6 +686,16 @@ export default function LlmBenchmarksExplorer({ records }: Props) {
                       <span className={`px-1.5 py-0.2 rounded text-[10px] font-bold border ${getTierBadge(m.梯队评级)}`}>
                         {m.梯队评级}
                       </span>
+                    </td>
+                    <td className="p-3.5 text-center">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded font-black text-xs bg-amber-50 text-amber-800 border border-amber-200">
+                        <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                        <span>{verdict.score}</span>
+                      </span>
+                    </td>
+                    <td className="p-3.5 font-sans text-xs text-zinc-700">
+                      <div className="font-bold text-zinc-900 line-clamp-1">{verdict.tagline}</div>
+                      <div className="text-[11px] text-zinc-500 line-clamp-1 mt-0.5">{verdict.summary}</div>
                     </td>
                     <td className="p-3.5 text-right font-black text-zinc-900">
                       {m.LMSYS总榜Elo || "—"}
@@ -548,67 +744,76 @@ export default function LlmBenchmarksExplorer({ records }: Props) {
         </div>
       )}
 
-      {/* ── 浮动对比托盘与横向对照抽屉 ──────────────────────────────── */}
+      {/* ── 底部对比托盘 (Compare Floating Bar) ────────────────────────── */}
       {compareList.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 rounded-2xl border border-zinc-900 bg-zinc-950 px-5 py-3 text-white shadow-2xl font-mono text-xs animate-in fade-in slide-in-from-bottom-3 duration-200">
+        <aside
+          role="region"
+          aria-label="对比托盘"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 rounded-2xl border border-zinc-200/80 bg-zinc-950/90 text-white px-5 py-3 shadow-2xl backdrop-blur-md"
+        >
           <div className="flex items-center gap-2">
-            <Scale className="h-4 w-4 text-[#E03E1A]" />
-            <span>已选 <strong className="text-white">{compareList.length}</strong> / 4 款模型</span>
+            <span className="flex h-2 w-2 rounded-full bg-[#E03E1A] animate-pulse" />
+            <span className="font-mono text-xs font-bold">
+              已选对比: {compareList.length} / 4 款
+            </span>
           </div>
 
-          <div className="h-4 w-px bg-zinc-800" />
-
-          <div className="flex items-center gap-1.5 max-w-xs sm:max-w-md overflow-x-auto scrollbar-none">
+          <div className="flex items-center gap-1.5">
             {compareList.map((name) => (
               <span
                 key={name}
-                className="inline-flex items-center gap-1 rounded-lg bg-zinc-800 px-2 py-0.5 text-[11px] text-zinc-300 shrink-0"
+                className="inline-flex items-center gap-1 rounded-lg bg-zinc-800 px-2 py-0.5 font-mono text-[11px] text-zinc-200 border border-zinc-700"
               >
-                <span className="truncate max-w-[120px]">{name}</span>
+                <span>{name.length > 14 ? `${name.slice(0, 14)}...` : name}</span>
                 <button
                   onClick={() => toggleCompare(name)}
-                  className="hover:text-white"
+                  className="text-zinc-400 hover:text-white"
                 >
-                  ✕
+                  <X className="h-3 w-3" />
                 </button>
               </span>
             ))}
           </div>
 
-          <button
-            onClick={() => setShowCompareModal(true)}
-            className="rounded-xl bg-[#E03E1A] px-3.5 py-1.5 font-bold text-white hover:bg-[#c93514] transition-colors"
-          >
-            横向深入对比
-          </button>
-          <button
-            onClick={() => setCompareList([])}
-            className="text-zinc-400 hover:text-white text-xs"
-          >
-            清空
-          </button>
-        </div>
+          <div className="flex items-center gap-2 pl-2 border-l border-zinc-700">
+            <button
+              onClick={() => setShowCompareModal(true)}
+              className="rounded-xl bg-[#E03E1A] px-3.5 py-1.5 font-mono text-xs font-bold text-white hover:bg-[#c93514] transition-colors flex items-center gap-1"
+            >
+              <Scale className="h-3.5 w-3.5" />
+              <span>展开横向对比</span>
+            </button>
+            <button
+              onClick={() => setCompareList([])}
+              className="text-zinc-400 hover:text-white text-xs font-mono px-1"
+            >
+              清空
+            </button>
+          </div>
+        </aside>
       )}
 
-      {/* ── 深入对比全屏弹窗 ────────────────────────────────────────── */}
+      {/* ── 对比弹窗 (Compare Modal) ─────────────────────────────────── */}
       {showCompareModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-6 overflow-y-auto">
-          <div className="relative w-full max-w-5xl rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-4 border-b border-zinc-200">
-              <div className="flex items-center gap-2 font-mono">
-                <Scale className="h-5 w-5 text-[#E03E1A]" />
-                <h2 className="text-xl font-black text-zinc-950">模型全维横评对比</h2>
-                <span className="text-xs text-zinc-400">({comparedRecords.length} 款)</span>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/50 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 shadow-2xl">
+            <div className="flex items-center justify-between pb-4 mb-4 border-b border-zinc-100">
+              <div className="flex items-center gap-2">
+                <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-zinc-900 text-white font-mono text-xs font-bold">
+                  VS
+                </span>
+                <h3 className="text-lg font-black text-zinc-950">
+                  大模型全参数横向深度比对
+                </h3>
               </div>
               <button
                 onClick={() => setShowCompareModal(false)}
-                className="rounded-full p-2 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors"
+                className="rounded-full p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            {/* 并排对比表格 */}
             <div className="overflow-x-auto">
               <table className="w-full border-collapse font-mono text-xs">
                 <thead>
@@ -622,6 +827,23 @@ export default function LlmBenchmarksExplorer({ records }: Props) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100">
+                  <tr className="bg-amber-50/60">
+                    <td className="p-3 text-amber-900 font-bold">综合评测研判</td>
+                    {comparedRecords.map((r) => {
+                      const v = getModelComprehensiveVerdict(r);
+                      return (
+                        <td key={r.模型名称} className="p-3">
+                          <div className="flex items-center gap-1 font-mono font-black text-amber-800 text-sm">
+                            <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
+                            <span>综合评分 {v.score}</span>
+                            <span className="text-[11px] font-normal text-amber-700 ml-1">({v.ratingLevel})</span>
+                          </div>
+                          <div className="text-[11px] font-bold text-zinc-900 mt-1">{v.tagline}</div>
+                          <div className="text-xs text-zinc-600 font-sans mt-0.5 leading-relaxed">{v.summary}</div>
+                        </td>
+                      );
+                    })}
+                  </tr>
                   <tr>
                     <td className="p-3 text-zinc-400 font-bold">厂商与家族</td>
                     {comparedRecords.map((r) => (
